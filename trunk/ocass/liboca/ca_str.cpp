@@ -1,0 +1,49 @@
+/**
+ *
+ */
+
+#include "ca_str.h"
+
+
+CA_DECLARE(CHAR *) CA_StrTok(CHAR *pszStr, const CHAR *pszSep, CHAR **pszLast)
+{
+    CHAR *pszToken;
+
+    if (!pszStr)           /* subsequent call */       
+        pszStr = *pszLast;    /* start where we left off */
+
+    /* skip characters in sep (will terminate at '\0') */
+    while (*pszStr && strchr(pszSep, *pszStr))
+        ++pszStr;
+
+    if (!*pszStr)          /* no more tokens */
+        return NULL;
+
+    pszToken = pszStr;
+
+    /* skip valid token characters to terminate token and
+     * prepare for the next call (will terminate at '\0) 
+     */
+    *pszLast = pszToken + 1;
+    while (**pszLast && !strchr(pszSep, **pszLast))
+        ++*pszLast;
+
+    if (**pszLast) {
+        **pszLast = '\0';
+        ++*pszLast;
+    }
+
+    return pszToken;
+}
+
+CA_DECLARE_NOSTD(int) CA_SNPrintf(TCHAR *pszBuf, const int nBufCnt, 
+                                  const TCHAR *pszFmt, ...)
+{
+    va_list pArgList;
+    int nResult;
+
+    va_start(pArgList, pszFmt);
+    nResult = _vsnprintf(pszBuf, nBufCnt, pszFmt, pArgList);
+    va_end(pArgList);
+    return nResult;
+}
