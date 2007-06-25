@@ -47,3 +47,29 @@ CA_DECLARE_NOSTD(int) CA_SNPrintf(TCHAR *pszBuf, const int nBufCnt,
     va_end(pArgList);
     return nResult;
 }
+
+
+CA_DECLARE(int) CA_TruncateStrnCpy(char *pszDst, 
+                    const char *pszSrc, int nDstSize)
+{
+    char *pStrPos;
+    int i;
+
+    /* XXX if ((signed)nDstSize =< 0) then call assert function */
+
+    pszDst[0] = '\0';
+    if (NULL == pszSrc)
+    {
+        return 0;
+    }
+
+    pStrPos = (char *)pszSrc;
+    i = 0;
+    for (; !('\0' == pStrPos[0] || i >= nDstSize); pStrPos++, i++)
+    {
+        pszDst[i] = pStrPos[0];
+    }
+
+    pszDst[i] = '\0';
+    return strlen(pszDst);
+}
