@@ -13,4 +13,7 @@ CA_DECLARE(CHAR *) CA_StrTok(CHAR *pszStr, const CHAR *pszSep,
 CA_DECLARE_NOSTD(int) CA_SNPrintf(TCHAR *pszBuf, const int nBufCnt, 
                                   const TCHAR *pszFmt, ...);
 
+CA_DECLARE(int) CA_TruncateStrnCpy(char *pszDst, 
+                    const char *pszSrc, int nDstSize);
+
 #endif /* !defined(_CA_STR_H_) */
