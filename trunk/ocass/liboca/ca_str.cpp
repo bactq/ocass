@@ -73,3 +73,11 @@ CA_DECLARE(int) CA_TruncateStrnCpy(char *pszDst,
     pszDst[i] = '\0';
     return strlen(pszDst);
 }
+
+CA_DECLARE(void) CA_BTruncateNCpy(const char *pSrcBuf, int nSrcBufLen, 
+                                  char *pDestBuf, int *pnDestBufLen)
+{
+    int nCpyLen = (nSrcBufLen >= *pnDestBufLen ? *pnDestBufLen : nSrcBufLen);
+    memcpy(pDestBuf, pSrcBuf, nCpyLen);
+    *pnDestBufLen = nCpyLen;
+}
