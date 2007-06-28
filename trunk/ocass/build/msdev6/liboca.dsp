@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 dbghelp.lib /nologo /dll /machine:I386 /libpath:"../../support_libs/dbghlp" /libpath:"./release"
+# ADD LINK32 advapi32.lib dbghelp.lib /nologo /dll /machine:I386 /libpath:"../../support_libs/dbghlp" /libpath:"./release"
 
 !ELSEIF  "$(CFG)" == "liboca - Win32 Debug"
 
@@ -66,6 +66,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "libocaDebug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LIBOCA_EXPORTS" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "../../liboca" /I "../../support_libs/dbghlp" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LIBOCA_EXPORTS" /YX /FD /GZ /c
@@ -78,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 dbghelp.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /libpath:"../../support_libs/dbghlp" /libpath:"./debug"
+# ADD LINK32 advapi32.lib dbghelp.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /libpath:"../../support_libs/dbghlp" /libpath:"./debug"
 
 !ENDIF 
 
@@ -116,6 +117,10 @@ SOURCE=..\..\liboca\ca_misc.cpp
 # Begin Source File
 
 SOURCE=..\..\liboca\ca_mm.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\liboca\ca_ofc.cpp
 # End Source File
 # Begin Source File
 
@@ -164,6 +169,14 @@ SOURCE=..\..\include\ca_misc.h
 # Begin Source File
 
 SOURCE=..\..\include\ca_mm.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\ca_mod.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\ca_ofc.h
 # End Source File
 # Begin Source File
 
