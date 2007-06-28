@@ -66,7 +66,7 @@ LINK32=link.exe
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "libocsDebug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LIBOCS_EXPORTS" /YX /FD /GZ  /c
+# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LIBOCS_EXPORTS" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "../../libocs" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LIBOCS_EXPORTS" /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -90,20 +90,64 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\..\libocs\cs_core.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_misc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_nti.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_ntr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_wrk.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\libocs\libocs.cpp
 # End Source File
+# End Group
+# Begin Group "Resource Files"
+
+# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=..\..\libocs\cs_core.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_inner.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_misc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_nti.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_ntr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_wrk.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\include\libocs.h
 # End Source File
-# End Group
-# Begin Group "Resource Files"
-
-# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
 # End Target
 # End Project
