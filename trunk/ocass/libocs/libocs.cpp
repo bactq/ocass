@@ -6,9 +6,14 @@
 
 static HINSTANCE g_hInst = NULL;
 
-CA_DECLARE(int) GetVer(void)
+CA_DECLARE(void) Sanctimonious(void)
 {
-    return 0;
+    /* nop */
+}
+
+const HINSTANCE CS_GetDllInst(void)
+{
+    return g_hInst;
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
