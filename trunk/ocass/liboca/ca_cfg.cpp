@@ -17,8 +17,20 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     CAErrno caErr;
     DWORD dwBufCnt;
 
-    pCfgDatum->szHistoryPath[0] = '\0';
     pCfgDatum->szCommunicatorFName[0] = '\0';
+    pCfgDatum->szHistoryPath[0] = '\0';
+    pCfgDatum->szSpyLog[0] = '\0';
+    pCfgDatum->szSpyNtDump[0] = '\0';
+    pCfgDatum->spyLogMask = CA_SPY_LOG_NONE;
+
+    /* Communicator file name */
+    dwBufCnt = sizeof(pCfgDatum->szCommunicatorFName) / 
+               sizeof(pCfgDatum->szCommunicatorFName[0]);
+    caErr = CA_OFCGetFNameFromReg(pCfgDatum->szCommunicatorFName, dwBufCnt);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return caErr;
+    }
 
     /* history dump path */
     dwBufCnt = sizeof(pCfgDatum->szHistoryPath) / 
@@ -30,14 +42,26 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
         return caErr;
     }
 
-    /* Communicator file name */
-    dwBufCnt = sizeof(pCfgDatum->szCommunicatorFName) / 
-               sizeof(pCfgDatum->szCommunicatorFName[0]);
-    caErr = CA_OFCGetFNameFromReg(pCfgDatum->szCommunicatorFName, dwBufCnt);
+    /* spy log */
+    dwBufCnt = sizeof(pCfgDatum->szSpyLog) / 
+               sizeof(pCfgDatum->szSpyLog[0]);
+    caErr = CA_PathJoin(pszWrkPath, CA_CFG_DEFAULT_SPY_LOG, 
+        pCfgDatum->szSpyLog, dwBufCnt);
     if (CA_ERR_SUCCESS != caErr)
     {
         return caErr;
     }
+
+    /* nt dump */
+    dwBufCnt = sizeof(pCfgDatum->szSpyNtDump) / 
+               sizeof(pCfgDatum->szSpyNtDump[0]);
+    caErr = CA_PathJoin(pszWrkPath, CA_CFG_DEFAULT_SPY_NT_DUMP, 
+        pCfgDatum->szSpyNtDump, dwBufCnt);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return caErr;
+    }
+    
 
     return CA_ERR_SUCCESS;
 }
@@ -64,19 +88,38 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
     pCfgDatum->szHistoryPath[0] = '\0';
     pCfgDatum->szCommunicatorFName[0] = '\0';
 
-    /* history dump path */
-    dwBufCnt = sizeof(pCfgDatum->szHistoryPath) / 
-               sizeof(pCfgDatum->szHistoryPath[0]);
-    GetPrivateProfileString(TEXT("app"), TEXT("history_path"), 
-        cfgDefaultDatum.szHistoryPath, pCfgDatum->szHistoryPath, 
-        dwBufCnt, pszCfgFName);
-
     /* Communicator file name */
     dwBufCnt = sizeof(pCfgDatum->szCommunicatorFName) /
                sizeof(pCfgDatum->szCommunicatorFName[0]);
     GetPrivateProfileString(TEXT("app"), TEXT("communicator_fname"), 
         cfgDefaultDatum.szCommunicatorFName, 
         pCfgDatum->szCommunicatorFName, dwBufCnt, pszCfgFName);
+
+
+    /* history dump path */
+    dwBufCnt = sizeof(pCfgDatum->szHistoryPath) / 
+               sizeof(pCfgDatum->szHistoryPath[0]);
+    GetPrivateProfileString(TEXT("spy"), TEXT("history_path"), 
+        cfgDefaultDatum.szHistoryPath, pCfgDatum->szHistoryPath, 
+        dwBufCnt, pszCfgFName);
+
+    /* spy log */
+    dwBufCnt = sizeof(pCfgDatum->szSpyLog) / 
+               sizeof(pCfgDatum->szSpyLog[0]);
+    GetPrivateProfileString(TEXT("spy"), TEXT("spy_log"), 
+        cfgDefaultDatum.szSpyLog, pCfgDatum->szSpyLog, 
+        dwBufCnt, pszCfgFName);
+
+    /* spy log */
+    dwBufCnt = sizeof(pCfgDatum->szSpyNtDump) / 
+               sizeof(pCfgDatum->szSpyNtDump[0]);
+    GetPrivateProfileString(TEXT("spy"), TEXT("spy_ntdump"), 
+        cfgDefaultDatum.szSpyNtDump, pCfgDatum->szSpyNtDump, 
+        dwBufCnt, pszCfgFName);
+
+    /* spy log mask */
+    pCfgDatum->spyLogMask = GetPrivateProfileInt(TEXT("spy"), 
+        TEXT("spy_logmask"), cfgDefaultDatum.spyLogMask, pszCfgFName);
 
     return CA_ERR_SUCCESS;
 }
@@ -90,6 +133,8 @@ CA_DECLARE(CAErrno) CA_CfgWr(const TCHAR *pszCfgFName,
 
     WritePrivateProfileString(TEXT("app"), TEXT("history_path"), 
         pCfgDatum->szHistoryPath, pszCfgFName);
+
+    /* XXX XXX */
     return CA_ERR_SUCCESS;
 }
 
@@ -130,4 +175,12 @@ CA_DECLARE(CAErrno) CA_CfgSetRTFromFile(const TCHAR *pszCfgFName,
     }
 
     return CA_CfgSetRT(&cfgDatum);
+}
+
+CA_DECLARE(CAErrno) CA_CfgDupRT(CACfgDatum *pResult)
+{
+    CA_RTCSEnter(); 
+    memcpy(pResult, CA_CfgGetRT(), sizeof(CACfgDatum));
+    CA_RTCSLeave();
+    return CA_ERR_SUCCESS;
 }

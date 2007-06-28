@@ -92,6 +92,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\..\liboca\ca_base64.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\liboca\ca_cfg.cpp
 # End Source File
 # Begin Source File
@@ -124,6 +128,10 @@ SOURCE=..\..\liboca\ca_ofc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\liboca\ca_sr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\liboca\ca_str.cpp
 # End Source File
 # Begin Source File
@@ -134,6 +142,10 @@ SOURCE=..\..\liboca\liboca.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=..\..\include\ca_base64.h
+# End Source File
 # Begin Source File
 
 SOURCE=..\..\include\ca_cfg.h
@@ -177,6 +189,10 @@ SOURCE=..\..\include\ca_mod.h
 # Begin Source File
 
 SOURCE=..\..\include\ca_ofc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\ca_sr.h
 # End Source File
 # Begin Source File
 
