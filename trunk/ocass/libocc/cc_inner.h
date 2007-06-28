@@ -5,9 +5,18 @@
 #ifndef _CC_INNER_H_
 #define _CC_INNER_H_ 1
 
+#include "libocc.h"
+
 struct _CC_Wrk
 {
-    int x;
+    HANDLE              hWrkTh;
+    CRITICAL_SECTION    wrkCS;
+    HANDLE              hWrkEvt;
+    BOOL                bStopWrkTh;
+
+    BOOL        bStateDirty;
+    CCWrkState  wrkState;
+    time_t      stateStartTime;
 };
 
 
