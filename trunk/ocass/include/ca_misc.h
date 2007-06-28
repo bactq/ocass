@@ -14,5 +14,10 @@ CA_DECLARE(CAErrno) CA_PathJoin(const TCHAR *pszPath,
                                 const TCHAR *pszSubPath, 
                                 TCHAR *pszPathBuf, DWORD dwBufCnt);
 
+CA_DECLARE(void) CA_PathGetBaseName(const TCHAR *pszFullName, 
+                                    const TCHAR **pszBaseName);
+
+CA_DECLARE(CAErrno) CA_GetProcFirstThread(DWORD dwProcId, 
+                                          DWORD *pdwFirstThId);
 
 #endif /* !defined(_CA_MISC_H_) */
