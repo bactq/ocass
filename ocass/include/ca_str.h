@@ -16,4 +16,7 @@ CA_DECLARE_NOSTD(int) CA_SNPrintf(TCHAR *pszBuf, const int nBufCnt,
 CA_DECLARE(int) CA_TruncateStrnCpy(char *pszDst, 
                     const char *pszSrc, int nDstSize);
 
+CA_DECLARE(void) CA_BTruncateNCpy(const char *pSrcBuf, int nSrcBufLen, 
+                                  char *pDestBuf, int *pnDestBufLen);
+
 #endif /* !defined(_CA_STR_H_) */
