@@ -10,6 +10,7 @@ typedef struct _CH_HOOK_DATUM
     HHOOK hInjectWndHook;
 } CHHDatum;
 
+const HINSTANCE CH_GetDllInstance(void);
 
 void        CH_HDatumInit(void);
 CHHDatum*   CH_HDatumPtrGet(void);
