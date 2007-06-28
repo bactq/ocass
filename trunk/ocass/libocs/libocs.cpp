@@ -3,6 +3,8 @@
  */
 
 #include "ca_types.h"
+#include "cs_inner.h"
+#include "cs_core.h"
 
 static HINSTANCE g_hInst = NULL;
 
@@ -22,8 +24,10 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
     {
     case DLL_PROCESS_ATTACH:
         g_hInst = hInst;
+        CS_CoreOnDllLoad(hInst);
         break;
     case DLL_PROCESS_DETACH:
+        CS_CoreOnDllUnload(hInst);
         g_hInst = NULL;
         break;
     default:
