@@ -40,7 +40,7 @@ static BOOL CA_OFCIsOFCProc(PROCESSENTRY32 *pProcEnt,
 CA_DECLARE(CAErrno) CA_OFCGetFNameFromReg(TCHAR *pszFNameBuf, 
                                           DWORD dwBufCnt)
 {
-    const TCHAR *pszMSOCExe = TEXT("communicator.exe");
+    const TCHAR *pszMSOCExe = CA_OFC_EXE_BASE_NAME;
     CAErrno funcErr = CA_ERR_SUCCESS;
     TCHAR szInstallDir[MAX_PATH];
     DWORD dwDataLen;
@@ -149,4 +149,9 @@ CA_DECLARE(BOOL) CA_OFCProcIsAttached(DWORD dwProcId)
     }
 
     return TRUE;
+}
+
+CA_DECLARE(BOOL) CA_OFCIsCommunicatorMod(HMODULE hMod)
+{
+    return FALSE;
 }
