@@ -7,12 +7,7 @@
 
 #include "ca_types.h"
 
-typedef struct _CSWrk
-{
-    HANDLE  hWrkTh;
-    HANDLE  hWrkEvt;
-    BOOL    bStopWrkTh;
-} CSWrk;
+typedef struct _CSWrk CSWrk;
 
 CA_DECLARE(CAErrno) CS_WrkStart(CSWrk **pCSWrk);
 CA_DECLARE(CAErrno) CS_WrkStop(CSWrk *pCSWrk);
