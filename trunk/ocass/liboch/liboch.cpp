@@ -6,6 +6,11 @@
 
 static HINSTANCE g_hInst = NULL;
 
+const HINSTANCE CH_GetDllInstance(void)
+{
+    return g_hInst;
+}
+
 BOOL WINAPI DllMain(HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
 {
     switch (dwReason)
