@@ -8,4 +8,3 @@
 #include "liboca.h"
 
 #endif /* !defined(_LIBOCS_H_) */
-
