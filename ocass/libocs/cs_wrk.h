@@ -6,10 +6,13 @@
 #define _CS_WRK_H_ 1
 
 #include "ca_types.h"
+#include "ca_cfg.h"
 
 typedef struct _CSWrk CSWrk;
 
-CA_DECLARE(CAErrno) CS_WrkStart(CSWrk **pCSWrk);
-CA_DECLARE(CAErrno) CS_WrkStop(CSWrk *pCSWrk);
+CAErrno CS_WrkStart(HMODULE hLib, CACfgDatum *pCfgDatum, 
+                    CSWrk **pCSWrk);
+
+CAErrno CS_WrkStop(CSWrk *pCSWrk);
 
 #endif /* !defined(_CS_WRK_H_) */

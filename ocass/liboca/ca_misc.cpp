@@ -102,3 +102,35 @@ CA_DECLARE(CAErrno) CA_GetProcFirstThread(DWORD dwProcId,
     *pdwFirstThId = entThread.th32ThreadID;
     return CA_ERR_SUCCESS;
 }
+
+CA_DECLARE(CAErrno) CA_W32ResNameFromFilename(const TCHAR *pszFName, 
+                        BOOL bIsGlobal, TCHAR *pszNameBuf, DWORD dwBufCnt)
+{
+    const TCHAR *pszPre = (bIsGlobal ? TEXT("Global\\") : TEXT("Local\\"));
+    TCHAR *pszStrPos;
+    int nResult;
+
+    if (NULL == pszFName || '\0' == pszFName[0])
+    {
+        return CA_ERR_BAD_ARG;
+    }
+
+    nResult = CA_SNPrintf(pszNameBuf, dwBufCnt, TEXT("%s%s"), 
+        pszPre, pszFName);
+    if (0 >= nResult)
+    {
+        return CA_ERR_OBJ_NAME_TOO_LONG;
+    }
+
+    pszStrPos = pszNameBuf + lstrlen(pszPre);
+    for (; '\0' != pszStrPos[0]; pszStrPos++)
+    {
+        if (':' == pszStrPos[0] || '\\' == pszStrPos[0] ||
+            '/' == pszStrPos[0])
+        {
+            pszStrPos[0] = '_';
+        }
+    }
+
+    return CA_ERR_SUCCESS;
+}

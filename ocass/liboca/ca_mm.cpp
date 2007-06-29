@@ -3,6 +3,8 @@
  */
 
 #include "ca_mm.h"
+#include "ca_misc.h"
+#include "ca_str.h"
 
 typedef struct _CA_ShmBlk
 {
@@ -38,30 +40,249 @@ CA_DECLARE(void) CA_MFree(void *pMem)
 CA_DECLARE(CAErrno) CA_ShMMCreate(UINT nReqSize, const TCHAR *pszFName, 
                                  CAShMM **pShMM)
 {
-    return CA_ERR_SUCCESS;
+    LPCTSTR pszMapKey;
+    CAErrno funcErr = CA_ERR_SUCCESS;
+    CAErrno caErr;
+    HANDLE hFile = INVALID_HANDLE_VALUE;
+    HANDLE hMap = NULL;
+    LPVOID pMapView = NULL;
+    CAShMM *pNewShMM;
+    TCHAR szMapKey[MAX_PATH * 2];
+    UINT nRealSize = nReqSize + sizeof(CAShmBlk);
+    int nResult;
+
+    *pShMM = NULL;
+    if (NULL == pszFName)
+    {
+        hFile = INVALID_HANDLE_VALUE;
+        pszMapKey = NULL;
+    }
+    else
+    {
+        hFile = CreateFile(pszFName, GENERIC_READ|GENERIC_WRITE, 
+            FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+        if (INVALID_HANDLE_VALUE == hFile)
+        {
+            funcErr = CA_ERR_FOPEN;
+            goto EXIT;
+        }
+
+        caErr = CA_W32ResNameFromFilename(pszFName, TRUE, 
+            szMapKey, sizeof(szMapKey) / sizeof(szMapKey[0]));
+        if (CA_ERR_SUCCESS != caErr)
+        {
+            funcErr = caErr;
+            goto EXIT;
+        }
+        pszMapKey = szMapKey;
+    }
+
+    hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 
+        0, nRealSize, pszMapKey);
+    if (NULL == hMap)
+    {
+        funcErr = CA_ERR_FOPEN;
+        goto EXIT;
+    }
+
+    pMapView = MapViewOfFile(hMap, FILE_MAP_READ|FILE_MAP_WRITE,
+                         0, 0, nRealSize);
+    if (NULL == pMapView)
+    {
+        funcErr = CA_ERR_NO_MEM;
+        goto EXIT;
+    }
+
+    if (INVALID_HANDLE_VALUE != hFile)
+    {
+        CloseHandle(hFile);
+        hFile = INVALID_HANDLE_VALUE;
+    }
+
+    pNewShMM = (CAShMM*)CA_MAlloc(sizeof(CAShMM));
+    if (NULL == pNewShMM)
+    {
+        funcErr = CA_ERR_NO_MEM;
+        goto EXIT;
+    }
+
+    pNewShMM->hMap = hMap;
+    pNewShMM->nShmSize = nRealSize;
+    pNewShMM->pShmBase = pMapView;
+    pNewShMM->pShmBlk = (CAShmBlk *)pMapView;
+    pNewShMM->pShmBlk->nShmRealSize = nRealSize;
+    pNewShMM->pShmBlk->nShmSize = nReqSize;
+    nResult = CA_SNPrintf(pNewShMM->szFileName, 
+        sizeof(pNewShMM->szFileName) / sizeof(pNewShMM->szFileName[0]), 
+        TEXT("%s"), pszFName);
+    if (0 >= nResult)
+    {
+        funcErr = CA_ERR_FNAME_TOO_LONG;
+        goto EXIT;
+    }
+
+EXIT:
+    if (CA_ERR_SUCCESS != funcErr)
+    {
+        /* failed close all handle */
+        if (NULL != pMapView)
+        {
+            UnmapViewOfFile(pMapView);
+        }
+
+        if (NULL != hMap)
+        {
+            CloseHandle(hMap);
+        }
+
+        if (INVALID_HANDLE_VALUE != hFile)
+        {
+            CloseHandle(hFile);
+        }
+
+        if (NULL != pNewShMM)
+        {
+            CA_MFree(pNewShMM);
+        }
+    }
+    else 
+    {
+        *pShMM = pNewShMM;
+    }
+    return funcErr;
 }
 
-CA_DECLARE(CAErrno) CA_ShMMDestroy(CAShMM *pShMM, BOOL bUnlinkMapFile)
+CA_DECLARE(void) CA_ShMMDestroy(CAShMM *pShMM, BOOL bUnlinkMapFile)
 {
-    return CA_ERR_SUCCESS;
+    if (NULL == pShMM)
+    {
+        return;
+    }
+
+    if (NULL != pShMM->pShmBase)
+    {
+        UnmapViewOfFile(pShMM->pShmBase);
+        pShMM->pShmBase = NULL;
+    }
+
+    if (NULL != pShMM->hMap)
+    {
+        CloseHandle(pShMM->hMap);
+        pShMM->hMap = NULL;
+    }
+
+    if (bUnlinkMapFile)
+    {
+        DeleteFile(pShMM->szFileName);
+        pShMM->szFileName[0] = '\0';
+    }
+
+    CA_MFree(pShMM);
 }
 
-CA_DECLARE(CAErrno) CA_ShMMAttach(const char *pszFileName, CAShMM **phShm)
+CA_DECLARE(CAErrno) CA_ShMMAttach(const TCHAR *pszFileName, CAShMM **pShm)
 {
-    return CA_ERR_SUCCESS;
+    CAShmBlk *pShmBlk;
+    CAErrno funcErr = CA_ERR_SUCCESS;
+    CAErrno caErr;
+    LPVOID pMapView = NULL;
+    HANDLE hMap = NULL;
+    CAShMM *pNewShm = NULL;
+    TCHAR szMapKey[MAX_PATH * 2];
+    int nResult;
+
+    *pShm = NULL;
+    if (NULL == pszFileName || '\0' == pszFileName[0])
+    {
+        return CA_ERR_BAD_ARG;
+    }
+    
+    caErr = CA_W32ResNameFromFilename(pszFileName, TRUE, 
+            szMapKey, sizeof(szMapKey) / sizeof(szMapKey[0]));
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        funcErr = caErr;
+        goto EXIT;
+    }
+
+    hMap = OpenFileMapping(FILE_MAP_READ|FILE_MAP_WRITE, FALSE, szMapKey);
+    if (NULL == hMap)
+    {
+        funcErr = CA_ERR_FOPEN;
+        goto EXIT;
+    }
+
+    pMapView = MapViewOfFile(hMap, FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, 0);
+    if (NULL == pMapView)
+    {
+        funcErr = CA_ERR_NO_MEM;
+        goto EXIT;
+    }
+
+    /* verify memory/file size ??? */
+
+    pShmBlk = (CAShmBlk *)pMapView;
+    pNewShm = (CAShMM *)CA_MAlloc(sizeof(CAShMM));
+    if (NULL == pNewShm)
+    {
+        funcErr = CA_ERR_NO_MEM;
+        goto EXIT;
+    }
+
+    pNewShm->hMap = hMap;
+    pNewShm->nShmSize = pShmBlk->nShmRealSize;
+    pNewShm->pShmBase = pMapView;
+    pNewShm->pShmBlk = pShmBlk;
+    nResult = CA_SNPrintf(pNewShm->szFileName, 
+        sizeof(pNewShm->szFileName) / sizeof(pNewShm->szFileName[0]), 
+        TEXT("%s"), pszFileName);
+    if (0 >= nResult)
+    {
+        funcErr = CA_ERR_FNAME_TOO_LONG;
+        goto EXIT;
+    }
+
+EXIT:
+    if (CA_ERR_SUCCESS != funcErr)
+    {
+        /* attach failed */
+        if (NULL != pMapView)
+        {
+            UnmapViewOfFile(pMapView);
+        }
+
+        if (NULL != hMap)
+        {
+            CloseHandle(hMap);
+        }
+
+        if (NULL != pNewShm)
+        {
+            CA_MFree(pNewShm);
+        }
+    }
+    else
+    {
+        *pShm = pNewShm;
+    }
+
+    return funcErr;
 }
 
-CA_DECLARE(CAErrno) CA_ShMMDettach(CAShMM *phShm)
+CA_DECLARE(void) CA_ShMMDettach(CAShMM *pShm)
 {
-    return CA_ERR_SUCCESS;
+    CA_ShMMDestroy(pShm, FALSE);
 }
 
-CA_DECLARE(void *) CA_ShMMBaseAddrGet(CAShMM *phShm)
+CA_DECLARE(void *) CA_ShMMBaseAddrGet(CAShMM *pShm)
 {
-    return CA_ERR_SUCCESS;
+    char *pBaseAddr = (char *)pShm->pShmBase;
+
+    pBaseAddr += sizeof(CAShmBlk);
+    return (void *)pBaseAddr;
 }
 
-CA_DECLARE(UINT) CA_ShMMSizeGet(CAShMM *phShm)
+CA_DECLARE(UINT) CA_ShMMSizeGet(CAShMM *pShm)
 {
-    return CA_ERR_SUCCESS;
+    return (pShm->nShmSize - sizeof(CAShmBlk));
 }

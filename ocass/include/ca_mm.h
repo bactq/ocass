@@ -19,13 +19,13 @@ typedef struct _CA_SHMM_ CAShMM;
 CA_DECLARE(CAErrno) CA_ShMMCreate(UINT nReqSize, const TCHAR *pszFName, 
                                  CAShMM **pShMM);
 
-CA_DECLARE(CAErrno) CA_ShMMDestroy(CAShMM *pShMM, BOOL bUnlinkMapFile);
+CA_DECLARE(void)    CA_ShMMDestroy(CAShMM *pShMM, BOOL bUnlinkMapFile);
 
-CA_DECLARE(CAErrno) CA_ShMMAttach(const char *pszFileName, CAShMM **phShm);
-CA_DECLARE(CAErrno) CA_ShMMDettach(CAShMM *phShm);
+CA_DECLARE(CAErrno) CA_ShMMAttach(const TCHAR *pszFileName, CAShMM **pShm);
+CA_DECLARE(void)    CA_ShMMDettach(CAShMM *pShm);
 
-CA_DECLARE(void *) CA_ShMMBaseAddrGet(CAShMM *phShm);
-CA_DECLARE(UINT)   CA_ShMMSizeGet(CAShMM *phShm);
+CA_DECLARE(void *) CA_ShMMBaseAddrGet(CAShMM *pShm);
+CA_DECLARE(UINT) CA_ShMMSizeGet(CAShMM *pShm);
 
 /** @} */
 

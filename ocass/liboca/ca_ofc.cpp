@@ -153,5 +153,20 @@ CA_DECLARE(BOOL) CA_OFCProcIsAttached(DWORD dwProcId)
 
 CA_DECLARE(BOOL) CA_OFCIsCommunicatorMod(HMODULE hMod)
 {
-    return FALSE;
+    TCHAR szModFName[MAX_PATH];
+    DWORD dwResult;
+    int nResult;
+
+    dwResult = GetModuleFileName(hMod, szModFName, 
+        sizeof(szModFName) / sizeof(szModFName[0]));
+    if (0 == dwResult)
+    {
+        return FALSE;
+    }
+
+    CA_RTCSEnter(); 
+    nResult = lstrcmpi(szModFName, 
+        CA_CfgGetRT()->szCommunicatorFName);
+    CA_RTCSLeave();
+    return (0 == nResult ? TRUE : FALSE);
 }
