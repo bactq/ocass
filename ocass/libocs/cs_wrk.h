@@ -15,4 +15,6 @@ CAErrno CS_WrkStart(HMODULE hLib, CACfgDatum *pCfgDatum,
 
 CAErrno CS_WrkStop(CSWrk *pCSWrk);
 
+CAErrno CS_WrkTouchSem(CSWrk *pCSWrk);
+
 #endif /* !defined(_CS_WRK_H_) */

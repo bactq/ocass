@@ -29,6 +29,9 @@ static CAErrno CA_SRDupFromCfg(CACfgDatum *pSrc, CASpyDatum *pDest)
     pDest->szSpyLog[0] = '\0';
     pDest->szSpyNtDump[0] = '\0';
     pDest->logMask = pSrc->spyLogMask;  
+    pDest->spyState = CA_SPY_STATE_PREPARE;
+    pDest->stateStartTime = time(NULL);
+    pDest->bStateIsDirty = TRUE;
 
     nResult = CA_SNPrintf(pDest->szHistoryPath, 
         sizeof(pDest->szHistoryPath) / sizeof(pDest->szHistoryPath[0]), 
@@ -332,4 +335,19 @@ CA_DECLARE(CAErrno) CA_SRTouch(CASpyRun *pSR)
     bResult = SetEvent(hEvt);
     CloseHandle(hEvt);
     return (bResult ? CA_ERR_SUCCESS : CA_ERR_SYS_CALL);
+}
+
+CA_DECLARE(void) CA_SRUpdateState(CASpyRun *pSR, CASpyState spyState)
+{
+    CASpyDatum *pSD;
+
+    CA_SRLock(pSR, TRUE);
+    pSD = CA_SRGetDatum(pSR);
+    if (pSD->spyState == spyState)
+    {
+        pSD->spyState = CA_SPY_STATE_PREPARE;
+        pSD->stateStartTime = time(NULL);
+        pSD->bStateIsDirty = TRUE;
+    }
+    CA_SRUnlock(pSR);
 }
