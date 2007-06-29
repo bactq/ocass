@@ -14,8 +14,19 @@ typedef int CASpyLogMask;
 #define CA_SPY_LOG_INFO         (1<< 2)
 #define CA_SPY_LOG_NT_DUMP      (1<<10)
 
+typedef enum
+{
+    CA_SPY_STATE_PREPARE = 0,
+    CA_SPY_STATE_RUNNING, 
+    CA_SPY_STATE_FAILED,
+} CASpyState;
+
 typedef struct _CA_SD
 {
+    CASpyState  spyState;
+    time_t      stateStartTime;
+    BOOL        bStateIsDirty;
+
     TCHAR szHistoryPath[MAX_PATH];
     TCHAR szSpyLog[MAX_PATH];
     TCHAR szSpyNtDump[MAX_PATH];
@@ -36,5 +47,6 @@ CA_DECLARE(CAErrno)     CA_SRUnlock(CASpyRun *pSR);
 CA_DECLARE(CASpyDatum*) CA_SRGetDatum(CASpyRun *pSR);
 CA_DECLARE(CAErrno)     CA_SRTouch(CASpyRun *pSR);
 
+CA_DECLARE(void)        CA_SRUpdateState(CASpyRun *pSR, CASpyState spyState);
 
 #endif /* !defined(_CS_SR_H_) */
