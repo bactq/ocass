@@ -17,12 +17,13 @@ DWORD WINAPI CS_WrkTh(void *pArg)
 }
 
 
-CA_DECLARE(CAErrno) CS_WrkStart(CSWrk **pCSWrk)
+CAErrno CS_WrkStart(HMODULE hLib, CACfgDatum *pCfgDatum, 
+                    CSWrk **pCSWrk)
 {
     return CA_ERR_SUCCESS;
 }
 
-CA_DECLARE(CAErrno) CS_WrkStop(CSWrk *pCSWrk)
+CAErrno CS_WrkStop(CSWrk *pCSWrk)
 {
     return CA_ERR_SUCCESS;
 }

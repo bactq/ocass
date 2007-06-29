@@ -27,14 +27,14 @@ typedef struct _CA_SD
 
 typedef struct _CA_SR CASpyRun;
 
-CA_DECLARE(CAErrno) CA_SRCreate(CASpyRun **pSR);
+CA_DECLARE(CAErrno) CA_SRCreate(CASpyRun **pSR, BOOL bAutoDupCfg);
 CA_DECLARE(CAErrno) CA_SRAttach(CASpyRun **pSR);
-CA_DECLARE(CAErrno) CA_SRClose(CASpyRun *pSR);
+CA_DECLARE(void)    CA_SRClose(CASpyRun *pSR);
 
 CA_DECLARE(CAErrno)     CA_SRLock(CASpyRun *pSR, BOOL bWr);
 CA_DECLARE(CAErrno)     CA_SRUnlock(CASpyRun *pSR);
 CA_DECLARE(CASpyDatum*) CA_SRGetDatum(CASpyRun *pSR);
-CA_DECLARE(CASpyDatum*) CA_SRTouch(CASpyRun *pSR);
+CA_DECLARE(CAErrno)     CA_SRTouch(CASpyRun *pSR);
 
 
 #endif /* !defined(_CS_SR_H_) */

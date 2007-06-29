@@ -8,11 +8,6 @@
 
 static HINSTANCE g_hInst = NULL;
 
-CA_DECLARE(void) Sanctimonious(void)
-{
-    /* nop */
-}
-
 const HINSTANCE CS_GetDllInst(void)
 {
     return g_hInst;

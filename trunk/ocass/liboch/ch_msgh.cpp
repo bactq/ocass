@@ -17,7 +17,7 @@ LRESULT WINAPI CH_HookCBTProc(int nCode, WPARAM wParam, LPARAM lParam)
 
     nResult = CallNextHookEx(pHDatum->hInjectWndHook, nCode, wParam, lParam);
 
-    CH_OnInject();
+    CH_OnInject(pHDatum);
     CH_OnInjectComplete(pHDatum);
     return nResult;
 }

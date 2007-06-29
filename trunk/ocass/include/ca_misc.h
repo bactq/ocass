@@ -20,4 +20,8 @@ CA_DECLARE(void) CA_PathGetBaseName(const TCHAR *pszFullName,
 CA_DECLARE(CAErrno) CA_GetProcFirstThread(DWORD dwProcId, 
                                           DWORD *pdwFirstThId);
 
+CA_DECLARE(CAErrno) CA_W32ResNameFromFilename(const TCHAR *pszFName, 
+                        BOOL bIsGlobal, TCHAR *pszNameBuf, DWORD dwBufCnt);
+
+
 #endif /* !defined(_CA_MISC_H_) */

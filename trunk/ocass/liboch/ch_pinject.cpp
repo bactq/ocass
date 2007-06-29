@@ -5,12 +5,18 @@
 #include "ca_types.h"
 #include "ca_misc.h"
 #include "ca_mod.h"
+#include "ca_cfg.h"
 #include "liboch.h"
 #include "ch_inner.h"
 
-void CH_OnInject(void)
+typedef CAErrno (__stdcall *CS_EntryFunc)(HMODULE hLib, 
+                                         CACfgDatum *pCfgDatum);
+
+void CH_OnInject(CHHDatum *pHDatum)
 {
+    CS_EntryFunc pEntryFunc;
     HMODULE hModSpy;
+    CAErrno caErr;
     TCHAR szModPath[MAX_PATH];
     TCHAR szModSpy[MAX_PATH];
     TCHAR *pSlash;
@@ -42,6 +48,20 @@ void CH_OnInject(void)
     {
         return;
     }
+
+    pEntryFunc = (CS_EntryFunc)GetProcAddress(hModSpy, TEXT("CS_Entry"));
+    if (NULL == pEntryFunc)
+    {
+        FreeLibrary(hModSpy);
+        return;
+    }
+
+    caErr = pEntryFunc(hModSpy, &(pHDatum->cfgDatum));
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        FreeLibrary(hModSpy);
+        return;
+    }
 }
 
 void CH_OnInjectComplete(CHHDatum *pHDatum)
@@ -71,6 +91,7 @@ CA_DECLARE(CAErrno) CH_PInject(DWORD dwProcId, DWORD dwTimeOut)
         return caErr;
     }
 
+    CA_CfgDupRT(&(pHDatum->cfgDatum));
     pHDatum->hInjectWndHook = SetWindowsHookEx(WH_CBT, 
             (HOOKPROC)CH_HookCBTProc, CH_GetDllInstance(), dwThId);
     if (NULL == pHDatum->hInjectWndHook)
@@ -79,6 +100,7 @@ CA_DECLARE(CAErrno) CH_PInject(DWORD dwProcId, DWORD dwTimeOut)
     }
 
     PostThreadMessage(dwThId, WM_NULL, 0, 0);
+
     /* wait for inject success */
     for (dwWaitTime = 0;;)
     {
