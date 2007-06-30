@@ -74,7 +74,8 @@ void OCAC_Panic(const TCHAR *pszSrc, const int nSrcLine,
 
 void OCAC_Usage(void)
 {
-    OCAC_PrintMsg(TEXT("Useage: \n"));
+    OCAC_PrintMsg(TEXT("Useage: \n\n"));
+    OCAC_PrintMsg(TEXT("ocassc.exe [hH?Kk] \n"));
 }
 
 void OCAC_PrintCoreState(CCWrkStateDesc *pWrkState)

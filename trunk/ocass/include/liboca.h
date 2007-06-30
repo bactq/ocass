@@ -41,5 +41,10 @@ CA_DECLARE(const TCHAR*) CA_RTLogFlagsDesc(CARTLogFlags logFlags);
 CA_DECLARE(void) CA_RTLog(const TCHAR *pszSrc, int nSrcLine, 
                           CARTLogFlags logFlags, const TCHAR *pszFmt, ...);
 
+#if defined(_DEBUG)
+#define CA_RT_DBG_TRACE         CA_RTLog
+#else
+#define CA_RT_DBG_TRACE
+#endif /* defined(_DEBUG) */
 
 #endif /* !defined(_LIBOCA_H_) */
