@@ -18,6 +18,8 @@
 #define CA_DECLARE_NOSTD(_type)  extern "C" __declspec(dllexport) _type 
 #endif /* defined(__cplusplus) */
 
+#define CA_DECLARE_DYL(_type)  extern "C" __declspec(dllexport) _type 
 
+#define CA_SRC_MARK     __FILE__, __LINE__
 
 #endif /* !defined(_CA_TYPES_H_) */

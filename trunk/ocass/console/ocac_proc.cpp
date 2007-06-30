@@ -8,6 +8,7 @@
 #include "ca_misc.h"
 #include "ca_cfg.h"
 #include "ocac_proc.h"
+#include "ocac_misc.h"
 
 CAErrno CAC_PDataInit(OCACProc *pProc)
 {
@@ -50,6 +51,7 @@ CAErrno CAC_PStartup(int nArgc, char **pArgv, OCACProc *pProc)
         return caErr;
     }
 
+    CA_RTSetLog(NULL, OCAC_LogShow);
     CA_InitGetOpt(nArgc, pArgv, &datumGetOpt);    
     for (;;)
     {

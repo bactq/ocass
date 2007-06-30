@@ -2,6 +2,7 @@
  *
  */
 
+#include "liboca.h"
 #include "ca_misc.h"
 #include "ca_str.h"
 #include "ca_tlhlp.h"
@@ -133,4 +134,96 @@ CA_DECLARE(CAErrno) CA_W32ResNameFromFilename(const TCHAR *pszFName,
     }
 
     return CA_ERR_SUCCESS;
+}
+
+CA_DECLARE(CAErrno) CA_GetCurTimeStr(TCHAR *pszTmBuf, DWORD dwBufCnt)
+{
+    struct tm *pTm;
+    CAErrno funcErr = CA_ERR_SUCCESS;
+    time_t tmNow;
+    int nResult;
+
+    CA_RTCSEnter();
+    tmNow = time(NULL);
+    pTm = localtime(&tmNow);
+    if (NULL == pTm)
+    {
+        funcErr = CA_ERR_SYS_CALL;
+        goto EXIT;
+    }
+
+    nResult = CA_SNPrintf(pszTmBuf, dwBufCnt, 
+        TEXT("%04u-%02u-%02u %02u:%02u:%02u"), 
+        pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday, 
+        pTm->tm_hour, pTm->tm_min, pTm->tm_sec);
+    if (0 >= nResult)
+    {
+        funcErr = CA_ERR_SYS_CALL;
+        goto EXIT;
+    }
+
+EXIT:
+    CA_RTCSLeave();
+    return funcErr;
+}
+
+CA_DECLARE(CAErrno) CA_GetTimeStr(time_t tmVal, TCHAR *pszTmBuf, 
+                                  DWORD dwBufCnt)
+{
+    struct tm *pTm;
+    CAErrno funcErr = CA_ERR_SUCCESS;
+    int nResult;
+
+    CA_RTCSEnter();
+    pTm = localtime(&tmVal);
+    if (NULL == pTm)
+    {
+        funcErr = CA_ERR_SYS_CALL;
+        goto EXIT;
+    }
+
+    nResult = CA_SNPrintf(pszTmBuf, dwBufCnt, 
+        TEXT("%04u-%02u-%02u %02u:%02u:%02u"), 
+        pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday, 
+        pTm->tm_hour, pTm->tm_min, pTm->tm_sec);
+    if (0 >= nResult)
+    {
+        funcErr = CA_ERR_SYS_CALL;
+        goto EXIT;
+    }
+
+EXIT:
+    CA_RTCSLeave();
+    return funcErr;
+}
+
+CA_DECLARE(CAErrno) CA_GetFSize(const TCHAR *pszFName, 
+                                CAFSize *pFSize)
+{
+    WIN32_FIND_DATA findData;
+    HANDLE hFind;
+
+    hFind = FindFirstFile(pszFName, &findData);
+    if (INVALID_HANDLE_VALUE == hFind)
+    {
+        return CA_ERR_FNAME_CANNOT_FIND;
+    }
+    FindClose(hFind);    
+
+    pFSize->dwFSize = findData.nFileSizeLow;
+    pFSize->dwFSizeHigh = findData.nFileSizeHigh;
+    return CA_ERR_SUCCESS;
+}
+
+CA_DECLARE(void) CA_SetFSize(CAFSize *pFSize, 
+                             DWORD dwFSize, DWORD dwFSizeHigh)
+{
+    pFSize->dwFSize = dwFSize;
+    pFSize->dwFSizeHigh = dwFSizeHigh;
+}
+
+CA_DECLARE(void) CA_AddFSize(CAFSize *pFSize, 
+                             DWORD dwIncreaseFSize)
+{
+    /* XXX */
 }

@@ -9,8 +9,8 @@
 #include "liboch.h"
 #include "ch_inner.h"
 
-typedef CAErrno (__stdcall *CS_EntryFunc)(HMODULE hLib, 
-                                         CACfgDatum *pCfgDatum);
+typedef CAErrno (*CS_EntryFunc)(HMODULE hLib, 
+                                CACfgDatum *pCfgDatum);
 
 void CH_OnInject(CHHDatum *pHDatum)
 {

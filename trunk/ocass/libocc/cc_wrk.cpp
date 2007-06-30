@@ -38,15 +38,19 @@ static void CC_DoInject(CCWrk *pCWrk, DWORD dwProcId)
     else
     {
         CC_UpdateState(pCWrk, CC_WRK_STATE_INJECT_FAILED);
-    }
-    
+    }    
 }
 
-static void CC_DoWrk(CCWrk *pCWrk)
+static void CC_DoWrk(CCWrk *pCWrk, CCWrkMod wrkMod)
 {
     CAErrno caErr;
     DWORD dwOFCProcId;
     BOOL bResult;
+
+    if (!(CC_WRK_MOD_DETECT & wrkMod))
+    {
+        return;
+    }
 
     caErr = CA_OFCGetRunProcId(&dwOFCProcId);
     if (CA_ERR_SUCCESS != caErr)
@@ -59,7 +63,14 @@ static void CC_DoWrk(CCWrk *pCWrk)
     bResult = CA_OFCProcIsAttached(dwOFCProcId);
     if (!bResult)
     {
-        CC_DoInject(pCWrk, dwOFCProcId);
+        if (CC_WRK_MOD_INJECT & wrkMod)
+        {
+            CC_DoInject(pCWrk, dwOFCProcId);
+        }
+        else 
+        {
+            CC_UpdateState(pCWrk, CC_WRK_STATE_NOT_INJECTED);
+        }
         return;
     }
 
@@ -68,6 +79,7 @@ static void CC_DoWrk(CCWrk *pCWrk)
 
 DWORD WINAPI CC_WrkThread(void *pThArg)
 {
+    CCWrkMod wrkMod;
     CCWrk *pCWrk = (CCWrk *)pThArg;
     DWORD dwThExit = CA_THREAD_EXIT_OK;
     DWORD dwWait;
@@ -91,8 +103,39 @@ DWORD WINAPI CC_WrkThread(void *pThArg)
             Sleep(1000);
         }
 
-        CC_DoWrk(pCWrk);
+        CC_GetWrkMod(pCWrk, &wrkMod);
+        if (CC_WRK_MOD_PAUSE & wrkMod)
+        {
+            continue;
+        }
+
+        CC_DoWrk(pCWrk, wrkMod);
     }
 
     return dwThExit;
+}
+
+CA_DECLARE(const TCHAR*) CC_StateDesc(CCWrkState wrkState)
+{
+    switch (wrkState)
+    {
+    case CC_WRK_STATE_IDLE:
+        return TEXT("IDLE");
+    case CC_WRK_STATE_NOT_RUNNING:
+        return TEXT("Not running");
+    case CC_WRK_STATE_NOT_INJECTED:
+        return TEXT("Not injected");
+    case CC_WRK_STATE_INJECTING:
+        return TEXT("Injecting");
+    case CC_WRK_STATE_INJECTED:
+        return TEXT("Injected");
+    case CC_WRK_STATE_INJECT_FAILED:
+        return TEXT("Inject failed");
+    case CC_WRK_STATE_CORPSE:
+        return TEXT("Corpse");
+    case CC_WRK_STATE_WORKING:
+        return TEXT("Working");
+    default:
+        return TEXT("Unknown");
+    }
 }

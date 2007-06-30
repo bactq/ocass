@@ -25,7 +25,7 @@ typedef struct _CA_CFG_DATUM
 } CACfgDatum;
 
 /**
- * config file sample
+ * ocass.cfg file sample
  *
  * [app]
  * communicator_fname="c:\abc\abc.exe"

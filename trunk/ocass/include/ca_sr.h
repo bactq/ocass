@@ -8,16 +8,19 @@
 #include "ca_types.h"
 
 typedef int CASpyLogMask;
-#define CA_SPY_LOG_NONE         0
+#define CA_SPY_LOG_NONE         (0)
 #define CA_SPY_LOG_ERR          (1<< 0)
 #define CA_SPY_LOG_DBG          (1<< 1)
-#define CA_SPY_LOG_INFO         (1<< 2)
+#define CA_SPY_LOG_WARN         (1<< 2)
+#define CA_SPY_LOG_INFO         (1<< 3)
 #define CA_SPY_LOG_NT_DUMP      (1<<10)
+#define CA_SPY_LOG_NT_ADUMP     (1<<11)
 
 typedef enum
 {
     CA_SPY_STATE_PREPARE = 0,
     CA_SPY_STATE_RUNNING, 
+    CA_SPY_STATE_END,
     CA_SPY_STATE_FAILED,
 } CASpyState;
 
@@ -47,6 +50,7 @@ CA_DECLARE(CAErrno)     CA_SRUnlock(CASpyRun *pSR);
 CA_DECLARE(CASpyDatum*) CA_SRGetDatum(CASpyRun *pSR);
 CA_DECLARE(CAErrno)     CA_SRTouch(CASpyRun *pSR);
 
+CA_DECLARE(void)        CA_SRDatumDup(CASpyRun *pSR, CASpyDatum *pDup);
 CA_DECLARE(void)        CA_SRUpdateState(CASpyRun *pSR, CASpyState spyState);
 
 #endif /* !defined(_CS_SR_H_) */

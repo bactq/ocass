@@ -13,10 +13,10 @@ CA_DECLARE(CHAR *) CA_StrTok(CHAR *pszStr, const CHAR *pszSep,
 CA_DECLARE_NOSTD(int) CA_SNPrintf(TCHAR *pszBuf, const int nBufCnt, 
                                   const TCHAR *pszFmt, ...);
 
+CA_DECLARE_NOSTD(int) CA_VSNPrintf(TCHAR *pszBuf, const int nBufCnt, 
+                                   const TCHAR *pszFmt, va_list pArgList);
+
 CA_DECLARE(int) CA_TruncateStrnCpy(char *pszDst, 
                     const char *pszSrc, int nDstSize);
-
-CA_DECLARE(void) CA_BTruncateNCpy(const char *pSrcBuf, int nSrcBufLen, 
-                                  char *pDestBuf, int *pnDestBufLen);
 
 #endif /* !defined(_CA_STR_H_) */

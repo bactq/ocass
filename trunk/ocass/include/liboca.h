@@ -16,5 +16,30 @@ CA_DECLARE(CAErrno) CA_RTCSLeave(void);
 CA_DECLARE(CAErrno) CA_RTPLockEnter(CAFLockOpt lockOpt);
 CA_DECLARE(CAErrno) CA_RTPLockLeave(void);
 
+typedef int CARTLogFlags;
+#define CA_RTLOG_ERR        (1<< 0)
+#define CA_RTLOG_INFO       (1<< 1)
+#define CA_RTLOG_WARN       (1<< 2)
+#define CA_RTLOG_DBG        (1<< 3)
+
+typedef struct _CA_RTLog
+{
+    const TCHAR *pszSrc;
+    const TCHAR *pszSrcBase;
+    int nSrcLine;
+
+    CARTLogFlags logFlags;
+    const TCHAR *pszLog;
+} CARTLog;
+
+typedef void (*CA_RTLogFunc)(void *pCbCtx, CARTLog *pLog);
+
+CA_DECLARE(CAErrno) CA_RTSetLog(void *pCbCtx, CA_RTLogFunc pLogFunc);
+
+CA_DECLARE(const TCHAR*) CA_RTLogFlagsDesc(CARTLogFlags logFlags);
+
+CA_DECLARE(void) CA_RTLog(const TCHAR *pszSrc, int nSrcLine, 
+                          CARTLogFlags logFlags, const TCHAR *pszFmt, ...);
+
 
 #endif /* !defined(_LIBOCA_H_) */
