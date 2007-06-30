@@ -23,5 +23,25 @@ CA_DECLARE(CAErrno) CA_GetProcFirstThread(DWORD dwProcId,
 CA_DECLARE(CAErrno) CA_W32ResNameFromFilename(const TCHAR *pszFName, 
                         BOOL bIsGlobal, TCHAR *pszNameBuf, DWORD dwBufCnt);
 
+#define CA_TM_STR_MAX_BUF   (128)
+
+CA_DECLARE(CAErrno) CA_GetCurTimeStr(TCHAR *pszTmBuf, DWORD dwBufCnt);
+CA_DECLARE(CAErrno) CA_GetTimeStr(time_t tmVal, TCHAR *pszTmBuf, 
+                                  DWORD dwBufCnt);
+
+typedef struct _CAFSize 
+{
+    DWORD dwFSize;
+    DWORD dwFSizeHigh;
+} CAFSize;
+
+CA_DECLARE(void) CA_SetFSize(CAFSize *pFSize, 
+                             DWORD dwFSize, DWORD dwFSizeHigh);
+
+CA_DECLARE(void) CA_AddFSize(CAFSize *pFSize, 
+                             DWORD dwIncreaseFSize);
+
+CA_DECLARE(CAErrno) CA_GetFSize(const TCHAR *pszFName, 
+                                CAFSize *pFSize);
 
 #endif /* !defined(_CA_MISC_H_) */

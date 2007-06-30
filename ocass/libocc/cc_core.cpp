@@ -39,6 +39,7 @@ CA_DECLARE(CAErrno) CC_Startup(CCWrk **pCWrk)
     pNewCWrk->bStateDirty = TRUE;
     pNewCWrk->stateStartTime = time(NULL);
     pNewCWrk->wrkState = CC_WRK_STATE_IDLE;
+    pNewCWrk->wrkMod = CC_WRK_MOD_NORMAL;
     pNewCWrk->hWrkTh = CreateThread(NULL, 0, 
         CC_WrkThread, pNewCWrk, 0, &dwThId);
     if (NULL == pNewCWrk->hWrkTh)
@@ -91,6 +92,8 @@ CA_DECLARE(CAErrno) CC_State(CCWrk *pCWrk, BOOL bClearDirtyFlag,
     pStateDesc->startTime = pCWrk->stateStartTime;
     pStateDesc->wrkState = pCWrk->wrkState;
     pStateDesc->bIsDirty = pCWrk->bStateDirty;
+    pStateDesc->wrkMod = pCWrk->wrkMod;
+
     if (bClearDirtyFlag)
     {
         pCWrk->bStateDirty = FALSE;
@@ -110,6 +113,27 @@ CA_DECLARE(CAErrno) CC_StateClear(CCWrk *pCWrk)
 {
     EnterCriticalSection(&pCWrk->wrkCS);
     pCWrk->bStateDirty = FALSE;
+    LeaveCriticalSection(&pCWrk->wrkCS);
+    return CA_ERR_SUCCESS;
+}
+
+CA_DECLARE(CAErrno) CC_SetWrkMod(CCWrk *pCWrk, CCWrkMod wrkMod)
+{
+    EnterCriticalSection(&pCWrk->wrkCS);
+    pCWrk->wrkMod = wrkMod;
+    LeaveCriticalSection(&pCWrk->wrkCS);
+    return CA_ERR_SUCCESS;
+}
+
+CA_DECLARE(CAErrno) CC_GetWrkMod(CCWrk *pCWrk, CCWrkMod *pWrkMod)
+{
+    if (NULL == pWrkMod)
+    {
+        return CA_ERR_BAD_ARG;
+    }
+
+    EnterCriticalSection(&pCWrk->wrkCS);
+    *pWrkMod = pCWrk->wrkMod;
     LeaveCriticalSection(&pCWrk->wrkCS);
     return CA_ERR_SUCCESS;
 }

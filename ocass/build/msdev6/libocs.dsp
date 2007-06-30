@@ -94,6 +94,10 @@ SOURCE=..\..\libocs\cs_core.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\libocs\cs_log.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\libocs\cs_misc.cpp
 # End Source File
 # Begin Source File
@@ -103,6 +107,14 @@ SOURCE=..\..\libocs\cs_nti.cpp
 # Begin Source File
 
 SOURCE=..\..\libocs\cs_ntr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_pparse.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_proto.cpp
 # End Source File
 # Begin Source File
 
@@ -130,6 +142,10 @@ SOURCE=..\..\libocs\cs_inner.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\libocs\cs_log.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\libocs\cs_misc.h
 # End Source File
 # Begin Source File
@@ -139,6 +155,14 @@ SOURCE=..\..\libocs\cs_nti.h
 # Begin Source File
 
 SOURCE=..\..\libocs\cs_ntr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_pparse.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\libocs\cs_proto.h
 # End Source File
 # Begin Source File
 

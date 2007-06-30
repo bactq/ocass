@@ -351,3 +351,10 @@ CA_DECLARE(void) CA_SRUpdateState(CASpyRun *pSR, CASpyState spyState)
     }
     CA_SRUnlock(pSR);
 }
+
+CA_DECLARE(void) CA_SRDatumDup(CASpyRun *pSR, CASpyDatum *pDup)
+{
+    CA_SRLock(pSR, FALSE);
+    memcpy(pDup, pSR->pSpyDatum, sizeof(CASpyDatum));
+    CA_SRUnlock(pSR);
+}

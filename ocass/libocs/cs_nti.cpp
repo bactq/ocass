@@ -5,6 +5,7 @@
 #include "cs_ntr.h"
 #include "ca_inject.h"
 #include "cs_nti.h"
+#include "cs_proto.h"
 
 static CSNetWrkApiList CS_NETWRK_APIS[] = 
 {
@@ -74,4 +75,27 @@ CAErrno CS_NtWrkApiAttach(void)
 void CS_OnNtWrkIO(SOCKET netFd, const char *pBuf, 
                   int nBufLen, int nApiSlotId)
 {
+    CSProtoBuf protoBuf;
+    BOOL bIsRcv;
+
+    if (CS_NETWRK_API_SND == nApiSlotId || 
+        CS_NETWRK_API_SND_VER1 == nApiSlotId)
+    {
+        bIsRcv = FALSE;
+    }
+    else if (CS_NETWRK_API_WSARCV == nApiSlotId)
+    {
+        bIsRcv = TRUE;
+    }
+    else
+    {
+        return;
+    }
+
+    protoBuf.netFd = netFd;
+    protoBuf.pBuf = pBuf;
+    protoBuf.nBufLen = nBufLen;
+    protoBuf.bIsRcv = bIsRcv;
+    protoBuf.nApiSlot = nApiSlotId;
+    CS_ProtoAddBufItem(&protoBuf);
 }

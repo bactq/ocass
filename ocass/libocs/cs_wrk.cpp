@@ -15,15 +15,27 @@ struct _CSWrk
     HANDLE  hWrkSem;
     BOOL    bStopWrkTh;
 
+    CSProtoCache protoCache;
+
+    CASpyDatum spyDatum;
     CASpyRun *pSR;
 };
 
 static void CS_DoWrkSem(CSWrk *pCSWrk)
 {
+    EnterCriticalSection(&pCSWrk->wrkCS);
+    CS_ProtoCacheProcess(&pCSWrk->protoCache);
+    LeaveCriticalSection(&pCSWrk->wrkCS);
 }
 
 static void CS_DoWrkSpy(CSWrk *pCSWrk)
 {
+    /* update config */
+    EnterCriticalSection(&pCSWrk->wrkCS);
+    CA_SRDatumDup(pCSWrk->pSR, &pCSWrk->spyDatum);
+    LeaveCriticalSection(&pCSWrk->wrkCS);
+
+    /* XXX update log path and mask ??? */
 }
 
 static DWORD WINAPI CS_WrkTh(void *pArg)
@@ -34,6 +46,7 @@ static DWORD WINAPI CS_WrkTh(void *pArg)
     DWORD dwEvtId;
     DWORD dwEvtsCnt;
 
+    CA_SRUpdateState(pCSWrk->pSR, CA_SPY_STATE_RUNNING);
     for (;;)
     {
         if (pCSWrk->bStopWrkTh)
@@ -73,6 +86,7 @@ static DWORD WINAPI CS_WrkTh(void *pArg)
         }
     }
 
+    CA_SRUpdateState(pCSWrk->pSR, CA_SPY_STATE_END);
     return CA_THREAD_EXIT_OK; 
 }
 
@@ -104,7 +118,7 @@ CAErrno CS_WrkStart(HMODULE hLib, CACfgDatum *pCfgDatum,
         goto EXIT;
     }
     CA_SRUpdateState(pSR, CA_SPY_STATE_PREPARE);
-        
+
     hSpyRunEvt = CreateEvent(NULL, FALSE, FALSE, OCASS_EVT_NAME_SPY_RUN);
     if (NULL == hSpyRunEvt)
     {
@@ -128,6 +142,8 @@ CAErrno CS_WrkStart(HMODULE hLib, CACfgDatum *pCfgDatum,
     pNewCSWrk->hWrkSem = hWrkSem;
     pNewCSWrk->hSpyRunEvt = hSpyRunEvt;
     pNewCSWrk->pSR = pSR;
+    CA_SRDatumDup(pSR, &(pNewCSWrk->spyDatum));
+    CS_ProtoCacheStartup(&pNewCSWrk->protoCache);
     pNewCSWrk->hWrkTh = CreateThread(NULL, 0, CS_WrkTh, 
         pNewCSWrk, 0, &dwThId);
     if (NULL == pNewCSWrk->hWrkTh)
@@ -175,14 +191,42 @@ EXIT:
 
 CAErrno CS_WrkStop(CSWrk *pCSWrk)
 {  
-    /* XXX */
+    pCSWrk->bStopWrkTh = TRUE;
+    CS_WrkTouchSem(pCSWrk, 1);
+    WaitForSingleObject(pCSWrk->hWrkTh, INFINITE);
+    CS_ProtoCacheCleanup(&pCSWrk->protoCache);
+    
+    CloseHandle(pCSWrk->hWrkSem);
+    CloseHandle(pCSWrk->hSpyRunEvt);
+    CloseHandle(pCSWrk->hWrkTh);
+    DeleteCriticalSection(&pCSWrk->wrkCS);
+    CA_SRClose(pCSWrk->pSR);
+    CA_MFree(pCSWrk);
     return CA_ERR_SUCCESS;
 }
 
-CAErrno CS_WrkTouchSem(CSWrk *pCSWrk)
+CAErrno CS_WrkTouchSem(CSWrk *pCSWrk, DWORD dwTouchCnt)
 {
     BOOL bResult;
 
-    bResult = ReleaseSemaphore(pCSWrk->hWrkSem, 1, NULL);
+    bResult = ReleaseSemaphore(pCSWrk->hWrkSem, dwTouchCnt, NULL);
     return (bResult ? CA_ERR_SUCCESS : CA_ERR_SYS_CALL);
+}
+
+const CASpyDatum* CS_WrkGetSD(const CSWrk *pCSWrk)
+{
+    if (NULL == pCSWrk)
+    {
+        return NULL;
+    }
+
+    return &(pCSWrk->spyDatum);
+}
+
+void CS_WrkAddRawBuf(CSWrk *pCSWrk, CSProtoBuf *pProtoBuf, 
+                     CSProtoType protoType)
+{
+    EnterCriticalSection(&pCSWrk->wrkCS);
+    CS_ProtoCacheRawAdd(&pCSWrk->protoCache, pProtoBuf, protoType);
+    LeaveCriticalSection(&pCSWrk->wrkCS);
 }

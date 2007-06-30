@@ -96,6 +96,10 @@ SOURCE=..\..\liboca\ca_base64.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\liboca\ca_buf.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\liboca\ca_cfg.cpp
 # End Source File
 # Begin Source File
@@ -145,6 +149,10 @@ SOURCE=..\..\liboca\liboca.cpp
 # Begin Source File
 
 SOURCE=..\..\include\ca_base64.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\ca_buf.h
 # End Source File
 # Begin Source File
 

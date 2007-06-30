@@ -7,6 +7,7 @@
 
 #include "ca_types.h"
 #include "ca_cfg.h"
+#include "cs_proto.h"
 
 typedef struct _CSWrk CSWrk;
 
@@ -15,6 +16,11 @@ CAErrno CS_WrkStart(HMODULE hLib, CACfgDatum *pCfgDatum,
 
 CAErrno CS_WrkStop(CSWrk *pCSWrk);
 
-CAErrno CS_WrkTouchSem(CSWrk *pCSWrk);
+CAErrno CS_WrkTouchSem(CSWrk *pCSWrk, DWORD dwTouchCnt);
+
+const CASpyDatum* CS_WrkGetSD(const CSWrk *pCSWrk);
+
+void CS_WrkAddRawBuf(CSWrk *pCSWrk, CSProtoBuf *pProtoBuf, 
+                     CSProtoType protoType);
 
 #endif /* !defined(_CS_WRK_H_) */

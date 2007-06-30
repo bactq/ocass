@@ -14,6 +14,7 @@ struct _CC_Wrk
     HANDLE              hWrkEvt;
     BOOL                bStopWrkTh;
 
+    CCWrkMod    wrkMod;
     BOOL        bStateDirty;
     CCWrkState  wrkState;
     time_t      stateStartTime;

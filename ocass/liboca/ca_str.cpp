@@ -48,6 +48,14 @@ CA_DECLARE_NOSTD(int) CA_SNPrintf(TCHAR *pszBuf, const int nBufCnt,
     return nResult;
 }
 
+CA_DECLARE_NOSTD(int) CA_VSNPrintf(TCHAR *pszBuf, const int nBufCnt, 
+                                   const TCHAR *pszFmt, va_list pArgList)
+{
+    int nResult;
+
+    nResult = _vsnprintf(pszBuf, nBufCnt, pszFmt, pArgList);
+    return nResult;
+}
 
 CA_DECLARE(int) CA_TruncateStrnCpy(char *pszDst, 
                     const char *pszSrc, int nDstSize)
@@ -72,12 +80,4 @@ CA_DECLARE(int) CA_TruncateStrnCpy(char *pszDst,
 
     pszDst[i] = '\0';
     return strlen(pszDst);
-}
-
-CA_DECLARE(void) CA_BTruncateNCpy(const char *pSrcBuf, int nSrcBufLen, 
-                                  char *pDestBuf, int *pnDestBufLen)
-{
-    int nCpyLen = (nSrcBufLen >= *pnDestBufLen ? *pnDestBufLen : nSrcBufLen);
-    memcpy(pDestBuf, pSrcBuf, nCpyLen);
-    *pnDestBufLen = nCpyLen;
 }
