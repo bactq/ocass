@@ -38,7 +38,7 @@ static int OCAC_PCCWrk(OCACProc *pProc)
     DWORD dwResult;
     int nProcExit = CA_PROC_EXIT_OK;
 
-    hCREvt = OpenEvent(EVENT_ALL_ACCESS, TRUE, OCASS_EVT_NAME_SPY_RUN);
+    hCREvt = OpenEvent(EVENT_ALL_ACCESS, TRUE, OCASS_EVT_NAME_SHELL_WRK);
     if (NULL != hCREvt)
     {
         nProcExit = CA_PROC_EXIT_ALREADY_RUN;
@@ -131,9 +131,33 @@ EXIT:
 
 static int OCAC_PWrkStop(OCACProc *pProc)
 {
+    HANDLE hCREvt;
+    BOOL bResult;
     int nProcExit = CA_PROC_EXIT_OK;
 
-    /* XXX */
+    hCREvt = OpenEvent(EVENT_ALL_ACCESS,TRUE, OCASS_EVT_NAME_SHELL_WRK);
+    if (NULL == hCREvt)
+    {
+        nProcExit = CA_PROC_EXIT_FATAL;
+        OCAC_Panic(CA_SRC_MARK, 
+            TEXT("Can't open event %s. system error %u"), 
+                OCASS_EVT_NAME_SPY_RUN, GetLastError());
+        goto EXIT;
+    }
+
+    bResult = SetEvent(hCREvt);
+    CloseHandle(hCREvt);
+    if (!bResult)
+    {
+        nProcExit = CA_PROC_EXIT_FATAL;
+        OCAC_Panic(CA_SRC_MARK, 
+            TEXT("Set event %s failed. system error %u"), 
+                OCASS_EVT_NAME_SPY_RUN, GetLastError());
+        goto EXIT;
+    }
+
+    OCAC_PrintMsgLine(TEXT("Send shutdown event successed"));
+EXIT:
     return nProcExit;
 }
 

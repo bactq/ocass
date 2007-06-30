@@ -34,4 +34,10 @@ typedef int CSLogFlags;
 void CS_Log(const TCHAR *pszSrc, int nSrcLine, CSLogFlags logFlags, 
             const TCHAR *pszFmt, ...);
 
+#if defined(_DEBUG)
+#define CS_DBG_TRACE         CS_Log
+#else
+#define CS_DBG_TRACE
+#endif /* defined(_DEBUG) */
+
 #endif /* !defined(_CS_LOG_H_) */
