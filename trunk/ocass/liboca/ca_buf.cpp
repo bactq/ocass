@@ -11,3 +11,9 @@ CA_DECLARE(void) CA_BTruncateNCpy(const char *pSrcBuf, int nSrcBufLen,
     memcpy(pDestBuf, pSrcBuf, nCpyLen);
     *pnDestBufLen = nCpyLen;
 }
+
+CA_DECLARE(const char *) CA_BMatching(const char *pBStart, int nBSLen, 
+                                      const char *pBMatching, int nBMLen)
+{
+    return NULL;
+}
