@@ -7,9 +7,6 @@
 
 #include "ca_types.h"
 
-#define CS_PROTO_RAW_MAX_BUF        (1024 * 4)
-#define CS_PROTO_RAW_MAX_CACHE      (1024)
-
 typedef enum
 {
     CS_PROTO_OTHER = -1,
@@ -27,17 +24,21 @@ typedef struct _CSProtoBuf
     int nApiSlot;
 } CSProtoBuf;
 
+#define CS_PROTO_RAW_MAX_BUF        (1024 * 4)
+
 typedef struct _CSProtoRawSlot
 {
     CSProtoType protoType;
     BOOL bIsRcv;
-    char szProtoData[CS_PROTO_RAW_MAX_BUF];
+    DWORD dwPDataLen;
+    char protoData[CS_PROTO_RAW_MAX_BUF];
 
-    struct _CSProtoSlot *pNext;
+    struct _CSProtoRawSlot *pNext;
 } CSProtoRawSlot;
 
 typedef struct _CSPProto
 {
+    BOOL bIsRcv;
     CSProtoType protoType;
 
     char szCall_ID[128];
@@ -49,7 +50,7 @@ typedef struct _CSPProto
     char szMsg[1024 * 3];
 } CSPProto;
 
-#define CS_PROTO_CACHE_MAX      (1000 * 3)
+#define CS_PROTO_CACHE_ITEM_MAX      (888)
 
 typedef struct _CSProtoCache
 {
@@ -72,5 +73,12 @@ void CS_ProtoCacheRawAdd(CSProtoCache *pCache, CSProtoBuf *pProtoBuf,
                          CSProtoType protoType);
 
 CAErrno CS_ProtoCacheProcess(CSProtoCache *pCache);
+
+CAErrno CS_ProtoCacheItemProcess(CSProtoRawSlot *pPSlot);
+
+CAErrno CS_ProtoRawDup(CSProtoBuf *pPBuf, CSProtoType protoType, 
+                       CSProtoRawSlot *pProtoSlot);
+
+CAErrno CS_ProtoItemProcess(CSPProto *pPI);
 
 #endif /* !defined(_CS_PROTO_H_) */
