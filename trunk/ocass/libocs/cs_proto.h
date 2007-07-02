@@ -12,7 +12,9 @@
 
 typedef enum
 {
-    CS_PROTO_MSG = 0,
+    CS_PROTO_OTHER = -1,
+    CS_PROTO_MESSAGE = 0,
+    CS_PROTO_INVITE, 
     CS_PROTO_OK, 
 } CSProtoType;
 
@@ -34,13 +36,31 @@ typedef struct _CSProtoRawSlot
     struct _CSProtoSlot *pNext;
 } CSProtoRawSlot;
 
+typedef struct _CSPProto
+{
+    CSProtoType protoType;
+
+    char szCall_ID[128];
+    DWORD dwCSeq;
+
+    char szFrom[128];
+    char szTo[128];
+
+    char szMsg[1024 * 3];
+} CSPProto;
+
+#define CS_PROTO_CACHE_MAX      (1000 * 3)
+
 typedef struct _CSProtoCache
 {
+    UINT nAllocCnt;
+
+    UINT nProcessCnt;
     CSProtoRawSlot *pProcessHdr;
     CSProtoRawSlot *pProcessTail;
-    CSProtoRawSlot *pFreeHdr;
-    UINT nProcessCnt;
+
     UINT nFreeCnt;
+    CSProtoRawSlot *pFreeHdr;
 } CSProtoCache;
 
 void CS_ProtoCacheStartup(CSProtoCache *pCache);
@@ -51,6 +71,6 @@ void CS_ProtoAddBufItem(CSProtoBuf *pProtoBuf);
 void CS_ProtoCacheRawAdd(CSProtoCache *pCache, CSProtoBuf *pProtoBuf, 
                          CSProtoType protoType);
 
-void CS_ProtoCacheProcess(CSProtoCache *pCache);
+CAErrno CS_ProtoCacheProcess(CSProtoCache *pCache);
 
 #endif /* !defined(_CS_PROTO_H_) */

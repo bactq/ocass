@@ -23,6 +23,7 @@ CA_DECLARE(CAErrno) CC_Startup(CCWrk **pCWrk)
         funcErr = CA_ERR_NO_MEM;
         goto EXIT;
     }
+    memset(pNewCWrk, 0, sizeof(CCWrk));
 
     hWrkEvt = CreateEvent(NULL, FALSE, TRUE, NULL);
     if (NULL == hWrkEvt)
@@ -40,6 +41,7 @@ CA_DECLARE(CAErrno) CC_Startup(CCWrk **pCWrk)
     pNewCWrk->stateStartTime = time(NULL);
     pNewCWrk->wrkState = CC_WRK_STATE_IDLE;
     pNewCWrk->wrkMod = CC_WRK_MOD_NORMAL;
+    pNewCWrk->pSR = NULL;
     pNewCWrk->hWrkTh = CreateThread(NULL, 0, 
         CC_WrkThread, pNewCWrk, 0, &dwThId);
     if (NULL == pNewCWrk->hWrkTh)
@@ -82,6 +84,10 @@ CA_DECLARE(void) CC_Cleanup(CCWrk *pCWrk)
     DeleteCriticalSection(&pCWrk->wrkCS);
     CloseHandle(pCWrk->hWrkEvt);
     CloseHandle(pCWrk->hWrkTh);
+    if (NULL != pCWrk->pSR)
+    {
+        CA_SRClose(pCWrk->pSR);
+    }
     CA_MFree(pCWrk);
 }
 
