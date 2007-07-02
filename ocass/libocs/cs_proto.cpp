@@ -7,10 +7,28 @@
 #include "cs_wrk.h"
 #include "cs_core.h"
 #include "cs_log.h"
+#include "cs_pparse.h"
 
 static BOOL CS_ProtoNeedFilter(CSProtoBuf *pProtoBuf, 
                                CSProtoType *pProtoType)
 {
+    BOOL bResult;
+
+    *pProtoType = CS_PROTO_OTHER;
+    bResult = CS_IsMessageProto(pProtoBuf->pBuf, pProtoBuf->nBufLen);
+    if (bResult)
+    {
+        *pProtoType = CS_PROTO_MESSAGE;
+        return FALSE;
+    }
+
+    bResult = CS_IsInviteProto(pProtoBuf->pBuf, pProtoBuf->nBufLen);
+    if (bResult)
+    {
+        *pProtoType = CS_PROTO_INVITE;
+        return FALSE;
+    }
+
     return TRUE;
 }
 
@@ -55,7 +73,8 @@ void CS_ProtoCacheRawAdd(CSProtoCache *pCache, CSProtoBuf *pProtoBuf,
     /* add to slots */
 }
 
-void CS_ProtoCacheProcess(CSProtoCache *pCache)
+CAErrno CS_ProtoCacheProcess(CSProtoCache *pCache)
 {
     /* parse from slots */
+    return CA_ERR_SUCCESS;
 }

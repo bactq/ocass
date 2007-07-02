@@ -104,6 +104,10 @@ SOURCE=..\..\liboca\ca_cfg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\liboca\ca_chr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\liboca\ca_flock.cpp
 # End Source File
 # Begin Source File
@@ -157,6 +161,10 @@ SOURCE=..\..\include\ca_buf.h
 # Begin Source File
 
 SOURCE=..\..\include\ca_cfg.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\ca_chr.h
 # End Source File
 # Begin Source File
 

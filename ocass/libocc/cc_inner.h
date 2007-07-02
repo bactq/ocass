@@ -6,6 +6,7 @@
 #define _CC_INNER_H_ 1
 
 #include "libocc.h"
+#include "ca_sr.h"
 
 struct _CC_Wrk
 {
@@ -18,10 +19,11 @@ struct _CC_Wrk
     BOOL        bStateDirty;
     CCWrkState  wrkState;
     time_t      stateStartTime;
+
+    CASpyRun    *pSR;
 };
 
 
 DWORD WINAPI CC_WrkThread(void *pThArg);
 
 #endif /* !defined(_CC_INNER_H_) */
-
