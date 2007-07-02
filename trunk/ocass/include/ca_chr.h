@@ -19,6 +19,9 @@ CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR);
 typedef struct _CA_CHR_ITEM
 {
     time_t tmAppend;
+    char *pszMaster;
+    char *pszCallId;
+    DWORD dwCSeq;
 
     char *pszFrom;
     char *pszTo;
