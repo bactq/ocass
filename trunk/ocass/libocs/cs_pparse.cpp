@@ -2,6 +2,7 @@
  *
  */
 
+#include "ca_buf.h"
 #include "cs_pparse.h"
 
 BOOL CS_CmpProtoWithHdr(const char *pszProtoHdr, 
@@ -31,36 +32,78 @@ BOOL CS_IsMessageProto(const char *pBuf, int nBufLen)
     return CS_CmpProtoWithHdr(pszProtoHdr, pBuf, nBufLen);
 }
 
-CAErrno  CS_RawProtoParse(CSProtoRawSlot *pRawProtoItem, CSPProto *pPProto)
-{
-    memset(pPProto, 0, sizeof(CSPProto));
-    return CA_ERR_SUCCESS;
-}
-
 CAErrno CS_PPBodySplit(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB)
 {
-    /* XXX */
-    return CA_ERR_SUCCESS;
-}
+    const char *pFind;
 
-CAErrno CS_PPGetMsg(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
-                    char *pszMsgBuf, DWORD dwMsgBufCnt)
-{
-    /* XXX */
+    pFind = CA_BMatching(pPSlot->protoData, pPSlot->dwPDataLen, 
+        CS_PP_SIP_HDR_END, CS_PP_SIP_HDR_END_CNT);
+    if (NULL == pFind)
+    {
+        pPPHB->pPHdr = pPSlot->protoData;
+        pPPHB->dwPHdrLen = pPSlot->dwPDataLen;
+
+        pPPHB->pPBody = NULL;
+        pPPHB->dwPBodyLen = 0;
+        return CA_ERR_SUCCESS;
+    }
+
+    pPPHB->pPHdr = pPSlot->protoData;
+    pPPHB->dwPHdrLen = pFind - pPPHB->pPHdr;
+    pFind += CS_PP_SIP_HDR_END_CNT;
+    pPPHB->pPBody = pFind;
+    pPPHB->dwPBodyLen = pPSlot->dwPDataLen - pPPHB->dwPHdrLen - 
+        CS_PP_SIP_HDR_END_CNT;
+    if (0 >= pPPHB->dwPBodyLen || 0 >= pPPHB->dwPHdrLen)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetCallId(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                        char *pszCallIdBuf, DWORD dwCallIdBufCnt)
 {
-    /* XXX */
+    const char *pszCallIdHdr = "CALL-ID: ";
+    const char *pszFind;
+    const char *pszPos;
+    DWORD dwCallIdPos;
+
+    pszFind = CA_BMatchingAlpha(pPPHB->pPHdr, pPPHB->dwPHdrLen, 
+        pszCallIdHdr, FALSE);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+
+    pszCallIdBuf[0] = '\0';
+    pszPos = pszFind + strlen(pszCallIdHdr);
+    for (dwCallIdPos = 0;; pszPos++, dwCallIdPos++)
+    {
+        if (dwCallIdPos >= dwCallIdBufCnt)
+        {
+            break;
+        }
+
+        if (!isalpha(pszPos[0]) && !isdigit(pszPos[0]))
+        {
+            break;
+        }
+
+        pszCallIdBuf[dwCallIdPos] = pszPos[0];
+    }
+    pszCallIdBuf[dwCallIdPos] = '\0';
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetCSeq(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                      DWORD *pdwCSeq)
 {
-    /* XXX */
+    const char *pszCSeq = "CSEQ: ";
+    CHAR szNum[128];
+
+    szNum[0] = '\0';
     return CA_ERR_SUCCESS;
 }
 
@@ -73,6 +116,13 @@ CAErrno CS_PPGetFrom(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
 
 CAErrno CS_PPGetTo(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                      char *pszFromBuf, DWORD dwFromBufCnt)
+{
+    /* XXX */
+    return CA_ERR_SUCCESS;
+}
+
+CAErrno CS_PPGetMsg(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
+                    char *pszMsgBuf, DWORD dwMsgBufCnt)
 {
     /* XXX */
     return CA_ERR_SUCCESS;

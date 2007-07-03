@@ -48,3 +48,11 @@ CA_DECLARE(const char *) CA_BMatching(const char *pBStart, int nBLen,
 
     return pFindPos;
 }
+
+CA_DECLARE(const char *) CA_BMatchingAlpha(const char *pBStart, int nBLen, 
+                                           const char *pszBMatching, 
+                                           BOOL bSensitive)
+{
+    /* XXX */
+    return NULL;
+}
