@@ -16,10 +16,15 @@ CA_DECLARE(CAErrno) CA_CHRecClose(CACHRec *pCHR);
 
 CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR);
 
+CA_DECLARE(CAErrno) CA_CHRecFlushAll(CACHRec *pCHR, 
+                                     BOOL bNeedClose);
+
 typedef struct _CA_CHR_ITEM
 {
     time_t tmAppend;
     char *pszMaster;
+    char *pszGuest;
+
     char *pszCallId;
     DWORD dwCSeq;
 
@@ -33,5 +38,9 @@ typedef struct _CA_CHR_ITEM
 
 CA_DECLARE(CAErrno) CA_CHRecAppend(CACHRec *pCHR, DWORD dwRetryCnt, 
                                    CACHRItem *pCHRItem);
+
+CA_DECLARE(CAErrno) CA_CHRecNaming(CACHRec *pCHR, CACHRItem *pCHRItem, 
+                                   TCHAR *pszSFNameBuf, 
+                                   DWORD dwSFNameBufCnt);
 
 #endif /* !defined(_CA_CHR_H_) */

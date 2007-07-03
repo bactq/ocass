@@ -51,9 +51,21 @@ CAErrno CS_ProtoRawDup(CSProtoBuf *pPBuf, CSProtoType protoType,
     return CA_ERR_SUCCESS;
 }
 
-void CS_ProtoCacheStartup(CSProtoCache *pCache)
+CAErrno CS_ProtoCacheStartup(CSProtoCache *pCache)
 {
+    CAErrno caErr;
+
     memset(pCache, 0, sizeof(CSProtoCache));
+    caErr = CA_CHRecOpen(&pCache->pCHR);
+    if (CA_ERR_SUCCESS == caErr)
+    {
+        CS_Log(CA_SRC_MARK, CS_LOG_ERR, 
+            TEXT("Open chr handle failed. error %u"), 
+            caErr);
+        return caErr;
+    }
+
+    return CA_ERR_SUCCESS;
 }
 
 void CS_ProtoCacheCleanup(CSProtoCache *pCache)
@@ -74,6 +86,11 @@ void CS_ProtoCacheCleanup(CSProtoCache *pCache)
     {
         pCache->pProcessHdr = pPSlot->pNext;
         CA_MFree(pPSlot);
+    }
+
+    if (NULL != pCache->pCHR)
+    {
+        CA_CHRecClose(pCache->pCHR);
     }
 
     CA_MFree(pCache);
@@ -193,10 +210,10 @@ CAErrno CS_ProtoCacheProcess(CSProtoCache *pCache)
         pCache->pProcessTail = NULL;
     }
 
-    caErr = CS_ProtoCacheItemProcess(pCacheItem);
+    caErr = CS_ProtoCacheItemProcess(pCache, pCacheItem);
     if (CA_ERR_SUCCESS != caErr)
     {
-        CS_Log(CA_SRC_MARK, CS_LOG_ERR, 
+        CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
             TEXT("process cache item failed. error %u"), 
             caErr);
     }
@@ -207,7 +224,8 @@ CAErrno CS_ProtoCacheProcess(CSProtoCache *pCache)
     return CA_ERR_SUCCESS;
 }
 
-CAErrno CS_ProtoCacheItemProcess(CSProtoRawSlot *pPSlot)
+CAErrno CS_ProtoCacheItemProcess(CSProtoCache *pCache, 
+                                 CSProtoRawSlot *pPSlot)
 {
     CSPProtoHB parseProtoHB;
     CSPProto csPProto;
@@ -216,7 +234,7 @@ CAErrno CS_ProtoCacheItemProcess(CSProtoRawSlot *pPSlot)
     caErr = CS_PPBodySplit(pPSlot, &parseProtoHB);
     if (CA_ERR_SUCCESS == caErr)
     {
-        CS_Log(CA_SRC_MARK, CS_LOG_ERR, 
+        CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
             TEXT("parse proto hdr and body failed, "
             "error %u, proto type %u."), 
             caErr, pPSlot->protoType);
@@ -230,7 +248,7 @@ CAErrno CS_ProtoCacheItemProcess(CSProtoRawSlot *pPSlot)
         csPProto.szMsg, sizeof(csPProto.szMsg));
     if (CA_ERR_SUCCESS != caErr)
     {
-        CS_Log(CA_SRC_MARK, CS_LOG_ERR, 
+        CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
             TEXT("parse proto msg field failed, "
             "error %u, proto type %u."), 
             caErr, pPSlot->protoType);
@@ -241,7 +259,7 @@ CAErrno CS_ProtoCacheItemProcess(CSProtoRawSlot *pPSlot)
         csPProto.szCall_ID, sizeof(csPProto.szCall_ID));
     if (CA_ERR_SUCCESS != caErr)
     {
-        CS_Log(CA_SRC_MARK, CS_LOG_ERR, 
+        CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
             TEXT("parse proto call id field failed, "
             "error %u, proto type %u."), 
             caErr, pPSlot->protoType);
@@ -251,7 +269,7 @@ CAErrno CS_ProtoCacheItemProcess(CSProtoRawSlot *pPSlot)
     caErr = CS_PPGetCSeq(pPSlot, &parseProtoHB, &csPProto.dwCSeq);
     if (CA_ERR_SUCCESS != caErr)
     {
-        CS_Log(CA_SRC_MARK, CS_LOG_ERR, 
+        CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
             TEXT("parse proto CSeq field failed, "
             "error %u, proto type %u."), 
             caErr, pPSlot->protoType);
@@ -262,7 +280,7 @@ CAErrno CS_ProtoCacheItemProcess(CSProtoRawSlot *pPSlot)
         csPProto.szFrom, sizeof(csPProto.szFrom));
     if (CA_ERR_SUCCESS != caErr)
     {
-        CS_Log(CA_SRC_MARK, CS_LOG_ERR, 
+        CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
             TEXT("parse proto from field failed, "
             "error %u, proto type %u."), 
             caErr, pPSlot->protoType);
@@ -273,19 +291,28 @@ CAErrno CS_ProtoCacheItemProcess(CSProtoRawSlot *pPSlot)
         csPProto.szTo, sizeof(csPProto.szTo));
     if (CA_ERR_SUCCESS != caErr)
     {
-        CS_Log(CA_SRC_MARK, CS_LOG_ERR, 
+        CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
             TEXT("parse proto to field failed, "
             "error %u, proto type %u."), 
             caErr, pPSlot->protoType);
         return caErr;
     }
 
-    return CS_ProtoItemProcess(&csPProto);
+    return CS_ProtoItemProcess(pCache, &csPProto);
 }
 
-CAErrno CS_ProtoItemProcess(CSPProto *pPI)
+CAErrno CS_ProtoItemProcess(CSProtoCache *pCache, 
+                            CSPProto *pPI)
 {
     CACHRItem chrItem;
+    CAErrno caErr;
+
+    if (NULL == pCache || NULL == pCache->pCHR || NULL == pPI)
+    {
+        CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
+            TEXT("Can't writ chart history, bad args"));
+        return CA_ERR_BAD_SEQ;
+    }
 
     chrItem.pszFrom = pPI->szFrom;
     chrItem.pszTo = pPI->szTo;
@@ -294,8 +321,17 @@ CAErrno CS_ProtoItemProcess(CSPProto *pPI)
     chrItem.tmAppend = time(NULL);
     chrItem.dwCSeq = pPI->dwCSeq;
     chrItem.pszCallId = pPI->szCall_ID;
-    chrItem.pszMaster = pPI->bIsRcv ? chrItem.pszFrom : chrItem.pszTo;
 
-    // CA_CHRecAppend(pCHR, 20, &chrItem);
-    return CA_ERR_SUCCESS;
+
+    chrItem.pszMaster   = pPI->bIsRcv ? chrItem.pszTo : chrItem.pszFrom;
+    chrItem.pszGuest    = pPI->bIsRcv ? chrItem.pszFrom : chrItem.pszTo;
+
+    caErr = CA_CHRecAppend(pCache->pCHR, 20, &chrItem);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
+            TEXT("Append chart hitory failed. err %u"), caErr);
+    }
+
+    return caErr;
 }

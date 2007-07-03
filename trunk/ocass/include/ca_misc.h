@@ -44,4 +44,11 @@ CA_DECLARE(void) CA_AddFSize(CAFSize *pFSize,
 CA_DECLARE(CAErrno) CA_GetFSize(const TCHAR *pszFName, 
                                 CAFSize *pFSize);
 
+CA_DECLARE(CAErrno) CA_MkSubDirWithBName(const TCHAR *pszDir, 
+                                         TCHAR *pszRealNameBuf, 
+                                         DWORD dwNameBufCnt);
+
+CA_DECLARE(CAErrno) CA_ConvertFNameStr(const TCHAR *pszSrc, 
+                        TCHAR *pszFNameBuf, DWORD dwFNameBufCnt);
+
 #endif /* !defined(_CA_MISC_H_) */

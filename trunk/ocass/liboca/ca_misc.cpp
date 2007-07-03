@@ -225,5 +225,109 @@ CA_DECLARE(void) CA_SetFSize(CAFSize *pFSize,
 CA_DECLARE(void) CA_AddFSize(CAFSize *pFSize, 
                              DWORD dwIncreaseFSize)
 {
-    /* XXX */
+    /* FIXME use int64 to calculate the file size */
+    pFSize->dwFSize += dwIncreaseFSize;
+}
+
+CA_DECLARE(CAErrno) CA_MkSubDirWithBName(const TCHAR *pszDir, 
+                                         TCHAR *pszRealNameBuf, 
+                                         DWORD dwNameBufCnt)
+{
+    WIN32_FIND_DATA findData;
+    const TCHAR *pszRealName = pszDir;
+    CAErrno funcErr = CA_ERR_SUCCESS;
+    HANDLE hFind;
+    TCHAR szReName[MAX_PATH];
+    BOOL bResult;
+    int nResult;
+    int nRNameId;
+
+    hFind = FindFirstFile(pszDir, &findData);
+    if (INVALID_HANDLE_VALUE == hFind)
+    {
+        bResult = CreateDirectory(pszDir, NULL);
+        if (!bResult)
+        {
+            funcErr = CA_ERR_FCREATE;
+            goto EXIT;
+        }
+
+        goto EXIT;
+    }
+    FindClose(hFind);
+    if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+    {
+        goto EXIT;
+    }
+    
+    /* XXX fixme set max retry count */
+    for (nRNameId = 1;; nRNameId++)
+    {
+        nResult = CA_SNPrintf(szReName, sizeof(szReName) / sizeof(szReName[0]), 
+            TEXT("%s_%u"), pszDir, nRNameId);
+        if (0 >= nResult)
+        {
+            funcErr = CA_ERR_FNAME_TOO_LONG;
+            break;
+        }
+        pszRealName = szReName;
+
+        hFind = FindFirstFile(pszDir, &findData);
+        if (INVALID_HANDLE_VALUE == hFind)
+        {
+            bResult = CreateDirectory(pszDir, NULL);
+            if (!bResult)
+            {
+                funcErr = CA_ERR_FCREATE;
+                break;
+            }
+        }
+        FindClose(hFind);
+
+        if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+            break;
+        }
+    }
+
+EXIT:
+    if (CA_ERR_SUCCESS == funcErr)
+    {
+        /* copy real name to result buf */
+        nResult = CA_SNPrintf(pszRealNameBuf, dwNameBufCnt, 
+            TEXT("%s"), pszRealName);
+        if (0 >= nResult)
+        {
+            funcErr = CA_ERR_FNAME_TOO_LONG;
+        }
+    }
+
+    return funcErr;
+}
+
+CA_DECLARE(CAErrno) CA_ConvertFNameStr(const TCHAR *pszSrc, 
+                        TCHAR *pszFNameBuf, DWORD dwFNameBufCnt)
+{
+    TCHAR *pStrPos;
+    int nResult;
+
+    nResult = CA_SNPrintf(pszFNameBuf, dwFNameBufCnt, TEXT("%s"), pszSrc);
+    if (0 >= nResult)
+    {
+        return CA_ERR_FNAME_TOO_LONG;
+    }
+
+    for (pStrPos = pszFNameBuf; '\0' != pszFNameBuf[0]; pszFNameBuf++)
+    {
+        if ('\\' == pStrPos[0] || '/' == pStrPos[0] ||
+            '?'  == pStrPos[0] || '*' == pStrPos[0] ||
+            ':'  == pStrPos[0] || '%' == pStrPos[0] ||
+            '<'  == pStrPos[0] || '>' == pStrPos[0] ||
+            '"'  == pStrPos[0] || '|' == pStrPos[0])
+        {
+            pStrPos[0] = '_';
+        }
+    }
+
+    return CA_ERR_SUCCESS;
 }
