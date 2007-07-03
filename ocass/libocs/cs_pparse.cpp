@@ -39,35 +39,41 @@ CAErrno  CS_RawProtoParse(CSProtoRawSlot *pRawProtoItem, CSPProto *pPProto)
 
 CAErrno CS_PPBodySplit(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB)
 {
+    /* XXX */
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetMsg(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                     char *pszMsgBuf, DWORD dwMsgBufCnt)
 {
+    /* XXX */
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetCallId(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                        char *pszCallIdBuf, DWORD dwCallIdBufCnt)
 {
+    /* XXX */
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetCSeq(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                      DWORD *pdwCSeq)
 {
+    /* XXX */
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetFrom(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                      char *pszFromBuf, DWORD dwFromBufCnt)
 {
+    /* XXX */
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetTo(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                      char *pszFromBuf, DWORD dwFromBufCnt)
 {
+    /* XXX */
     return CA_ERR_SUCCESS;
 }

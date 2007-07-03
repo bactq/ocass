@@ -6,6 +6,7 @@
 #define _CS_PROTO_H_ 1
 
 #include "ca_types.h"
+#include "ca_chr.h"
 
 typedef enum
 {
@@ -62,9 +63,11 @@ typedef struct _CSProtoCache
 
     UINT nFreeCnt;
     CSProtoRawSlot *pFreeHdr;
+
+    CACHRec *pCHR;
 } CSProtoCache;
 
-void CS_ProtoCacheStartup(CSProtoCache *pCache);
+CAErrno CS_ProtoCacheStartup(CSProtoCache *pCache);
 void CS_ProtoCacheCleanup(CSProtoCache *pCache);
 
 void CS_ProtoAddBufItem(CSProtoBuf *pProtoBuf);
@@ -74,11 +77,13 @@ void CS_ProtoCacheRawAdd(CSProtoCache *pCache, CSProtoBuf *pProtoBuf,
 
 CAErrno CS_ProtoCacheProcess(CSProtoCache *pCache);
 
-CAErrno CS_ProtoCacheItemProcess(CSProtoRawSlot *pPSlot);
+CAErrno CS_ProtoCacheItemProcess(CSProtoCache *pCache, 
+                                 CSProtoRawSlot *pPSlot);
 
 CAErrno CS_ProtoRawDup(CSProtoBuf *pPBuf, CSProtoType protoType, 
                        CSProtoRawSlot *pProtoSlot);
 
-CAErrno CS_ProtoItemProcess(CSPProto *pPI);
+CAErrno CS_ProtoItemProcess(CSProtoCache *pCache, 
+                            CSPProto *pPI);
 
 #endif /* !defined(_CS_PROTO_H_) */

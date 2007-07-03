@@ -143,7 +143,14 @@ CAErrno CS_WrkStart(HMODULE hLib, CACfgDatum *pCfgDatum,
     pNewCSWrk->hSpyRunEvt = hSpyRunEvt;
     pNewCSWrk->pSR = pSR;
     CA_SRDatumDup(pSR, &(pNewCSWrk->spyDatum));
-    CS_ProtoCacheStartup(&pNewCSWrk->protoCache);
+    caErr = CS_ProtoCacheStartup(&pNewCSWrk->protoCache);
+    if (CA_ERR_SUCCESS != funcErr)
+    {
+        CA_SRUpdateState(pSR, CA_SPY_STATE_FAILED);
+        funcErr = caErr;
+        goto EXIT;
+    }
+
     pNewCSWrk->hWrkTh = CreateThread(NULL, 0, CS_WrkTh, 
         pNewCSWrk, 0, &dwThId);
     if (NULL == pNewCSWrk->hWrkTh)
