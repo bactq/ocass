@@ -30,6 +30,7 @@ typedef struct _CSProtoBuf
 typedef struct _CSProtoRawSlot
 {
     CSProtoType protoType;
+    time_t tmAppend;
     BOOL bIsRcv;
     DWORD dwPDataLen;
     char protoData[CS_PROTO_RAW_MAX_BUF];
@@ -41,6 +42,7 @@ typedef struct _CSPProto
 {
     BOOL bIsRcv;
     CSProtoType protoType;
+    time_t tmAppend;
 
     char szCall_ID[128];
     DWORD dwCSeq;

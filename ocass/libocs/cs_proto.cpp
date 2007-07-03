@@ -43,6 +43,7 @@ CAErrno CS_ProtoRawDup(CSProtoBuf *pPBuf, CSProtoType protoType,
     pProtoSlot->pNext = NULL;
     pProtoSlot->bIsRcv = pPBuf->bIsRcv;
     pProtoSlot->protoType = protoType;
+    pProtoSlot->tmAppend = time(NULL);
 
     nDestBLen =  sizeof(pProtoSlot->protoData);
     CA_BTruncateNCpy(pPBuf->pBuf, pPBuf->nBufLen, 
@@ -251,6 +252,7 @@ CAErrno CS_ProtoCacheItemProcess(CSProtoCache *pCache,
     /* init proto type */
     csPProto.bIsRcv = pPSlot->bIsRcv;
     csPProto.protoType = pPSlot->protoType;
+    csPProto.tmAppend = pPSlot->tmAppend;
     caErr = CS_PPGetMsg(pPSlot, &parseProtoHB, 
         csPProto.szMsg, sizeof(csPProto.szMsg));
     if (CA_ERR_SUCCESS != caErr)
@@ -325,10 +327,9 @@ CAErrno CS_ProtoItemProcess(CSProtoCache *pCache,
     chrItem.pszTo = pPI->szTo;
     chrItem.pszMsg = pPI->szMsg;
 
-    chrItem.tmAppend = time(NULL);
+    chrItem.tmAppend = pPI->tmAppend;
     chrItem.dwCSeq = pPI->dwCSeq;
     chrItem.pszCallId = pPI->szCall_ID;
-
 
     chrItem.pszMaster   = pPI->bIsRcv ? chrItem.pszTo : chrItem.pszFrom;
     chrItem.pszGuest    = pPI->bIsRcv ? chrItem.pszFrom : chrItem.pszTo;

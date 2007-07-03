@@ -8,14 +8,17 @@
 #include "ca_types.h"
 #include "cs_proto.h"
 
+#define CS_PP_SIP_NEWLINE_CNT   (3)
+#define CS_PP_SIP_NEWLINE       ("\r\r\n")
+#define CS_PP_SIP_HDR_END_CNT   (6)
+#define CS_PP_SIP_HDR_END       ("\r\r\n\r\r\n")
+
 BOOL CS_CmpProtoWithHdr(const char *pszProtoHdr, 
                         const char *pBuf, int nBufLen);
 
 BOOL CS_IsMessageProto(const char *pBuf, int nBufLen);
 
 BOOL CS_IsInviteProto(const char *pBuf, int nBufLen);
-
-CAErrno  CS_RawProtoParse(CSProtoRawSlot *pRawProtoItem, CSPProto *pPProto);
 
 typedef struct _CS_PPHB
 {
