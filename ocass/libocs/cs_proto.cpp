@@ -93,7 +93,14 @@ void CS_ProtoCacheCleanup(CSProtoCache *pCache)
         CA_CHRecClose(pCache->pCHR);
     }
 
-    CA_MFree(pCache);
+    pCache->nAllocCnt = 0;
+    pCache->nFreeCnt = 0;
+    pCache->nProcessCnt = 0;
+
+    pCache->pCHR = NULL;
+    pCache->pFreeHdr = NULL;
+    pCache->pProcessHdr = NULL;
+    pCache->pProcessTail = NULL;
 }
 
 void CS_ProtoAddBufItem(CSProtoBuf *pProtoBuf)
