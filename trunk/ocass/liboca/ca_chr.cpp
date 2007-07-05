@@ -445,6 +445,15 @@ CA_DECLARE(CAErrno) CA_CHRecNaming(CACHRec *pCHR, CACHRItem *pCHRItem,
         }
         FindClose(hFind);
         
+        if (FILE_ATTRIBUTE_DIRECTORY & findData.dwFileAttributes)
+        {
+            continue;
+        }
+        else
+        {
+            bFind = TRUE;
+            break;
+        }
     }
     if (!bFind)
     {

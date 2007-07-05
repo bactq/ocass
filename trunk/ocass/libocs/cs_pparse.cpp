@@ -208,7 +208,7 @@ CAErrno CS_PPGetTo(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
 {
     const char *pszPos;
     const char *pszFind;
-    const char *pszTo = "From: ";
+    const char *pszTo = "To: ";
     const char *pToHdr;
     const char *pToTail;
     const char *pNameHdr;
