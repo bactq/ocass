@@ -100,30 +100,64 @@ CAErrno CS_PPGetCallId(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
 CAErrno CS_PPGetCSeq(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                      DWORD *pdwCSeq)
 {
+    const char *pszFind;
+    const char *pszPos;
     const char *pszCSeq = "CSEQ: ";
+    DWORD dwInsPos;
     CHAR szNum[128];
 
+    pszFind = CA_BMatchingAlpha(pPPHB->pPHdr, pPPHB->dwPHdrLen, 
+        pszCSeq, FALSE);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+
     szNum[0] = '\0';
+    pszPos = pszFind + strlen(pszCSeq);
+    for (dwInsPos = 0;; pszPos++, dwInsPos++)
+    {
+        if (dwInsPos >= sizeof(szNum))
+        {
+            break;
+        }
+
+        if (!isdigit(pszPos[0]))
+        {
+            break;
+        }
+
+        szNum[dwInsPos] = pszPos[0];
+    }
+    szNum[dwInsPos] = '\0';
+
+    try
+    {
+        *pdwCSeq = (DWORD)atol(szNum);
+    }
+    catch (...)
+    {
+    }
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetFrom(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                      char *pszFromBuf, DWORD dwFromBufCnt)
 {
-    /* XXX */
+    pszFromBuf[0] = '\0';
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetTo(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
-                     char *pszFromBuf, DWORD dwFromBufCnt)
+                   char *pszToBuf, DWORD dwToBufCnt)
 {
-    /* XXX */
+    pszToBuf[0] = '\0';
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetMsg(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                     char *pszMsgBuf, DWORD dwMsgBufCnt)
 {
-    /* XXX */
+    pszMsgBuf[0] = '\0';
     return CA_ERR_SUCCESS;
 }

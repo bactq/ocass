@@ -44,6 +44,6 @@ CAErrno CS_PPGetFrom(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
                      char *pszFromBuf, DWORD dwFromBufCnt);
 
 CAErrno CS_PPGetTo(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
-                     char *pszFromBuf, DWORD dwFromBufCnt);    
+                   char *pszToBuf, DWORD dwToBufCnt); 
 
 #endif /* !defined(_CS_PPARSE_H_) */
