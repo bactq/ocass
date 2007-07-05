@@ -5,6 +5,7 @@
 #ifndef _CS_LOG_H_
 #define _CS_LOG_H_ 1
 
+#include "liboca.h"
 #include "ca_types.h"
 #include "ca_cfg.h"
 
@@ -33,6 +34,8 @@ typedef int CSLogFlags;
 
 void CS_Log(const TCHAR *pszSrc, int nSrcLine, CSLogFlags logFlags, 
             const TCHAR *pszFmt, ...);
+
+void CS_RTLog(void *pCbCtx, CARTLog *pLog);
 
 #if defined(_DEBUG)
 #define CS_DBG_TRACE         CS_Log

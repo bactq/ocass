@@ -144,20 +144,131 @@ CAErrno CS_PPGetCSeq(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
 CAErrno CS_PPGetFrom(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                      char *pszFromBuf, DWORD dwFromBufCnt)
 {
+    const char *pszPos;
+    const char *pszFind;
+    const char *pszFrom = "From: ";
+    const char *pFromHdr;
+    const char *pFromTail;
+    const char *pNameHdr;
+    DWORD dwInsPos;
+    DWORD dwFindLen;
+
+    /* proto example
+     * From: "L - name1"<sip:webmaster(lexx.51.net)@msn.com>;tag=571be9611
+     */
+    pszFind = CA_BMatchingAlpha(pPPHB->pPHdr, pPPHB->dwPHdrLen, 
+        pszFrom, FALSE);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pFromHdr = pszFind;
+
+    dwFindLen = pPPHB->dwPHdrLen - (pFromHdr - pPPHB->pPHdr);
+    pszFind = CA_BMatching(pFromHdr, dwFindLen, 
+        CS_PP_SIP_NEWLINE, CS_PP_SIP_HDR_END_CNT);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pFromTail = pszFind;
+
+    dwFindLen = pFromTail - pFromHdr;
+    pszFind = CA_BMatchingAlpha(pFromHdr, dwFindLen, 
+                "<sip:", FALSE);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pNameHdr = pszFind;
+
+    pszPos = pNameHdr;
     pszFromBuf[0] = '\0';
+    for (dwInsPos = 0;; pszPos++, dwInsPos++)
+    {
+        if (dwInsPos >= dwFromBufCnt)
+        {
+            break;
+        }
+
+        if ('>' == pszPos[0])
+        {
+            break;
+        }
+
+        pszFromBuf[dwInsPos] = pszPos[0];
+    }
+    pszFromBuf[dwInsPos] = '\0';
+
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetTo(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                    char *pszToBuf, DWORD dwToBufCnt)
 {
+    const char *pszPos;
+    const char *pszFind;
+    const char *pszTo = "From: ";
+    const char *pToHdr;
+    const char *pToTail;
+    const char *pNameHdr;
+    DWORD dwInsPos;
+    DWORD dwFindLen;
+
+    /* proto example
+     * To: "test dd"<sip:xiongjia_le@sonic.com>;epid=8dcae8e001
+     */
+    pszFind = CA_BMatchingAlpha(pPPHB->pPHdr, pPPHB->dwPHdrLen, 
+        pszTo, FALSE);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pToHdr = pszFind;
+
+    dwFindLen = pPPHB->dwPHdrLen - (pToHdr - pPPHB->pPHdr);
+    pszFind = CA_BMatching(pToHdr, dwFindLen, 
+        CS_PP_SIP_NEWLINE, CS_PP_SIP_HDR_END_CNT);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pToTail = pszFind;
+
+    dwFindLen = pToTail - pToHdr;
+    pszFind = CA_BMatchingAlpha(pToHdr, dwFindLen, 
+                "<sip:", FALSE);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pNameHdr = pszFind;
+
+    pszPos = pNameHdr;
     pszToBuf[0] = '\0';
+    for (dwInsPos = 0;; pszPos++, dwInsPos++)
+    {
+        if (dwInsPos >= dwToBufCnt)
+        {
+            break;
+        }
+
+        if ('>' == pszPos[0])
+        {
+            break;
+        }
+
+        pszToBuf[dwInsPos] = pszPos[0];
+    }
+    pszToBuf[dwInsPos] = '\0';
+
     return CA_ERR_SUCCESS;
 }
 
 CAErrno CS_PPGetMsg(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                     char *pszMsgBuf, DWORD dwMsgBufCnt)
 {
-    pszMsgBuf[0] = '\0';
+    /* XXX FIXME just for test */
+    strcpy(pszMsgBuf, "test1");
     return CA_ERR_SUCCESS;
 }

@@ -24,6 +24,33 @@ typedef struct _CSLog
 static CSLog g_csLog = {0};
 static CSLog *g_pCSLog = NULL;
 
+static CSLogFlags CS_LogFlagsConvert(CARTLogFlags caLogFlags)
+{
+    CSLogFlags csLogFlags = 0;
+
+    if (caLogFlags & CA_RTLOG_ERR)
+    {
+        csLogFlags |= CS_LOG_ERR;
+    }
+
+    if (caLogFlags & CA_RTLOG_INFO)
+    {
+        csLogFlags |= CS_LOG_INFO;
+    }
+
+    if (caLogFlags & CA_RTLOG_WARN)
+    {
+        csLogFlags |= CS_LOG_WARN;
+    }
+
+    if (caLogFlags & CA_RTLOG_DBG)
+    {
+        csLogFlags |= CS_LOG_DBG;
+    }
+
+    return csLogFlags;
+}
+
 static CSLog* CS_LogGetPtr(void)
 {
     return g_pCSLog;
@@ -172,24 +199,14 @@ CAErrno CS_LogStartup(TCHAR *pszSpyLog, TCHAR *pszSpyNtDump,
 
 void CS_LogCleanup(void)
 {
+    if (NULL == g_pCSLog)
+    {
+        return;
+    }
+
     g_pCSLog = NULL;
-
-    /* Close all file */
-}
-
-CAErrno CS_LogSetLogMask(CASpyLogMask spyLogMask)
-{
-    return CA_ERR_SUCCESS;
-}
-
-CAErrno CS_LogSetLogFName(TCHAR *pszSpyLog)
-{
-    return CA_ERR_SUCCESS;
-}
-
-CAErrno CS_LogSetLogNtDumpFName(TCHAR *pszNtDump)
-{
-    return CA_ERR_SUCCESS;
+    
+    /* close all file */
 }
 
 void CS_LogNtDump(const TCHAR *pszSrc, int nSrcLine, 
@@ -310,4 +327,24 @@ void CS_Log(const TCHAR *pszSrc, int nSrcLine, CSLogFlags logFlags,
         }
     }
     LeaveCriticalSection(&pCSLog->logCS);
+}
+
+void CS_RTLog(void *pCbCtx, CARTLog *pLog)
+{  
+    CS_Log(pLog->pszSrc, pLog->nSrcLine, 0, TEXT("%s"), pLog->pszLog);
+}
+
+CAErrno CS_LogSetLogMask(CASpyLogMask spyLogMask)
+{
+    return CA_ERR_SUCCESS;
+}
+
+CAErrno CS_LogSetLogFName(TCHAR *pszSpyLog)
+{
+    return CA_ERR_SUCCESS;
+}
+
+CAErrno CS_LogSetLogNtDumpFName(TCHAR *pszNtDump)
+{
+    return CA_ERR_SUCCESS;
 }
