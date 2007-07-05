@@ -166,7 +166,7 @@ CAErrno CS_PPGetFrom(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
 
     dwFindLen = pPPHB->dwPHdrLen - (pFromHdr - pPPHB->pPHdr);
     pszFind = CA_BMatching(pFromHdr, dwFindLen, 
-        CS_PP_SIP_NEWLINE, CS_PP_SIP_HDR_END_CNT);
+        CS_PP_SIP_SUB_NEWLINE, CS_PP_SIP_SUB_NEWLINE_CNT);
     if (NULL == pszFind)
     {
         return CA_ERR_BAD_SEQ;
@@ -180,7 +180,7 @@ CAErrno CS_PPGetFrom(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
     {
         return CA_ERR_BAD_SEQ;
     }
-    pNameHdr = pszFind;
+    pNameHdr = pszFind + strlen("<sip:");
 
     pszPos = pNameHdr;
     pszFromBuf[0] = '\0';
@@ -228,7 +228,7 @@ CAErrno CS_PPGetTo(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
 
     dwFindLen = pPPHB->dwPHdrLen - (pToHdr - pPPHB->pPHdr);
     pszFind = CA_BMatching(pToHdr, dwFindLen, 
-        CS_PP_SIP_NEWLINE, CS_PP_SIP_HDR_END_CNT);
+        CS_PP_SIP_SUB_NEWLINE, CS_PP_SIP_SUB_NEWLINE_CNT);
     if (NULL == pszFind)
     {
         return CA_ERR_BAD_SEQ;
@@ -242,7 +242,7 @@ CAErrno CS_PPGetTo(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
     {
         return CA_ERR_BAD_SEQ;
     }
-    pNameHdr = pszFind;
+    pNameHdr = pszFind + strlen("<sip:");
 
     pszPos = pNameHdr;
     pszToBuf[0] = '\0';
