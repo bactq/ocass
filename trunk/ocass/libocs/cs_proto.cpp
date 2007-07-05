@@ -127,6 +127,7 @@ void CS_ProtoAddBufItem(CSProtoBuf *pProtoBuf)
 
     /* add to cache proto */
     CS_WrkAddRawBuf((CSWrk *)pCSWrk, pProtoBuf, protoType);
+    CS_WrkTouchSem((CSWrk *)pCSWrk, 1);
 }
 
 void CS_ProtoCacheRawAdd(CSProtoCache *pCache, CSProtoBuf *pProtoBuf, 
@@ -240,7 +241,7 @@ CAErrno CS_ProtoCacheItemProcess(CSProtoCache *pCache,
     CAErrno caErr;
 
     caErr = CS_PPBodySplit(pPSlot, &parseProtoHB);
-    if (CA_ERR_SUCCESS == caErr)
+    if (CA_ERR_SUCCESS != caErr)
     {
         CS_Log(CA_SRC_MARK, CS_LOG_WARN, 
             TEXT("parse proto hdr and body failed, "
