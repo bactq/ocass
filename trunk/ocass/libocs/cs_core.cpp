@@ -32,6 +32,7 @@ const CSWrk* CS_CoreGetWrkPtr(void)
 
 void CS_CoreOnDllLoad(HINSTANCE hInst)
 {
+    /* NOP */
 }
 
 void CS_CoreOnDllUnload(HINSTANCE hInst)
@@ -41,11 +42,15 @@ void CS_CoreOnDllUnload(HINSTANCE hInst)
         return;
     }
 
-    CS_Log(CA_SRC_MARK, CS_LOG_INFO, TEXT("Start end spy work thread."));
+    CS_Log(CA_SRC_MARK, CS_LOG_INFO, 
+        TEXT("Start end spy work thread."));
 
     /* close spy core thread */
     CS_WrkStop(g_pCSCore->pCoreWrk);
+
+    CA_RTSetLog(NULL, NULL);
     CS_LogCleanup();
+    CA_Cleanup();
 }
 
 CA_DECLARE_DYL(CAErrno) CS_Entry(HMODULE hLib, CACfgDatum *pCfgDatum)
@@ -76,7 +81,14 @@ CA_DECLARE_DYL(CAErrno) CS_Entry(HMODULE hLib, CACfgDatum *pCfgDatum)
     caErr = CA_CfgSetRT(pCfgDatum);
     if (CA_ERR_SUCCESS != caErr)
     {
-        /* startup failed */
+        CA_Cleanup();
+        return caErr;
+    }
+
+    caErr = CA_RTSetLog(NULL, CS_RTLog);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        CA_Cleanup();
         return caErr;
     }
 
