@@ -3,7 +3,148 @@
  */
 
 #include "ca_buf.h"
+#include "ca_base64.h"
 #include "cs_pparse.h"
+
+static CAErrno CS_PPGetMsgHdr(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
+                              char *pszMsgBuf, DWORD dwMsgBufCnt)
+{
+    const char *pszFind;
+    const char *pszMsTxtFmtHdr = "Ms-Text-Format: ";
+    const char *pszMsgBodyHdr = "ms-body=";
+    const char *pszMsgStart;
+    const char *pMsTxtHdr;
+    const char *pMsTxtTail; 
+    const char *pMsgPos; 
+    DWORD dwFindLen;
+    DWORD dwIns;
+    char szRawMsg[CS_PP_SIP_MSG_MAX];
+    int nDecodeLen;
+
+    /* proto example
+     * Ms-Text-Format: text/plain; \
+     * charset=UTF-8;msgr=WAA;ms-body=ODg4IHRlc3QgODk5OQ==
+     */
+    pszFind = CA_BMatchingAlpha(pPPHB->pPHdr, pPPHB->dwPHdrLen, 
+        pszMsTxtFmtHdr, FALSE);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pMsTxtHdr = pszFind;
+
+    dwFindLen = pPPHB->dwPHdrLen - (pMsTxtHdr - pPPHB->pPHdr);
+    pszFind = CA_BMatching(pMsTxtHdr, dwFindLen, 
+        CS_PP_SIP_SUB_NEWLINE, CS_PP_SIP_SUB_NEWLINE_CNT);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pMsTxtTail = pszFind;
+
+    dwFindLen = pMsTxtTail - pMsTxtHdr;
+    pszFind = CA_BMatchingAlpha(pPPHB->pPHdr, pPPHB->dwPHdrLen, 
+        "ms-body=", FALSE);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pszMsgStart = pszFind + strlen("ms-body=");
+
+    szRawMsg[0] = '\0';
+    for (pMsgPos = pszMsgStart, dwIns = 0;; pMsgPos++, dwIns++)
+    {
+        if (!CA_Base64IsEncoded(pMsgPos[0]))
+        {
+            break;
+        }
+
+        if (dwIns >= sizeof(szRawMsg))
+        {
+            return CA_ERR_BAD_SEQ;
+        }
+
+        szRawMsg[dwIns] = pMsgPos[0];
+    }
+    szRawMsg[dwIns] = '\0';
+
+    nDecodeLen = CA_Base64DecodeLen(szRawMsg);
+    if (nDecodeLen >= (int)dwMsgBufCnt)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+
+    CA_Base64Decode(pszMsgBuf, szRawMsg);
+    return CA_ERR_SUCCESS;
+}
+
+static CAErrno CS_PPGetMsgBody(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
+                               char *pszMsgBuf, DWORD dwMsgBufCnt)
+{
+    const char *pszFind;
+    const char *pszContLen = "Content-Length: ";
+    const char *pContLenHdr;
+    const char *pPos;
+    DWORD dwContentLen;
+    DWORD dwRealContentLen;
+    DWORD dwIns;
+    char szContentLen[128];
+
+    /* proto example
+     * Content-Length: 4
+     */
+    if (NULL == pPPHB->pPBody || 0 >= pPPHB->dwPBodyLen)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+
+    pszFind = CA_BMatchingAlpha(pPPHB->pPHdr, pPPHB->dwPHdrLen, 
+        pszContLen, FALSE);
+    if (NULL == pszFind)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+    pContLenHdr = pszFind + strlen(pszContLen);
+
+    szContentLen[0] = '\0';
+    for (pPos = pContLenHdr, dwIns = 0;; dwIns++, pPos++)
+    {
+        if (!isdigit(pPos[0]))
+        {
+            break;
+        }
+        if (dwIns >= sizeof(szContentLen))
+        {
+            return CA_ERR_BAD_SEQ;
+        }
+
+        szContentLen[dwIns] = pPos[0];
+    }
+    szContentLen[dwIns] = '\0';
+    try
+    {
+        dwContentLen = atol(szContentLen);
+    }
+    catch (...)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+
+    pszMsgBuf[0] = '\0';
+    dwRealContentLen = (dwContentLen > pPPHB->dwPBodyLen ? 
+        pPPHB->dwPBodyLen : dwContentLen);
+    for (pPos = pPPHB->pPBody, dwIns = 0;; pPos++, dwIns++)
+    {
+        if (dwIns >= dwMsgBufCnt || dwIns >= dwRealContentLen)
+        {
+            break;
+        }
+
+        pszMsgBuf[dwIns] = pPos[0];
+    }
+    pszMsgBuf[dwIns] = '\0';
+    return CA_ERR_SUCCESS;
+}
 
 BOOL CS_CmpProtoWithHdr(const char *pszProtoHdr, 
                         const char *pBuf, int nBufLen)
@@ -137,7 +278,9 @@ CAErrno CS_PPGetCSeq(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
     }
     catch (...)
     {
+        return CA_ERR_BAD_SEQ;
     }
+
     return CA_ERR_SUCCESS;
 }
 
@@ -268,7 +411,12 @@ CAErrno CS_PPGetTo(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB,
 CAErrno CS_PPGetMsg(CSProtoRawSlot *pPSlot, CSPProtoHB *pPPHB, 
                     char *pszMsgBuf, DWORD dwMsgBufCnt)
 {
-    /* XXX FIXME just for test */
-    strcpy(pszMsgBuf, "test1");
-    return CA_ERR_SUCCESS;
+    if (CS_PROTO_INVITE == pPSlot->protoType)
+    {
+        return CS_PPGetMsgHdr(pPSlot, pPPHB, pszMsgBuf, dwMsgBufCnt);
+    }
+    else
+    {
+        return CS_PPGetMsgBody(pPSlot, pPPHB, pszMsgBuf, dwMsgBufCnt);
+    }
 }

@@ -8,14 +8,16 @@
 #include "ca_types.h"
 #include "cs_proto.h"
 
+#define CS_PP_SIP_MSG_MAX       (1024 * 2)
+
 #define CS_PP_SIP_NEWLINE_CNT   (3)
 #define CS_PP_SIP_NEWLINE       ("\r\r\n")
 
 #define CS_PP_SIP_SUB_NEWLINE_CNT   (2)
 #define CS_PP_SIP_SUB_NEWLINE       ("\r\n")
 
-#define CS_PP_SIP_HDR_END_CNT   (6)
-#define CS_PP_SIP_HDR_END       ("\r\r\n\r\r\n")
+#define CS_PP_SIP_HDR_END_CNT   (4)
+#define CS_PP_SIP_HDR_END       ("\r\n\r\n")
 
 BOOL CS_CmpProtoWithHdr(const char *pszProtoHdr, 
                         const char *pBuf, int nBufLen);
