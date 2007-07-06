@@ -35,8 +35,7 @@ static CAErrno CA_CHRecWrHdr(CACHRRecFdSlot *pSlot, DWORD dwRetryCnt,
         return CA_ERR_FOPEN;
     }
 
-    /* XXX FIXME set utf8 version to xml */
-    fprintf(pSlot->pFile, "<?xml version=\"1.0\"?>");
+    fprintf(pSlot->pFile, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     if (bNeedFlush)
     {
         fflush(pSlot->pFile);
@@ -47,11 +46,22 @@ static CAErrno CA_CHRecWrHdr(CACHRRecFdSlot *pSlot, DWORD dwRetryCnt,
 static CAErrno CA_CHRecWrItem(CACHRRecFdSlot *pSlot, DWORD dwRetryCnt, 
                               CACHRItem *pCHRItem, BOOL bNeedFlush)
 {
-    TCHAR szTmStamp[128] = {0};
+    CAErrno caErr;
+    TCHAR szTmStamp[CA_TM_STR_MAX_BUF];
 
     if (NULL == pSlot || NULL == pSlot->pFile)
     {
         return CA_ERR_FOPEN;
+    }
+
+    /* seek to insert pos */
+
+    szTmStamp[0] = '\0';
+    caErr = CA_GetTimeStr(pCHRItem->tmAppend, szTmStamp, 
+        sizeof(szTmStamp) / sizeof(szTmStamp[0]));
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return caErr;
     }
 
     /* XXX FIXME we need convert all xml key string */
@@ -65,7 +75,7 @@ static CAErrno CA_CHRecWrItem(CACHRRecFdSlot *pSlot, DWORD dwRetryCnt,
             "</MsgItem>\n"
             "\n", 
             szTmStamp, pCHRItem->dwCSeq, pCHRItem->pszCallId, 
-            pCHRItem->pszMsg, pCHRItem->pszFrom, pCHRItem->pszTo);
+            pCHRItem->pszFrom, pCHRItem->pszTo, pCHRItem->pszMsg);
 
     if (bNeedFlush)
     {
@@ -408,6 +418,8 @@ CA_DECLARE(CAErrno) CA_CHRecNaming(CACHRec *pCHR, CACHRItem *pCHRItem,
     {
         return caErr;
     }
+
+    /* XXX FIXME copy the template file to this path */
 
     /* naming guest file */
     caErr = CA_PathJoin(szRealMasterDir, szGuestSuffix, 

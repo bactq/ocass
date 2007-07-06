@@ -142,3 +142,24 @@ CA_DECLARE(int) CA_Base64EncodeBin(char *encoded,
     *p++ = '\0';
     return p - encoded;
 }
+
+CA_DECLARE(BOOL) CA_Base64IsEncoded(char cChar)
+{
+    /*
+     * convert string to 
+     * {A-Z,a-z,0-9,+,/},'='
+     */
+    if ('=' == cChar || '/' == cChar || '+' == cChar)
+    {
+        return TRUE;
+    }
+
+    if (('A' <= cChar && 'Z' >= cChar) ||
+        ('a' <= cChar && 'z' >= cChar) ||
+        ('0' <= cChar && '9' >= cChar))
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
