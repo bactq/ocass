@@ -9,4 +9,3 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
     return 0;
 }
-

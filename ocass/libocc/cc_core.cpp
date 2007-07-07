@@ -143,3 +143,51 @@ CA_DECLARE(CAErrno) CC_GetWrkMod(CCWrk *pCWrk, CCWrkMod *pWrkMod)
     LeaveCriticalSection(&pCWrk->wrkCS);
     return CA_ERR_SUCCESS;
 }
+
+CA_DECLARE(CAErrno) CC_SetPauseFlag(CCWrk *pCWrk, BOOL bPause)
+{
+    CASpyDatum *pSHDatum;
+    CASpyRun *pSR;
+    CAErrno funcErr = CA_ERR_SUCCESS;
+    CAErrno caErr;
+    BOOL bNeedTouch = FALSE;
+
+    EnterCriticalSection(&pCWrk->wrkCS);
+    if (NULL == pCWrk || NULL == pCWrk->pSR)
+    {
+        funcErr = CA_ERR_BAD_SEQ;
+        goto EXIT;
+    }
+
+    pSR = pCWrk->pSR;
+    caErr = CA_SRLock(pSR, TRUE);
+    if (CA_ERR_SUCCESS == caErr)
+    {
+        funcErr = caErr;
+        goto EXIT;
+    }
+
+    pSHDatum = CA_SRGetDatum(pCWrk->pSR);
+    if (NULL != pSHDatum)
+    {
+        pSHDatum->bPauseMon = bPause;
+        bNeedTouch = TRUE;
+    }
+    CA_SRUnlock(pSR);
+
+    if (bNeedTouch)
+    {
+        CA_SRTouch(pSR);
+    }
+EXIT:
+    LeaveCriticalSection(&pCWrk->wrkCS);
+    return funcErr;
+}
+
+CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, BOOL bPause)
+{
+    CAErrno funcErr = CA_ERR_SUCCESS;
+
+    /* XXX read new config from rt */
+    return funcErr;
+}

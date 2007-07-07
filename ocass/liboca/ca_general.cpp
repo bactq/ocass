@@ -20,6 +20,7 @@ static CAErrno CA_RTStartup(void)
 {
     CRITICAL_SECTION *pRTCS = NULL;
     CRITICAL_SECTION *pRTLogCS = NULL;
+    HRESULT hResult;
     CAFLock *pRTPL = NULL;
     CAErrno caErr;
     CAErrno funcErr = CA_ERR_SUCCESS;
@@ -57,6 +58,13 @@ static CAErrno CA_RTStartup(void)
         goto EXIT;
     }
     pRTPL = &g_caRT.rtPL;
+
+    hResult = CoInitialize(NULL);
+    if (FAILED(hResult))
+    {
+        funcErr = CA_ERR_SYS_CALL;
+        goto EXIT;
+    }
 
 EXIT:
     if (CA_ERR_SUCCESS == funcErr)
@@ -96,6 +104,7 @@ static CAErrno CA_RTCleanup(void)
     DeleteCriticalSection(&g_caRT.rtCS);
     DeleteCriticalSection(&g_caRT.rtLogCS);
     CA_FLockDestroy(&g_caRT.rtPL, FALSE);
+    CoUninitialize();
     return CA_ERR_SUCCESS;
 }
 

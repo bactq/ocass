@@ -48,8 +48,11 @@ CA_DECLARE(CAErrno) CC_State(CCWrk *pCWrk, BOOL bClearDirtyFlag,
 
 CA_DECLARE(CAErrno) CC_SetWrkMod(CCWrk *pCWrk, CCWrkMod wrkMod);
 CA_DECLARE(CAErrno) CC_GetWrkMod(CCWrk *pCWrk, CCWrkMod *pWrkMod);
+CA_DECLARE(CAErrno) CC_SetPauseFlag(CCWrk *pCWrk, BOOL bPause);
+CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, BOOL bPause);
 
 CA_DECLARE(CAErrno) CC_StateClear(CCWrk *pCWrk);
+
 CA_DECLARE(CAErrno) CC_Touch(CCWrk *pCWrk);
 
 CA_DECLARE(const TCHAR*) CC_StateDesc(CCWrkState wrkState);
