@@ -203,6 +203,8 @@ CA_DECLARE(CAErrno) CA_GetFSize(const TCHAR *pszFName,
     WIN32_FIND_DATA findData;
     HANDLE hFind;
 
+    pFSize->dwFSize = 0;
+    pFSize->dwFSizeHigh = 0;
     hFind = FindFirstFile(pszFName, &findData);
     if (INVALID_HANDLE_VALUE == hFind)
     {

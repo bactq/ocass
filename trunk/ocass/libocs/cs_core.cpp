@@ -42,7 +42,7 @@ void CS_CoreOnDllUnload(HINSTANCE hInst)
         return;
     }
 
-    CS_Log(CA_SRC_MARK, CS_LOG_INFO, 
+    CA_RTLog(CA_SRC_MARK, CA_RTLOG_INFO, 
         TEXT("Start end spy work thread."));
 
     /* close spy core thread */
@@ -55,6 +55,7 @@ void CS_CoreOnDllUnload(HINSTANCE hInst)
 
 CA_DECLARE_DYL(CAErrno) CS_Entry(HMODULE hLib, CACfgDatum *pCfgDatum)
 {
+    CSLogCfg caLogCfg;
     CAErrno caErr;
     BOOL bResult;
 
@@ -100,22 +101,26 @@ CA_DECLARE_DYL(CAErrno) CS_Entry(HMODULE hLib, CACfgDatum *pCfgDatum)
         return CA_ERR_BAD_SEQ;
     }
 
-    /* startup log */  
-    CS_LogStartup(pCfgDatum->szSpyLog, pCfgDatum->szSpyNtDump, 
-        pCfgDatum->spyLogMask);
+    /* startup log */
+    caLogCfg.pszSpyLogFName = pCfgDatum->szSpyLog;
+    caLogCfg.dwSpyLogTSize = pCfgDatum->dwSpyLogTSize;
+    caLogCfg.pszNtDumpLogFName = pCfgDatum->szSpyNtDump;
+    caLogCfg.dwNtDumpLogTSize = pCfgDatum->dwSpyNtDumpTSize;
+    caLogCfg.spyLogMask = pCfgDatum->spyLogMask;
+    CS_LogStartup(&caLogCfg);
 
     caErr = CS_WrkStart(hLib, pCfgDatum, &g_csCore.pCoreWrk);
     if (CA_ERR_SUCCESS != caErr)
     {
         /* start wrk thread failed */       
-        CS_Log(CA_SRC_MARK, CS_LOG_ERR, 
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
             TEXT("Start spy work thread failed. error %u"), caErr);
 
         CA_Cleanup();
         return caErr;
     }
 
-    CS_Log(CA_SRC_MARK, CS_LOG_INFO, 
+    CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
         TEXT("Start spy work thread successed."));
 
     /* attach network api */

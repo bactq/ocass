@@ -77,7 +77,7 @@ void CS_ProtoAddBufItem(CSProtoBuf *pProtoBuf);
 void CS_ProtoCacheRawAdd(CSProtoCache *pCache, CSProtoBuf *pProtoBuf, 
                          CSProtoType protoType);
 
-CAErrno CS_ProtoCacheProcess(CSProtoCache *pCache);
+CAErrno CS_ProtoCacheProcess(CSProtoCache *pCache, BOOL bIsPauseMon);
 
 CAErrno CS_ProtoCacheItemProcess(CSProtoCache *pCache, 
                                  CSProtoRawSlot *pPSlot);

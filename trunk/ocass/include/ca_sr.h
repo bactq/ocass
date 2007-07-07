@@ -9,12 +9,17 @@
 
 typedef int CASpyLogMask;
 #define CA_SPY_LOG_NONE         (0)
+
 #define CA_SPY_LOG_ERR          (1<< 0)
 #define CA_SPY_LOG_DBG          (1<< 1)
 #define CA_SPY_LOG_WARN         (1<< 2)
 #define CA_SPY_LOG_INFO         (1<< 3)
+
 #define CA_SPY_LOG_NT_DUMP      (1<<10)
 #define CA_SPY_LOG_NT_ADUMP     (1<<11)
+
+#define CA_SPY_LOG_DEL_OLD      (1<<20)
+#define CA_SPY_LOG_RENAME_OLD   (1<<21)
 
 typedef enum
 {
@@ -30,9 +35,16 @@ typedef struct _CA_SD
     time_t      stateStartTime;
     BOOL        bStateIsDirty;
 
+    BOOL bPauseMon;
+
     TCHAR szHistoryPath[MAX_PATH];
+
     TCHAR szSpyLog[MAX_PATH];
+    DWORD dwSpyLogTSize;
+
     TCHAR szSpyNtDump[MAX_PATH];
+    DWORD dwSpyNtDumpTSize;
+
     CASpyLogMask logMask;
 } CASpyDatum;
 

@@ -3,20 +3,14 @@
  */
 
 #include "ca_str.h"
+#include "ca_log.h"
 #include "cs_log.h"
 #include "ca_misc.h"
 
 typedef struct _CSLog
 {
-    CRITICAL_SECTION logCS;
-
-    TCHAR szSpyLog[MAX_PATH];
-    FILE *pSpyLog;
-    CAFSize spyLogSize;
-
-    TCHAR szNtDump[MAX_PATH];
-    FILE *pNtDump;
-    CAFSize ntDumpLogSize;
+    CALog *pSpyLog;
+    CALog *pNtDumpLog;
 
     CASpyLogMask spyLogMask;
 } CSLog;
@@ -24,68 +18,37 @@ typedef struct _CSLog
 static CSLog g_csLog = {0};
 static CSLog *g_pCSLog = NULL;
 
-static CSLogFlags CS_LogFlagsConvert(CARTLogFlags caLogFlags)
-{
-    CSLogFlags csLogFlags = 0;
-
-    if (caLogFlags & CA_RTLOG_ERR)
-    {
-        csLogFlags |= CS_LOG_ERR;
-    }
-
-    if (caLogFlags & CA_RTLOG_INFO)
-    {
-        csLogFlags |= CS_LOG_INFO;
-    }
-
-    if (caLogFlags & CA_RTLOG_WARN)
-    {
-        csLogFlags |= CS_LOG_WARN;
-    }
-
-    if (caLogFlags & CA_RTLOG_DBG)
-    {
-        csLogFlags |= CS_LOG_DBG;
-    }
-
-    return csLogFlags;
-}
-
 static CSLog* CS_LogGetPtr(void)
 {
     return g_pCSLog;
 }
 
-static const TCHAR *CS_LogFalgsDesc(CSLogFlags logFlags)
-{
-    return TEXT("");
-}
-
-static BOOL CS_LogFalgsNeedFilter(CSLogFlags logFlags, 
+static BOOL CS_LogFalgsNeedFilter(CARTLogFlags logFlags, 
                                   CASpyLogMask spyLogMask)
 {
     if (CA_SPY_LOG_NONE == spyLogMask)
     {
         return TRUE;
     }
+
     else if (CA_SPY_LOG_DBG &  spyLogMask)
     {
         /* if log level is dbg then we need all log */
         return FALSE;
     }
     else if ((CA_SPY_LOG_INFO & spyLogMask) && 
-        (!(logFlags & CS_LOG_ERR) && !(logFlags & CS_LOG_WARN) && 
-         !(logFlags & CS_LOG_INFO)))
+        (!(logFlags & CA_RTLOG_ERR) && !(logFlags & CA_RTLOG_WARN) && 
+         !(logFlags & CA_RTLOG_INFO)))
     {
         return TRUE;
     }
     else if ((CA_SPY_LOG_WARN & spyLogMask) && 
-        (!(logFlags & CS_LOG_ERR) && !(logFlags & CS_LOG_WARN)))
+        (!(logFlags & CA_RTLOG_ERR) && !(logFlags & CA_RTLOG_WARN)))
     {
         return TRUE;
     }
     else if ((CA_SPY_LOG_ERR & spyLogMask) &&
-        !(logFlags & CS_LOG_ERR))
+        !(logFlags & CA_RTLOG_ERR))
     {
         return TRUE;
     }
@@ -95,102 +58,37 @@ static BOOL CS_LogFalgsNeedFilter(CSLogFlags logFlags,
     }
 }
 
-static DWORD CS_LogWrBin(CSLog *pCSLog, FILE *pLogFd, 
-                         const char *pBuf, int nBufLen, 
-                         TCHAR *pszHdrFmt, ...)
+CAErrno CS_LogStartup(CSLogCfg *pCSLogCfg)
 {
-    TCHAR szNtDumpLog[CS_LOG_MAX_NTDUMP_HDR];
-    va_list pArgList;
-    char cPos;
-    int nWrCnt = 0;
-    int nResult;
-    int i;
-
-    if (NULL == pLogFd)
-    {
-        return nWrCnt;
-    }
-
-    va_start(pArgList, pszHdrFmt);
-    nResult = CA_VSNPrintf(szNtDumpLog, 
-        sizeof(szNtDumpLog) / sizeof(szNtDumpLog[0]), 
-        pszHdrFmt, pArgList);
-    va_end(pArgList);
-    if (0 >= nResult)
-    {
-        return nWrCnt;
-    }
-
-    nResult = fprintf(pLogFd, "\n^^^^^^^^^\n");
-    if (0 < nResult)
-    {
-        nWrCnt += nResult;
-    }
-
-    nResult = fprintf(pLogFd, "Hdr: %s\n\n", szNtDumpLog);
-    if (0 < nResult)
-    {
-        nWrCnt += nResult;
-    }
-
-    for (i = 0; i < nBufLen; i++)
-    {
-        cPos = pBuf[i];
-        nResult = fprintf(pLogFd, "%c", cPos);
-        if (0 < nResult)
-        {
-            nWrCnt += nResult;
-        }
-    }
-
-    nResult = fprintf(pLogFd, "\n\nvvvvvvvvv\n");
-    if (0 < nResult)
-    {
-        nWrCnt += nResult;
-    }
-
-    fflush(pLogFd);
-    return nWrCnt;
-}
-
-CAErrno CS_LogStartup(TCHAR *pszSpyLog, TCHAR *pszSpyNtDump, 
-                      CASpyLogMask spyLogMask)
-{
-    CRITICAL_SECTION *pLogCS = NULL;
+    CALogTAct logAct;
+    CALogOpt logOpt;
     CAErrno funcErr = CA_ERR_SUCCESS;
-    int nResult;
+    CAErrno caErr;
 
-    g_csLog.spyLogMask = spyLogMask;
-    InitializeCriticalSection(&g_csLog.logCS);
+    if (NULL != g_pCSLog)
+    {
+        return CA_ERR_SUCCESS;
+    }
 
-    nResult = CA_SNPrintf(g_csLog.szSpyLog,
-        sizeof(g_csLog.szSpyLog) / sizeof(g_csLog.szSpyLog[0]), 
-        TEXT("%s"), pszSpyLog);
-    if (0 >= nResult)
+    logAct = (pCSLogCfg->spyLogMask & CA_SPY_LOG_RENAME_OLD ?
+        CA_LOG_TRUNCATE_RNAME : CA_LOG_TRUNCATE_DEL);
+
+    logOpt.pszLogFName = pCSLogCfg->pszSpyLogFName;
+    logOpt.logAct = logAct;
+    logOpt.dwTruncateSize = pCSLogCfg->dwSpyLogTSize;
+    caErr = CA_LogOpen(&logOpt, &g_csLog.pSpyLog);
+    if (CA_ERR_SUCCESS != caErr)
     {
         g_csLog.pSpyLog = NULL;
-        g_csLog.szSpyLog[0] = '\0';
-        CA_SetFSize(&g_csLog.spyLogSize, 0, 0);
-    }
-    else
-    {
-        CA_GetFSize(g_csLog.szSpyLog, &g_csLog.spyLogSize);
-        g_csLog.pSpyLog = fopen(g_csLog.szSpyLog, "a+");
     }
 
-    nResult = CA_SNPrintf(g_csLog.szNtDump, 
-        sizeof(g_csLog.szNtDump) / sizeof(g_csLog.szNtDump[0]), 
-        TEXT("%s"), pszSpyNtDump);
-    if (0 >= nResult)
+    logOpt.pszLogFName = pCSLogCfg->pszNtDumpLogFName;
+    logOpt.logAct = logAct;
+    logOpt.dwTruncateSize = pCSLogCfg->dwNtDumpLogTSize;
+    caErr = CA_LogOpen(&logOpt, &g_csLog.pNtDumpLog);
+    if (CA_ERR_SUCCESS != caErr)
     {
-        g_csLog.pNtDump = NULL;
-        g_csLog.szNtDump[0] = '\0';
-        CA_SetFSize(&g_csLog.ntDumpLogSize, 0, 0);
-    }
-    else
-    {
-        CA_GetFSize(g_csLog.szNtDump, &g_csLog.ntDumpLogSize);
-        g_csLog.pNtDump = fopen(g_csLog.szNtDump, "a+");
+        g_csLog.pNtDumpLog = NULL;
     }
 
     g_pCSLog = &g_csLog;
@@ -205,37 +103,60 @@ void CS_LogCleanup(void)
     }
 
     g_pCSLog = NULL;
+
+    CA_LogClose(g_csLog.pNtDumpLog);
+    g_csLog.pNtDumpLog = NULL;
+
+    CA_LogClose(g_csLog.pSpyLog);
+    g_csLog.pSpyLog = NULL;
+}
+
+CAErrno CS_LogUpdateCfg(CSLogCfg *pCSLogCfg)
+{
+    CALogTAct logAct;
+    CALogOpt logOpt;
+    CSLog *pCSLog = CS_LogGetPtr();
+
+    if (NULL == pCSLog)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+
+    logAct = (pCSLogCfg->spyLogMask & CA_SPY_LOG_RENAME_OLD ?
+        CA_LOG_TRUNCATE_RNAME : CA_LOG_TRUNCATE_DEL);
     
-    /* close all file */
+    pCSLog->spyLogMask = pCSLogCfg->spyLogMask;
+
+    logOpt.pszLogFName = pCSLogCfg->pszSpyLogFName;
+    logOpt.logAct = logAct;
+    logOpt.dwTruncateSize = pCSLogCfg->dwSpyLogTSize;
+    CA_LogUpdate(pCSLog->pSpyLog, &logOpt);
+
+    logOpt.pszLogFName = pCSLogCfg->pszNtDumpLogFName;
+    logOpt.logAct = logAct;
+    logOpt.dwTruncateSize = pCSLogCfg->dwNtDumpLogTSize;
+    CA_LogUpdate(pCSLog->pNtDumpLog, &logOpt);
+    return CA_ERR_SUCCESS;
 }
 
 void CS_LogNtDump(const TCHAR *pszSrc, int nSrcLine, 
                   int nApiSlotId, BOOL bIsFilterProto, 
                   const char *pNtBuf, int nNtBufLen)
-{   
+{
     CASpyLogMask spyLogMask;
     const TCHAR *pszSrcBase;
     CAErrno caErr;
-    CSLog *pCSLog = CS_LogGetPtr();
     TCHAR szTmBuf[CA_TM_STR_MAX_BUF];
-    DWORD dwWrCnt;
-    BOOL bIsOpen = FALSE;
-    
-    if (NULL == pCSLog)
+    CSLog *pCSLog = CS_LogGetPtr();
+
+    if (NULL == pCSLog || NULL == pCSLog->pNtDumpLog)
     {
         return;
     }
-
-    EnterCriticalSection(&pCSLog->logCS);
-    if (NULL != pCSLog->pNtDump)
-    {
-        bIsOpen = TRUE;
-    }
     spyLogMask = pCSLog->spyLogMask;
-    LeaveCriticalSection(&pCSLog->logCS);
 
-    if (!bIsOpen || (!(spyLogMask & CA_SPY_LOG_NT_DUMP) &&
-        !(spyLogMask & CA_SPY_LOG_NT_ADUMP)))
+    if (!(spyLogMask & CA_SPY_LOG_NT_DUMP) &&
+        !(spyLogMask & CA_SPY_LOG_NT_ADUMP))
     {
         return;
     }
@@ -252,56 +173,29 @@ void CS_LogNtDump(const TCHAR *pszSrc, int nSrcLine,
     }
 
     CA_PathGetBaseName(pszSrc, &pszSrcBase);
-    EnterCriticalSection(&pCSLog->logCS);
-    dwWrCnt = CS_LogWrBin(pCSLog, pCSLog->pNtDump, pNtBuf, nNtBufLen, 
+    CA_LogBuf(pCSLog->pNtDumpLog, pNtBuf, nNtBufLen, 
         TEXT("Time: %s, ApiSlotId: %u, Src: %s(%u) "), 
         szTmBuf, nApiSlotId, NULL == pszSrcBase ? TEXT("") : pszSrcBase, 
         nSrcLine);
 
-    CA_AddFSize(&pCSLog->ntDumpLogSize, dwWrCnt);
-    LeaveCriticalSection(&pCSLog->logCS);
 }
 
-void CS_Log(const TCHAR *pszSrc, int nSrcLine, CSLogFlags logFlags, 
-            const TCHAR *pszFmt, ...)
+void CS_RTLog(void *pCbCtx, CARTLog *pLog)
 {
     CASpyLogMask spyLogMask;
-    const TCHAR *pszSrcBase;
     CAErrno caErr;
-    va_list pArgList;
     CSLog *pCSLog = CS_LogGetPtr();
-    BOOL bIsOpen = FALSE;
-    TCHAR szSLog[CS_LOG_MAX];
     TCHAR szTmBuf[CA_TM_STR_MAX_BUF];
-    int nResult;
+    BOOL bResult;
 
-    if (NULL == pCSLog)
+    if (NULL == pCSLog || NULL == pCSLog->pSpyLog)
     {
         return;
-    }
-
-    EnterCriticalSection(&pCSLog->logCS);
-    if (NULL != pCSLog->pNtDump)
-    {
-        bIsOpen = TRUE;
     }
     spyLogMask = pCSLog->spyLogMask;
-    LeaveCriticalSection(&pCSLog->logCS);
-    if (!bIsOpen)
-    {
-        return;
-    }
 
-    if (CS_LogFalgsNeedFilter(logFlags, spyLogMask))
-    {
-        return;
-    }
-
-    va_start(pArgList, pszFmt);
-    nResult = CA_VSNPrintf(szSLog, sizeof(szSLog) / sizeof(szSLog[0]), 
-        pszFmt, pArgList);
-    va_end(pArgList);
-    if (0 >= nResult)
+    bResult = CS_LogFalgsNeedFilter(pLog->logFlags, spyLogMask);
+    if (bResult)
     {
         return;
     }
@@ -312,39 +206,7 @@ void CS_Log(const TCHAR *pszSrc, int nSrcLine, CSLogFlags logFlags,
         szTmBuf[0] = '\0';
     }
 
-    CA_PathGetBaseName(pszSrc, &pszSrcBase);
-    EnterCriticalSection(&pCSLog->logCS);
-    if (NULL != pCSLog->pSpyLog)
-    {
-        nResult = fprintf(pCSLog->pSpyLog, "%s %s %s(%u): %s\n", szTmBuf, 
-            CS_LogFalgsDesc(logFlags),
-            NULL == pszSrcBase ? "" : pszSrcBase, nSrcLine, 
-            szSLog);        
-        if (0 < nResult)
-        {
-            fflush(pCSLog->pSpyLog);
-            CA_AddFSize(&pCSLog->spyLogSize, nResult);
-        }
-    }
-    LeaveCriticalSection(&pCSLog->logCS);
-}
-
-void CS_RTLog(void *pCbCtx, CARTLog *pLog)
-{  
-    CS_Log(pLog->pszSrc, pLog->nSrcLine, 0, TEXT("%s"), pLog->pszLog);
-}
-
-CAErrno CS_LogSetLogMask(CASpyLogMask spyLogMask)
-{
-    return CA_ERR_SUCCESS;
-}
-
-CAErrno CS_LogSetLogFName(TCHAR *pszSpyLog)
-{
-    return CA_ERR_SUCCESS;
-}
-
-CAErrno CS_LogSetLogNtDumpFName(TCHAR *pszNtDump)
-{
-    return CA_ERR_SUCCESS;
+    CA_LogLine(pCSLog->pSpyLog, TEXT("%s %s %s(%u): %s\n"), 
+        szTmBuf, CA_RTLogFlagsDesc(pLog->logFlags), 
+        pLog->pszSrcBase, pLog->nSrcLine, pLog->pszLog);
 }

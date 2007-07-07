@@ -124,6 +124,10 @@ SOURCE=..\..\liboca\ca_inject.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\liboca\ca_log.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\liboca\ca_misc.cpp
 # End Source File
 # Begin Source File
@@ -189,6 +193,10 @@ SOURCE=..\..\include\ca_inject.h
 # Begin Source File
 
 SOURCE=..\..\liboca\ca_inner.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\ca_log.h
 # End Source File
 # Begin Source File
 

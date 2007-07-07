@@ -28,11 +28,13 @@ static CAErrno CA_SRDupFromCfg(CACfgDatum *pSrc, CASpyDatum *pDest)
     pDest->szHistoryPath[0] = '\0';
     pDest->szSpyLog[0] = '\0';
     pDest->szSpyNtDump[0] = '\0';
+    pDest->bPauseMon = FALSE;
+    pDest->dwSpyLogTSize = pSrc->dwSpyLogTSize;
+    pDest->dwSpyNtDumpTSize = pSrc->dwSpyNtDumpTSize;
     pDest->logMask = pSrc->spyLogMask;  
     pDest->spyState = CA_SPY_STATE_PREPARE;
     pDest->stateStartTime = time(NULL);
-    pDest->bStateIsDirty = TRUE;
-
+    pDest->bStateIsDirty = FALSE;
     nResult = CA_SNPrintf(pDest->szHistoryPath, 
         sizeof(pDest->szHistoryPath) / sizeof(pDest->szHistoryPath[0]), 
         TEXT("%s"), pSrc->szHistoryPath);

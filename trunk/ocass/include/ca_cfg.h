@@ -14,13 +14,23 @@
 #define CA_CFG_DEFAULT_SPY_LOG          (TEXT("ocass_s.log"))
 #define CA_CFG_DEFAULT_SPY_NT_DUMP      (TEXT("ocass_ntd.log"))
 
+#define CA_CFG_DEFAULT_SPY_LOG_TSIZE_B        (1024 * 1024 * 3)
+#define CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_B    (1024 * 1024 * 5)
+#define CA_CFG_DEFAULT_SPY_LOG_TSIZE_M        (3)
+#define CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_M    (5)
+
 typedef struct _CA_CFG_DATUM
 {
     TCHAR szCommunicatorFName[MAX_PATH];
 
     TCHAR szHistoryPath[MAX_PATH];
+
     TCHAR szSpyLog[MAX_PATH];
+    DWORD dwSpyLogTSize;
+
     TCHAR szSpyNtDump[MAX_PATH];
+    DWORD dwSpyNtDumpTSize;
+
     CASpyLogMask spyLogMask;
 } CACfgDatum;
 
@@ -32,7 +42,9 @@ typedef struct _CA_CFG_DATUM
  * [spy]
  * history_path="c:\abc"
  * spy_log="c:\abc\abc.log"
+ * spy_log_ts=5
  * spy_ntdump="c:\abc\abc.data"
+ * spy_ntdump_ts=5
  * spy_logmask=0
  */
 
