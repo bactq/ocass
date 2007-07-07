@@ -29,6 +29,7 @@ typedef int CAErrno;
 #define CA_ERR_FNAME_BAD            (-1002)
 #define CA_ERR_FOPEN                (-1052)
 #define CA_ERR_FCREATE              (-1053)
+#define CA_ERR_FWRITE               (-1055)
 
 /** @} */
 

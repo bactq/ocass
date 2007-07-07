@@ -25,4 +25,3 @@ void CH_OnInject(CHHDatum *pHDatum);
 void CH_OnInjectComplete(CHHDatum *pHDatum);
 
 #endif /* !defined(_CH_INNER_H_) */
-
