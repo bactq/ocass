@@ -11,7 +11,6 @@ const HINSTANCE CA_GetDllInstance(void)
     return g_hInst;
 }
 
-
 BOOL WINAPI DllMain(HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
 {
     switch (dwReason)

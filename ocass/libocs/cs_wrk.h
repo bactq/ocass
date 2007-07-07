@@ -16,6 +16,8 @@ CAErrno CS_WrkStart(HMODULE hLib, CACfgDatum *pCfgDatum,
 
 CAErrno CS_WrkStop(CSWrk *pCSWrk);
 
+BOOL CS_WrkIsPause(CSWrk *pCSWrk);
+
 CAErrno CS_WrkTouchSem(CSWrk *pCSWrk, DWORD dwTouchCnt);
 
 const CASpyDatum* CS_WrkGetSD(const CSWrk *pCSWrk);

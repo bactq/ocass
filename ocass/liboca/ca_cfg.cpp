@@ -22,6 +22,8 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     pCfgDatum->szSpyLog[0] = '\0';
     pCfgDatum->szSpyNtDump[0] = '\0';
     pCfgDatum->spyLogMask = CA_SPY_LOG_NONE;
+    pCfgDatum->dwSpyLogTSize = CA_CFG_DEFAULT_SPY_LOG_TSIZE_B;
+    pCfgDatum->dwSpyNtDumpTSize = CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_B;
 
     /* Communicator file name */
     dwBufCnt = sizeof(pCfgDatum->szCommunicatorFName) / 
@@ -78,6 +80,7 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
     CACfgDatum cfgDefaultDatum;
     CAErrno caErr;
     DWORD dwBufCnt;
+    int nVal;
 
     caErr = CA_CfgGetDefaultSetVals(pszWrkPath, &cfgDefaultDatum);
     if (CA_ERR_SUCCESS != caErr)
@@ -109,6 +112,9 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
     GetPrivateProfileString(TEXT("spy"), TEXT("spy_log"), 
         cfgDefaultDatum.szSpyLog, pCfgDatum->szSpyLog, 
         dwBufCnt, pszCfgFName);
+    nVal = GetPrivateProfileInt(TEXT("spy"), TEXT("spy_log_ts"), 
+        CA_CFG_DEFAULT_SPY_LOG_TSIZE_M, pszCfgFName);
+     pCfgDatum->dwSpyLogTSize = (nVal * 1024 * 1024);
 
     /* spy log */
     dwBufCnt = sizeof(pCfgDatum->szSpyNtDump) / 
@@ -116,6 +122,9 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
     GetPrivateProfileString(TEXT("spy"), TEXT("spy_ntdump"), 
         cfgDefaultDatum.szSpyNtDump, pCfgDatum->szSpyNtDump, 
         dwBufCnt, pszCfgFName);
+    nVal = GetPrivateProfileInt(TEXT("spy"), TEXT("spy_ntdump_ts"), 
+        CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_M, pszCfgFName);
+     pCfgDatum->dwSpyNtDumpTSize = (nVal * 1024 * 1024);
 
     /* spy log mask */
     pCfgDatum->spyLogMask = GetPrivateProfileInt(TEXT("spy"), 

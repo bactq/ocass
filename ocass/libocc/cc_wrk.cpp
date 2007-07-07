@@ -21,8 +21,30 @@ static void CC_UpdateState(CCWrk *pCWrk, CCWrkState wrkState)
 
 static void CC_UpdateSpyWrkState(CCWrk *pCWrk, DWORD dwProcId)
 {
+    CCWrkState wrkState = CC_WRK_STATE_CORPSE;
+    CASpyRun *pSR = NULL;
+    CAErrno caErr;
+
     /* read state from shared mem */
-    CC_UpdateState(pCWrk, CC_WRK_STATE_WORKING);
+    EnterCriticalSection(&pCWrk->wrkCS);
+    if (NULL == pCWrk->pSR)
+    {
+        caErr = CA_SRAttach(&pSR);
+        if (CA_ERR_SUCCESS != caErr)
+        {
+            wrkState = CC_WRK_STATE_CORPSE;
+            goto EXIT;
+        }
+
+        wrkState = CC_WRK_STATE_WORKING;
+        pCWrk->pSR = pSR;
+        goto EXIT;
+    }
+    wrkState = CC_WRK_STATE_WORKING;
+
+EXIT:
+    LeaveCriticalSection(&pCWrk->wrkCS);
+    CC_UpdateState(pCWrk, wrkState);
 }
 
 static void CC_DoInject(CCWrk *pCWrk, DWORD dwProcId)

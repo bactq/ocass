@@ -6,6 +6,7 @@
 #include "ca_evts.h"
 #include "ca_mm.h"
 #include "ca_sr.h"
+#include "cs_log.h"
 
 struct _CSWrk
 {
@@ -23,19 +24,38 @@ struct _CSWrk
 
 static void CS_DoWrkSem(CSWrk *pCSWrk)
 {
+    BOOL bIsPauseMon;
+
     EnterCriticalSection(&pCSWrk->wrkCS);
-    CS_ProtoCacheProcess(&pCSWrk->protoCache);
+    bIsPauseMon = pCSWrk->spyDatum.bPauseMon;
+    CS_ProtoCacheProcess(&pCSWrk->protoCache, bIsPauseMon);
     LeaveCriticalSection(&pCSWrk->wrkCS);
 }
 
 static void CS_DoWrkSpy(CSWrk *pCSWrk)
 {
+    CSLogCfg csLogCfg;
+    BOOL bStateIsDirty;
+
     /* update config */
     EnterCriticalSection(&pCSWrk->wrkCS);
+    bStateIsDirty = pCSWrk->spyDatum.bStateIsDirty;
     CA_SRDatumDup(pCSWrk->pSR, &pCSWrk->spyDatum);
+    if (pCSWrk->spyDatum.bStateIsDirty)
+    {        
+        /* update log config */
+        csLogCfg.pszSpyLogFName = pCSWrk->spyDatum.szSpyLog;
+        csLogCfg.dwSpyLogTSize = pCSWrk->spyDatum.dwSpyLogTSize;
+        csLogCfg.pszNtDumpLogFName = pCSWrk->spyDatum.szSpyNtDump;
+        csLogCfg.dwNtDumpLogTSize = pCSWrk->spyDatum.dwSpyNtDumpTSize;
+        csLogCfg.spyLogMask = pCSWrk->spyDatum.logMask;
+    }
     LeaveCriticalSection(&pCSWrk->wrkCS);
 
-    /* XXX update log path and mask ??? */
+    if (bStateIsDirty)
+    {
+        CS_LogUpdateCfg(&csLogCfg);
+    }
 }
 
 static DWORD WINAPI CS_WrkTh(void *pArg)
@@ -236,4 +256,19 @@ void CS_WrkAddRawBuf(CSWrk *pCSWrk, CSProtoBuf *pProtoBuf,
     EnterCriticalSection(&pCSWrk->wrkCS);
     CS_ProtoCacheRawAdd(&pCSWrk->protoCache, pProtoBuf, protoType);
     LeaveCriticalSection(&pCSWrk->wrkCS);
+}
+
+BOOL CS_WrkIsPause(CSWrk *pCSWrk)
+{
+    BOOL bIsPauseMon;
+
+    if (NULL == pCSWrk)
+    {
+        return FALSE;
+    }
+
+    EnterCriticalSection(&pCSWrk->wrkCS);
+    bIsPauseMon = pCSWrk->spyDatum.bPauseMon;
+    LeaveCriticalSection(&pCSWrk->wrkCS);
+    return bIsPauseMon;
 }
