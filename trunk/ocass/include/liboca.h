@@ -40,6 +40,7 @@ typedef int CARTLogFlags;
 #define CA_RTLOG_INFO       (1<< 1)
 #define CA_RTLOG_WARN       (1<< 2)
 #define CA_RTLOG_DBG        (1<< 3)
+#define CA_RTLOG_OSERR      (1<<10)
 
 typedef struct _CA_RTLog
 {

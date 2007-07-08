@@ -57,6 +57,8 @@ static CAErrno CA_CHRecItemAppend(CACHRec *pCHR, CACHRRecItem *pRecItem,
 
     if (NULL == pRecItem || NULL == pRecItem->pXF || NULL == pAddData)
     {
+         CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Save chat item failed. bad args"));
         return CA_ERR_BAD_ARG;
     }
 
@@ -64,6 +66,8 @@ static CAErrno CA_CHRecItemAppend(CACHRec *pCHR, CACHRRecItem *pRecItem,
         sizeof(szTmDesc) / sizeof(szTmDesc[0]));
     if (CA_ERR_SUCCESS != caErr)
     {
+         CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Save chat item failed. bad time string"));
         return caErr;
     }
 
@@ -77,12 +81,18 @@ static CAErrno CA_CHRecItemAppend(CACHRec *pCHR, CACHRRecItem *pRecItem,
     caErr = CA_XFAddNode(pRecItem->pXF, &xfNode);
     if (CA_ERR_SUCCESS != caErr)
     {
+         CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Add node to xml file failed. err %u"), 
+            caErr);
         return caErr;
     }
 
     caErr = CA_XFSave(pRecItem->pXF); 
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Add node to xml file failed. can't save xml file. err %u"), 
+            caErr);
         return caErr;
     }
 
@@ -134,6 +144,9 @@ static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem,
     if (0 >= nResult)
     {
         /* guest name is bad */
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create xf node failed, guest name (%s) is too long"), 
+            pCHRItem->pszGuest);
         return NULL;
     }
 
@@ -141,6 +154,9 @@ static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem,
         szGuestFName, sizeof(szGuestFName) / sizeof(szGuestFName[0]));
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create xf node failed, guest name (%s) is bad"), 
+            pCHRItem->pszGuest);
         return NULL;
     }
 
@@ -148,6 +164,11 @@ static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem,
         sizeof(szRecXFNamePrefix) / sizeof(szRecXFNamePrefix[0]));    
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create xf node failed. Guest file name is bad."
+            "Base dir %s, guest file suffix %s"), 
+            pszMasterDir, szGuestFName);
+
         return NULL;
     }
 
@@ -168,6 +189,9 @@ static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem,
         if (0 >= nResult)
         {
             /* file name to long */
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Create xf node failed. Guest file name is bad."
+                "File name prefix %s"), szRecXFNamePrefix);
             return NULL;
         }
 
@@ -178,8 +202,13 @@ static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem,
             if (CA_ERR_SUCCESS != caErr)
             {
                 /* create failed */
+                CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                    TEXT("Create xf node failed. "
+                    "can't create xml file (%s). err %u"),
+                    szRecXFName, caErr);
                 return NULL;
             }
+
             break;
         }
         FindClose(hFind);
@@ -194,16 +223,28 @@ static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem,
         {
             break;
         }
+        else
+        {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_WARN, 
+                TEXT("open xf node failed. "
+                "can't create xml file (%s). err %u"),
+                szRecXFName, caErr);
+        }
     }
     if (NULL == pXF)
     {
         /* can't open xml file */
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("open xf node failed. can't create/load xml file"));
         return NULL;
     }
 
     pCreateItem = (CACHRRecItem*)CA_MAlloc(sizeof(CACHRRecItem));
     if (NULL == pCreateItem)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("open xf node failed. no memory"));
+
         /* no mem */
         CA_XFClose(pXF);
         return NULL;
@@ -309,6 +350,10 @@ static CAErrno CA_CHRCreateMasterDir(CACHRec *pCHR, CACHRItem *pCHRItem,
         szMasterSuffix, sizeof(szMasterSuffix) / sizeof(szMasterSuffix[0]));
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create master dir failed, bad master name %s"), 
+            pCHRItem->pszMaster);
+
         return caErr;
     }
 
@@ -317,6 +362,10 @@ static CAErrno CA_CHRCreateMasterDir(CACHRec *pCHR, CACHRItem *pCHRItem,
         szMasterDir, sizeof(szMasterDir) / sizeof(szMasterDir[0]));
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create master dir failed, bad master name %s"), 
+            pCHRItem->pszMaster);
+
         return caErr;
     }
 
@@ -324,11 +373,21 @@ static CAErrno CA_CHRCreateMasterDir(CACHRec *pCHR, CACHRItem *pCHRItem,
         sizeof(szRealMasterDir) / sizeof(szRealMasterDir[0]));
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create master dir failed, bad master name %s"), 
+            pCHRItem->pszMaster);
+
         return caErr;
     }
 
     nResult = CA_SNPrintf(pszMDirBuf, dwMDirBufCnt, TEXT("%s"), 
         szRealMasterDir);
+    if (0 >= nResult)
+    {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create master dir failed, path name (%s) is too long"), 
+            szRealMasterDir);
+    }
     return (0 >= nResult ? CA_ERR_FNAME_TOO_LONG : CA_ERR_SUCCESS);
 }
 
@@ -347,6 +406,8 @@ static CAErrno CA_CHRWrGuestRec(CACHRec *pCHR, CACHRItem *pCHRItem,
     pGuestNode = CA_CHRecItemCreate(pCHR, pCHRItem, pszMasterDir);
     if (NULL == pGuestNode)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create xf item node failed"));
         return CA_ERR_FCREATE;
     }
 
@@ -363,6 +424,8 @@ CA_DECLARE(CAErrno) CA_CHRecOpen(CACHRec **pCHR, DWORD nMaxCacheSec)
     pNewCHR = (CACHRec *)CA_MAlloc(sizeof(CACHRec));
     if (NULL == pNewCHR)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("create CHR failed. no mem"));
         funcErr = CA_ERR_NO_MEM;
         goto EXIT;
     }
@@ -374,6 +437,8 @@ CA_DECLARE(CAErrno) CA_CHRecOpen(CACHRec **pCHR, DWORD nMaxCacheSec)
     CA_RTCSLeave();
     if (0 >= nResult)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("create CHR failed. history path too long"));
         funcErr = CA_ERR_FNAME_TOO_LONG;
         goto EXIT;
     }
@@ -385,6 +450,8 @@ CA_DECLARE(CAErrno) CA_CHRecOpen(CACHRec **pCHR, DWORD nMaxCacheSec)
     CA_RTCSLeave();
     if (0 >= nResult)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("create CHR failed. template path too long"));
         funcErr = CA_ERR_FNAME_TOO_LONG;
         goto EXIT;
     }
@@ -444,6 +511,8 @@ CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR)
     CA_RTCSLeave();
     if (0 >= nResult)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("update config failed. hsitory path is too long"));
         return CA_ERR_FNAME_TOO_LONG;
     }
 
@@ -454,6 +523,8 @@ CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR)
     CA_RTCSLeave();
     if (0 >= nResult)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("update config failed. template path is too long"));
         return CA_ERR_FNAME_TOO_LONG;
     }
 
@@ -477,6 +548,8 @@ CA_DECLARE(CAErrno) CA_CHRecAppend(CACHRec *pCHR, DWORD dwRetryCnt,
         sizeof(szMasterDir) / sizeof(szMasterDir[0]));
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create master dir failed. err %u"), caErr);
         return caErr;
     }
 
@@ -504,6 +577,10 @@ CA_DECLARE(CAErrno) CA_CHRCpStyleFile(CACHRec *pCHR,
     if (CA_ERR_SUCCESS != caErr)
     {
         /* file name to long */
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("copy style file failed. dest file name too long"
+            "base dir (%s). file name (%s)"), 
+            pszDestPath, CA_XF_XSL_FNAME);
         return caErr;
     }
 
@@ -513,6 +590,8 @@ CA_DECLARE(CAErrno) CA_CHRCpStyleFile(CACHRec *pCHR,
     LeaveCriticalSection(&pCHR->chrCS);
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("copy style file failed. source file name too long"));
         return caErr;
     }
 
@@ -532,6 +611,9 @@ CA_DECLARE(CAErrno) CA_CHRCpStyleFile(CACHRec *pCHR,
     bResult = CopyFile(szStyleSrcFName, szStyleDestFName, TRUE);
     if (!bResult)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR|CA_RTLOG_OSERR, 
+            TEXT("copy style file failed. source %s dest %s"), 
+            szStyleSrcFName, szStyleDestFName);
         return CA_ERR_FCREATE;
     }
 
