@@ -335,6 +335,8 @@ CAErrno CS_ProtoItemProcess(CSProtoCache *pCache,
 {
     CACHRItem chrItem;
     CAErrno caErr;
+    WCHAR wszMsg[1024 * 4];
+    int nResult;
 
     if (NULL == pCache || NULL == pCache->pCHR || NULL == pPI)
     {
@@ -343,17 +345,25 @@ CAErrno CS_ProtoItemProcess(CSProtoCache *pCache,
         return CA_ERR_BAD_SEQ;
     }
 
+    wszMsg[0] = '\0';
+    nResult = MultiByteToWideChar(CP_UTF8, 0, pPI->szMsg, -1, 
+        wszMsg, sizeof(wszMsg) / sizeof(wszMsg[0]));
+    if (0 >= nResult)
+    {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_WARN|CA_RTLOG_OSERR, 
+            TEXT("Convet msg from utf8 -> unicode failed"));
+        return CA_ERR_BAD_SEQ;
+    }
+
     chrItem.pszFrom = pPI->szFrom;
     chrItem.pszTo = pPI->szTo;
-    chrItem.pszMsg = pPI->szMsg;
-
+    chrItem.pszMsgData = pPI->szMsg;
+    chrItem.pwszMsgData = wszMsg;
     chrItem.tmAppend = pPI->tmAppend;
     chrItem.dwCSeq = pPI->dwCSeq;
     chrItem.pszCallId = pPI->szCall_ID;
-
     chrItem.pszMaster   = pPI->bIsRcv ? chrItem.pszTo : chrItem.pszFrom;
     chrItem.pszGuest    = pPI->bIsRcv ? chrItem.pszFrom : chrItem.pszTo;
-
     caErr = CA_CHRecAppend(pCache->pCHR, 20, &chrItem);
     if (CA_ERR_SUCCESS != caErr)
     {

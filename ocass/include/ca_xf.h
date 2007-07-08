@@ -37,6 +37,7 @@ typedef struct _CAXFNode
     const char *pszFrom;
     const char *pszTo;
     const char *pszMsg;
+    const WCHAR *pwszMsg;
 } CAXFNode;
 
 CA_DECLARE(CAErrno) CA_XFOpen(const TCHAR *pszFName, BOOL bCreate, 

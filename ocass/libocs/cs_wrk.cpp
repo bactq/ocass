@@ -22,6 +22,7 @@
 #include "ca_evts.h"
 #include "ca_mm.h"
 #include "ca_sr.h"
+#include "ca_chr.h"
 #include "cs_log.h"
 
 struct _CSWrk
@@ -45,6 +46,16 @@ static void CS_DoWrkSem(CSWrk *pCSWrk)
     EnterCriticalSection(&pCSWrk->wrkCS);
     bIsPauseMon = pCSWrk->spyDatum.bPauseMon;
     CS_ProtoCacheProcess(&pCSWrk->protoCache, bIsPauseMon);
+    LeaveCriticalSection(&pCSWrk->wrkCS);
+}
+
+static void CS_DoWrkTimer(CSWrk *pCSWrk)
+{
+    EnterCriticalSection(&pCSWrk->wrkCS);
+    if (NULL != pCSWrk->protoCache.pCHR)
+    {
+        CA_CHRecCloseTimeOutSlot(pCSWrk->protoCache.pCHR);
+    }   
     LeaveCriticalSection(&pCSWrk->wrkCS);
 }
 
@@ -76,12 +87,14 @@ static void CS_DoWrkSpy(CSWrk *pCSWrk)
 
 static DWORD WINAPI CS_WrkTh(void *pArg)
 {
+    const DWORD dwWrkMSec = 1000 * 30;
     HANDLE hWaitEvts[2];
     CSWrk *pCSWrk = (CSWrk *)pArg;
     DWORD dwWait;
     DWORD dwEvtId;
     DWORD dwEvtsCnt;
 
+    CoInitialize(NULL);
     CA_SRUpdateState(pCSWrk->pSR, CA_SPY_STATE_RUNNING);
     for (;;)
     {
@@ -94,15 +107,20 @@ static DWORD WINAPI CS_WrkTh(void *pArg)
         hWaitEvts[1] = pCSWrk->hSpyRunEvt;
         dwEvtsCnt = sizeof(hWaitEvts) / sizeof(hWaitEvts[0]);
         dwWait = WaitForMultipleObjects(dwEvtsCnt, 
-            hWaitEvts, FALSE, INFINITE);
+            hWaitEvts, FALSE, dwWrkMSec);
         if (pCSWrk->bStopWrkTh)
         {
             break;
         }
 
-        if (WAIT_FAILED == dwWait || WAIT_TIMEOUT == dwWait)
+        if (WAIT_FAILED == dwWait)
         {
             Sleep(500);
+            continue;
+        }
+        else if (WAIT_TIMEOUT == dwWait)
+        {
+            CS_DoWrkTimer(pCSWrk);
             continue;
         }
 
@@ -123,6 +141,7 @@ static DWORD WINAPI CS_WrkTh(void *pArg)
     }
 
     CA_SRUpdateState(pCSWrk->pSR, CA_SPY_STATE_END);
+    CoUninitialize();
     return CA_THREAD_EXIT_OK; 
 }
 
