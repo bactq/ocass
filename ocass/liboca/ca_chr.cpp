@@ -7,230 +7,341 @@
 #include "ca_str.h"
 #include "ca_misc.h"
 #include "ca_cfg.h"
+#include "ca_xf.h"
 #include "ca_inner.h"
 
-#define CA_CHR_MAX_REC_SLOTS_CNT     (300)
+#define CA_CHR_REC_ITEM_MAX_GUEST_LEN   (512)
 
-typedef struct _CA_CHR_REC_FD_SLOT
+typedef struct _CA_CHR_REC_Item
 {
-    BOOL bIsUsed;
+    time_t tmOpen;
+    time_t tmLastUpdate;
+    char szGuest[CA_CHR_REC_ITEM_MAX_GUEST_LEN];
+    CAXF *pXF;
 
-    FILE    *pFile;
-    TCHAR   szFName[MAX_PATH];
-} CACHRRecFdSlot;
+    struct _CA_CHR_REC_Item *pNext;
+} CACHRRecItem;
 
 struct _CA_CHART_HISTORY_REC
 {
     CRITICAL_SECTION chrCS;
 
     TCHAR szCHRPath[MAX_PATH];
-    CACHRRecFdSlot recSlots[CA_CHR_MAX_REC_SLOTS_CNT];
+    TCHAR szTemplatePath[MAX_PATH];
+    DWORD nMaxCacheSec;
+    CACHRRecItem *pRecItemHdr;
 };
 
-static CAErrno CA_CHRecWrHdr(CACHRRecFdSlot *pSlot, DWORD dwRetryCnt, 
-                             CACHRItem *pCHRItem, BOOL bNeedFlush)
+static CAErrno CA_CHRecItemAppend(CACHRec *pCHR, CACHRRecItem *pRecItem, 
+                                  CACHRItem *pAddData, DWORD dwRetryCnt)
 {
-    if (NULL == pSlot || NULL == pSlot->pFile)
-    {
-        return CA_ERR_FOPEN;
-    }
-
-    fprintf(pSlot->pFile, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-    if (bNeedFlush)
-    {
-        fflush(pSlot->pFile);
-    }
-    return CA_ERR_SUCCESS;
-}
-
-static CAErrno CA_CHRecWrItem(CACHRRecFdSlot *pSlot, DWORD dwRetryCnt, 
-                              CACHRItem *pCHRItem, BOOL bNeedFlush)
-{
+    CAXFNode xfNode;
     CAErrno caErr;
-    TCHAR szTmStamp[CA_TM_STR_MAX_BUF];
+    TCHAR szTmDesc[CA_TM_STR_MAX_BUF];
 
-    if (NULL == pSlot || NULL == pSlot->pFile)
+    if (NULL == pRecItem || NULL == pRecItem->pXF || NULL == pAddData)
     {
-        return CA_ERR_FOPEN;
+        return CA_ERR_BAD_ARG;
     }
 
-    /* seek to insert pos */
-
-    szTmStamp[0] = '\0';
-    caErr = CA_GetTimeStr(pCHRItem->tmAppend, szTmStamp, 
-        sizeof(szTmStamp) / sizeof(szTmStamp[0]));
+    caErr = CA_GetTimeStr(pAddData->tmAppend, szTmDesc, 
+        sizeof(szTmDesc) / sizeof(szTmDesc[0]));
     if (CA_ERR_SUCCESS != caErr)
     {
         return caErr;
     }
 
-    /* XXX FIXME we need convert all xml key string */
-    fprintf(pSlot->pFile, 
-            "\n"
-            "<MsgItem TimeStamp=\"%s\"> \n"
-            "   <MsgCallId CSeq=\"%u\">%s</MsgCallId> \n"
-            "   <MsgFrom>%s</MsgFrom> \n"
-            "   <MsgTo>%s</MsgTo> \n"
-            "   <MsgData>%s</MsgData> \n"
-            "</MsgItem>\n"
-            "\n", 
-            szTmStamp, pCHRItem->dwCSeq, pCHRItem->pszCallId, 
-            pCHRItem->pszFrom, pCHRItem->pszTo, pCHRItem->pszMsg);
-
-    if (bNeedFlush)
+    pRecItem->tmLastUpdate = time(NULL); 
+    xfNode.pszTm = szTmDesc;
+    xfNode.dwCSeq = pAddData->dwCSeq;
+    xfNode.pszCallId = pAddData->pszCallId;
+    xfNode.pszFrom = pAddData->pszFrom;
+    xfNode.pszTo = pAddData->pszTo;
+    xfNode.pszMsg = pAddData->pszMsg;
+    caErr = CA_XFAddNode(pRecItem->pXF, &xfNode);
+    if (CA_ERR_SUCCESS != caErr)
     {
-        fflush(pSlot->pFile);
+        return caErr;
     }
+
+    caErr = CA_XFSave(pRecItem->pXF); 
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return caErr;
+    }
+
     return CA_ERR_SUCCESS;
 }
 
-static CACHRRecFdSlot* CA_CHRGetFirstFreeSlot(CACHRec *pCHR)
+static CACHRRecItem* CA_CHRecItemFindByGuest(CACHRec *pCHR, 
+                                             const char *pszGuest)
 {
-    CACHRRecFdSlot *pFind = NULL;
-    CACHRRecFdSlot *pPos;
-    DWORD dwSlotsCnt;
-    DWORD dwSlotId;
-
-    dwSlotsCnt = sizeof(pCHR->recSlots) / sizeof(pCHR->recSlots[0]);
-    for (dwSlotId = 0; dwSlotId < dwSlotsCnt; dwSlotId++)
-    {
-        pPos = &pCHR->recSlots[dwSlotId];
-        if (pPos->bIsUsed)
-        {
-            continue;
-        }
-
-        pFind = pPos;
-        break;
-    }
-
-    return pFind;
-}
-
-static CACHRRecFdSlot* CA_CHRFindSlotByFName(CACHRec *pCHR, 
-                                             const TCHAR *pszFName)
-{
-    CACHRRecFdSlot *pFind = NULL;
-    CACHRRecFdSlot *pPos;
-    DWORD dwSlotsCnt;
-    DWORD dwSlotId;
+    CACHRRecItem *pFindItem = NULL;
     int nResult;
 
-    if (NULL == pszFName || '\0' == pszFName[0])
+    if (NULL == pszGuest || '\0' == pszGuest[0])
     {
         return NULL;
     }
 
-    dwSlotsCnt = sizeof(pCHR->recSlots) / sizeof(pCHR->recSlots[0]);
-    for (dwSlotId = 0; dwSlotId < dwSlotsCnt; dwSlotId++)
+    for (pFindItem = pCHR->pRecItemHdr; NULL != pFindItem; 
+    pFindItem = pFindItem->pNext)
     {
-        pPos = &pCHR->recSlots[dwSlotId];
-        if (!pPos->bIsUsed)
-        {
-            break;
-        }
-
-        nResult = lstrcmpi(pszFName, pPos->szFName);
+        nResult = stricmp(pFindItem->szGuest, pszGuest);
         if (0 == nResult)
         {
-            pFind = pPos;
             break;
         }
     }
 
-    return pFind;
+    return pFindItem;
 }
 
-static CAErrno CA_CHRecFlushAllSlots(CACHRec *pCHR, BOOL bNeedClose)
+static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem, 
+                                        const TCHAR *pszMasterDir)
 {
-    CACHRRecFdSlot *pPos;
-    DWORD dwSlotsCnt;
-    DWORD dwSlotId;
+    WIN32_FIND_DATA findData;
+    CACHRRecItem *pCreateItem = NULL;
+    CAErrno caErr;
+    HANDLE hFind;
+    time_t tmOpen;
+    TCHAR szRecXFNamePrefix[MAX_PATH];
+    TCHAR szGuestFName[MAX_PATH];
+    TCHAR szRecXFName[MAX_PATH];
+    DWORD dwId;
+    CAXF *pXF = NULL;
+    char szGuest[CA_CHR_REC_ITEM_MAX_GUEST_LEN];
+    int nResult;
 
-    dwSlotsCnt = sizeof(pCHR->recSlots) / sizeof(pCHR->recSlots[0]);
-    for (dwSlotId = 0; dwSlotId < dwSlotsCnt; dwSlotId++)
+    nResult = CA_SNPrintf(szGuest, sizeof(szGuest) / sizeof(szGuest[0]), 
+        TEXT("%s"), pCHRItem->pszGuest);
+    if (0 >= nResult)
     {
-        pPos = &pCHR->recSlots[dwSlotId];
-        if (!pPos->bIsUsed)
+        /* guest name is bad */
+        return NULL;
+    }
+
+    caErr = CA_ConvertFNameStr(pCHRItem->pszGuest, 
+        szGuestFName, sizeof(szGuestFName) / sizeof(szGuestFName[0]));
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return NULL;
+    }
+
+    caErr = CA_PathJoin(pszMasterDir, szGuestFName, szRecXFNamePrefix, 
+        sizeof(szRecXFNamePrefix) / sizeof(szRecXFNamePrefix[0]));    
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return NULL;
+    }
+
+    for (dwId = 0;; dwId++)
+    {
+        if (0 == dwId)
         {
+            nResult = CA_SNPrintf(szRecXFName, 
+                sizeof(szRecXFName) / sizeof(szRecXFName[0]), 
+                TEXT("%s.xml"), szRecXFNamePrefix);
+        }
+        else
+        {
+            nResult = CA_SNPrintf(szRecXFName, 
+                sizeof(szRecXFName) / sizeof(szRecXFName[0]), 
+                TEXT("%s_%u.xml"), szRecXFNamePrefix, dwId);
+        }
+        if (0 >= nResult)
+        {
+            /* file name to long */
+            return NULL;
+        }
+
+        hFind = FindFirstFile(szRecXFName, &findData);
+        if (INVALID_HANDLE_VALUE == hFind)
+        {
+            caErr = CA_XFOpen(szRecXFName, TRUE, &pXF);
+            if (CA_ERR_SUCCESS != caErr)
+            {
+                /* create failed */
+                return NULL;
+            }
             break;
         }
+        FindClose(hFind);
 
-        if (NULL != pPos->pFile)
-        {
-            fflush(pPos->pFile);
-        }
-
-        if (!bNeedClose)
+        if (FILE_ATTRIBUTE_DIRECTORY & findData.dwFileAttributes)
         {
             continue;
         }
 
-        if (NULL != pPos->pFile)
+        caErr = CA_XFOpen(szRecXFName, FALSE, &pXF);
+        if (CA_ERR_SUCCESS == caErr)
         {
-            fclose(pPos->pFile);
-            pPos->pFile = NULL;
+            break;
+        }
+    }
+    if (NULL == pXF)
+    {
+        /* can't open xml file */
+        return NULL;
+    }
+
+    pCreateItem = (CACHRRecItem*)CA_MAlloc(sizeof(CACHRRecItem));
+    if (NULL == pCreateItem)
+    {
+        /* no mem */
+        CA_XFClose(pXF);
+        return NULL;
+    }
+
+    tmOpen = time(NULL);
+    pCreateItem->pNext = NULL;
+    strcpy(pCreateItem->szGuest, szGuest);
+    pCreateItem->pXF = pXF;
+    pCreateItem->tmOpen = tmOpen;
+    pCreateItem->tmLastUpdate = tmOpen;
+
+    pCreateItem->pNext = pCHR->pRecItemHdr;
+    pCHR->pRecItemHdr = pCreateItem;
+    return pCreateItem;
+}
+
+static BOOL CA_CHRecItemIsTimeOut(CACHRec *pCHR, time_t tmNow, 
+                                  CACHRRecItem *pRecItem)
+{
+    time_t tmDiff = tmNow - pRecItem->tmLastUpdate;
+    return (pCHR->nMaxCacheSec > (DWORD)tmDiff ? FALSE : TRUE);
+}
+
+static CAErrno CA_CHRecCloseItem(CACHRec *pCHR, 
+                                 CACHRRecItem *pRecItem)
+{
+    if (NULL == pRecItem)
+    {
+        return CA_ERR_BAD_ARG;
+    }
+
+    if (NULL != pRecItem->pXF)
+    {
+        CA_XFSave(pRecItem->pXF);
+        CA_XFClose(pRecItem->pXF);
+    }
+
+    CA_MFree(pRecItem);
+    return CA_ERR_SUCCESS;
+}
+
+static CAErrno CA_CHRecCloseAll(CACHRec *pCHR)
+{
+    CACHRRecItem *pRecItem;
+
+    for (pRecItem = pCHR->pRecItemHdr; NULL != pCHR->pRecItemHdr;)
+    {
+        pCHR->pRecItemHdr = pRecItem->pNext;
+        CA_CHRecCloseItem(pCHR, pRecItem);
+        pRecItem = pCHR->pRecItemHdr;
+    }
+    
+    return CA_ERR_SUCCESS;
+}
+
+static CAErrno CA_CHRecCloseTimeOut(CACHRec *pCHR)
+{
+    CACHRRecItem *pPreRecItem;
+    CACHRRecItem *pRecItem;
+    CACHRRecItem *pRmRecItem;
+    time_t tmNow = time(NULL);
+    BOOL bResult;
+
+    for (pPreRecItem = NULL, pRecItem = pCHR->pRecItemHdr; NULL != pRecItem;)
+    {
+        bResult = CA_CHRecItemIsTimeOut(pCHR, tmNow, pRecItem);
+        if (!bResult)
+        {
+            pPreRecItem = pRecItem;
+            pRecItem = pRecItem->pNext;
+            continue;
         }
 
-        pPos->szFName[0] = '\0';
-        pPos->bIsUsed = FALSE;
+        pRmRecItem = pRecItem;
+        if (NULL == pPreRecItem)
+        {
+            pRecItem = pRecItem->pNext;
+            pCHR->pRecItemHdr = pRecItem;
+        }
+        else
+        {
+            pPreRecItem->pNext = pRecItem->pNext;
+            pRecItem = pRecItem->pNext;
+        }        
+
+        CA_CHRecCloseItem(pCHR, pRmRecItem);
     }
 
     return CA_ERR_SUCCESS;
 }
 
-static CAErrno CA_CHRecWrite(CACHRec *pCHR, CACHRRecFdSlot *pSlot, 
-                             const TCHAR *pszFName, DWORD dwRetryCnt, 
-                             CACHRItem *pCHRItem)
+static CAErrno CA_CHRCreateMasterDir(CACHRec *pCHR, CACHRItem *pCHRItem, 
+                    TCHAR *pszMDirBuf, DWORD dwMDirBufCnt)
 {
     CAErrno caErr;
-    CAFSize fileSize;
+    TCHAR szMasterSuffix[MAX_PATH];
+    TCHAR szMasterDir[MAX_PATH];
+    TCHAR szRealMasterDir[MAX_PATH];
     int nResult;
 
-    if (pSlot->bIsUsed)
-    {
-        return CA_CHRecWrItem(pSlot, dwRetryCnt, pCHRItem, TRUE);
-    }
-
-    nResult = CA_SNPrintf(pSlot->szFName, 
-        sizeof(pSlot->szFName) / sizeof(pSlot->szFName[0]), 
-        TEXT("%s"), pszFName);
-    if (0 >= nResult)
-    {
-        pSlot->szFName[0] =  '\0';
-        return CA_ERR_FNAME_TOO_LONG;
-    }
-
-    caErr = CA_GetFSize(pSlot->szFName, &fileSize);
+    caErr = CA_ConvertFNameStr(pCHRItem->pszMaster, 
+        szMasterSuffix, sizeof(szMasterSuffix) / sizeof(szMasterSuffix[0]));
     if (CA_ERR_SUCCESS != caErr)
     {
-        fileSize.dwFSize = 0;
-        fileSize.dwFSizeHigh = 0;
+        return caErr;
     }
 
-    pSlot->pFile = fopen(pSlot->szFName, "a+");
-    if (NULL == pSlot->pFile)
+    /* create master save dir */
+    caErr = CA_PathJoin(pCHR->szCHRPath, szMasterSuffix, 
+        szMasterDir, sizeof(szMasterDir) / sizeof(szMasterDir[0]));
+    if (CA_ERR_SUCCESS != caErr)
     {
-        pSlot->szFName[0] = '\0';
-        return CA_ERR_FOPEN;
-    }
-    pSlot->bIsUsed = TRUE;
-    
-    if (0 == fileSize.dwFSize)
-    {
-        CA_CHRecWrHdr(pSlot, dwRetryCnt, pCHRItem, FALSE);
+        return caErr;
     }
 
-    return CA_CHRecWrItem(pSlot, dwRetryCnt, pCHRItem, TRUE);
+    caErr = CA_MkSubDirWithBName(szMasterDir, szRealMasterDir, 
+        sizeof(szRealMasterDir) / sizeof(szRealMasterDir[0]));
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return caErr;
+    }
+
+    nResult = CA_SNPrintf(pszMDirBuf, dwMDirBufCnt, TEXT("%s"), 
+        szRealMasterDir);
+    return (0 >= nResult ? CA_ERR_FNAME_TOO_LONG : CA_ERR_SUCCESS);
 }
 
-CA_DECLARE(CAErrno) CA_CHRecOpen(CACHRec **pCHR)
+static CAErrno CA_CHRWrGuestRec(CACHRec *pCHR, CACHRItem *pCHRItem, 
+                                const TCHAR *pszMasterDir, DWORD dwRetryCnt)
+{
+    CACHRRecItem *pGuestNode;
+
+    pGuestNode = CA_CHRecItemFindByGuest(pCHR, pCHRItem->pszGuest);
+    if (NULL != pGuestNode)
+    {
+        return CA_CHRecItemAppend(pCHR, pGuestNode, pCHRItem, dwRetryCnt);
+    }
+
+    /* create new guset node */
+    pGuestNode = CA_CHRecItemCreate(pCHR, pCHRItem, pszMasterDir);
+    if (NULL == pGuestNode)
+    {
+        return CA_ERR_FCREATE;
+    }
+
+    return CA_CHRecItemAppend(pCHR, pGuestNode, pCHRItem, dwRetryCnt);
+}
+
+CA_DECLARE(CAErrno) CA_CHRecOpen(CACHRec **pCHR, DWORD nMaxCacheSec)
 {
     CRITICAL_SECTION *pCHRCS = NULL;
-    CACHRec *pNewCHR = NULL;
     CAErrno funcErr = CA_ERR_SUCCESS;
-    DWORD dwSlotsCnt;
-    DWORD dwSlotId;
+    CACHRec *pNewCHR = NULL;
     int nResult;
 
     pNewCHR = (CACHRec *)CA_MAlloc(sizeof(CACHRec));
@@ -249,24 +360,27 @@ CA_DECLARE(CAErrno) CA_CHRecOpen(CACHRec **pCHR)
     {
         funcErr = CA_ERR_FNAME_TOO_LONG;
         goto EXIT;
-    }  
+    }
+
+    CA_RTCSEnter();
+    nResult = CA_SNPrintf(pNewCHR->szTemplatePath, 
+        sizeof(pNewCHR->szTemplatePath) / sizeof(pNewCHR->szTemplatePath[0]), 
+        TEXT("%s"), CA_CfgGetRT()->szTemplatePath);
+    CA_RTCSLeave();
+    if (0 >= nResult)
+    {
+        funcErr = CA_ERR_FNAME_TOO_LONG;
+        goto EXIT;
+    }
 
     InitializeCriticalSection(&pNewCHR->chrCS);
     pCHRCS = &pNewCHR->chrCS;
-
-    /* init slots mem */
-    dwSlotsCnt = sizeof(pNewCHR->recSlots) / sizeof(pNewCHR->recSlots[0]);
-    for (dwSlotId = 0; dwSlotId < dwSlotsCnt; dwSlotId++)
-    {
-        (pNewCHR->recSlots[dwSlotId]).bIsUsed = FALSE;
-        (pNewCHR->recSlots[dwSlotId]).pFile = NULL;
-        (pNewCHR->recSlots[dwSlotId]).szFName[0] = '\0';
-    }
+    pNewCHR->nMaxCacheSec = nMaxCacheSec;
+    pNewCHR->pRecItemHdr = NULL;
 
 EXIT:
     if (CA_ERR_SUCCESS != funcErr)
     {
-        /* free all mem and handle */
         if (NULL != pCHRCS)
         {
             DeleteCriticalSection(pCHRCS);
@@ -289,10 +403,12 @@ CA_DECLARE(CAErrno) CA_CHRecClose(CACHRec *pCHR)
 {
     if (NULL == pCHR)
     {
-        return CA_ERR_SUCCESS;
+        return CA_ERR_BAD_ARG;
     }
 
-    CA_CHRecFlushAll(pCHR, TRUE);
+    EnterCriticalSection(&pCHR->chrCS);
+    CA_CHRecCloseAll(pCHR);
+    LeaveCriticalSection(&pCHR->chrCS);
     DeleteCriticalSection(&pCHR->chrCS);
     CA_MFree(pCHR);
     return CA_ERR_SUCCESS;
@@ -302,6 +418,7 @@ CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR)
 {
     CAErrno funcErr = CA_ERR_SUCCESS;
     TCHAR szCHRPath[MAX_PATH];
+    TCHAR szCHStylePath[MAX_PATH];
     int nResult;
 
     CA_RTCSEnter();
@@ -314,165 +431,93 @@ CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR)
         return CA_ERR_FNAME_TOO_LONG;
     }
 
+    CA_RTCSEnter();
+    nResult = CA_SNPrintf(szCHStylePath, 
+        sizeof(szCHStylePath) / sizeof(szCHStylePath[0]), TEXT("%s"), 
+        CA_CfgGetRT()->szTemplatePath);
+    CA_RTCSLeave();
+    if (0 >= nResult)
+    {
+        return CA_ERR_FNAME_TOO_LONG;
+    }
+
+    /* FIXME read cache time from config or args */
     EnterCriticalSection(&pCHR->chrCS);
     lstrcpy(pCHR->szCHRPath, szCHRPath);
-    funcErr = CA_CHRecFlushAllSlots(pCHR, TRUE);
+    lstrcpy(pCHR->szTemplatePath, szCHStylePath);
+    funcErr = CA_CHRecCloseAll(pCHR);
     LeaveCriticalSection(&pCHR->chrCS);
     return funcErr;
-}
-
-CA_DECLARE(CAErrno) CA_CHRecFlushAll(CACHRec *pCHR, 
-                                     BOOL bNeedClose)
-{
-    CAErrno caErr;
-
-    EnterCriticalSection(&pCHR->chrCS);
-    caErr = CA_CHRecFlushAllSlots(pCHR, bNeedClose);
-    LeaveCriticalSection(&pCHR->chrCS);
-    return caErr;
 }
 
 CA_DECLARE(CAErrno) CA_CHRecAppend(CACHRec *pCHR, DWORD dwRetryCnt, 
                                    CACHRItem *pCHRItem)
 {
-    CACHRRecFdSlot *pCHRSlot;
     CAErrno funcErr = CA_ERR_SUCCESS;
     CAErrno caErr;
-    TCHAR szCHRFName[MAX_PATH];
-    DWORD dwRealRetryCnt;
-    BOOL bIsNewSlot;
+    TCHAR szMasterDir[MAX_PATH];
 
-    caErr = CA_CHRecNaming(pCHR, pCHRItem, szCHRFName, 
-        sizeof(szCHRFName) / sizeof(szCHRFName[0]));
+    caErr = CA_CHRCreateMasterDir(pCHR, pCHRItem, szMasterDir, 
+        sizeof(szMasterDir) / sizeof(szMasterDir[0]));
     if (CA_ERR_SUCCESS != caErr)
-    {        
+    {
         return caErr;
     }
 
-    EnterCriticalSection(&pCHR->chrCS);
-    bIsNewSlot = FALSE;
-    pCHRSlot = CA_CHRFindSlotByFName(pCHR, szCHRFName);
-    if (NULL == pCHRSlot)
-    {
-        bIsNewSlot = TRUE;
-        pCHRSlot = CA_CHRGetFirstFreeSlot(pCHR);
-        if (NULL == pCHRSlot)
-        {
-            funcErr = CA_ERR_NO_MEM;
-            goto EXIT;
-        }
-    }
+    /* copy style file to master dir */
+    CA_CHRCpStyleFile(pCHR, szMasterDir);
 
-    dwRealRetryCnt = (CA_CHR_MAX_RETRY <= dwRetryCnt ? 
-            CA_CHR_MAX_RETRY : dwRetryCnt);
-    funcErr = CA_CHRecWrite(pCHR, pCHRSlot, szCHRFName, 
-        dwRealRetryCnt, pCHRItem);
-EXIT:
+    EnterCriticalSection(&pCHR->chrCS);
+    funcErr = CA_CHRWrGuestRec(pCHR, pCHRItem, szMasterDir, dwRetryCnt);
     LeaveCriticalSection(&pCHR->chrCS);
     return funcErr;
 }
 
-CA_DECLARE(CAErrno) CA_CHRecNaming(CACHRec *pCHR, CACHRItem *pCHRItem, 
-                                   TCHAR *pszSFNameBuf, 
-                                   DWORD dwSFNameBufCnt)
+CA_DECLARE(CAErrno) CA_CHRCpStyleFile(CACHRec *pCHR, 
+                                      const TCHAR *pszDestPath)
 {
     WIN32_FIND_DATA findData;
-    const int nMaxReNameCnt = 20;
     CAErrno caErr;
     HANDLE hFind;
-    TCHAR szMasterDir[MAX_PATH];
-    TCHAR szRealMasterDir[MAX_PATH];  
-    TCHAR szGuestFName[MAX_PATH];
-    TCHAR szRealGuestFName[MAX_PATH];
-    TCHAR szGuestSuffix[MAX_PATH];
-    TCHAR szMasterSuffix[MAX_PATH];
-    BOOL bFind;
-    int nReNameId;
-    int nResult;
+    TCHAR szStyleSrcFName[MAX_PATH];
+    TCHAR szStyleDestFName[MAX_PATH];
+    BOOL bResult;
 
-    caErr = CA_ConvertFNameStr(pCHRItem->pszMaster, 
-        szMasterSuffix, sizeof(szMasterSuffix) / sizeof(szMasterSuffix[0]));
+    caErr = CA_PathJoin(pszDestPath, CA_XF_XSL_FNAME, szStyleDestFName, 
+        sizeof(szStyleDestFName) / sizeof(szStyleDestFName[0]));
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        /* file name to long */
+        return caErr;
+    }
+
+    EnterCriticalSection(&pCHR->chrCS);
+    caErr = CA_PathJoin(pCHR->szTemplatePath, CA_XF_XSL_FNAME, szStyleSrcFName, 
+        sizeof(szStyleSrcFName) / sizeof(szStyleSrcFName[0]));
+    LeaveCriticalSection(&pCHR->chrCS);
     if (CA_ERR_SUCCESS != caErr)
     {
         return caErr;
     }
 
-    caErr = CA_ConvertFNameStr(pCHRItem->pszGuest, 
-        szGuestSuffix, sizeof(szGuestSuffix) / sizeof(szGuestSuffix[0]));
-    if (CA_ERR_SUCCESS != caErr)
+    hFind = FindFirstFile(szStyleDestFName, &findData);
+    if (INVALID_HANDLE_VALUE != hFind)
     {
-        return caErr;
-    }
-
-    /* create master save dir */
-    caErr = CA_PathJoin(pCHR->szCHRPath, szMasterSuffix, 
-        szMasterDir, sizeof(szMasterDir) / sizeof(szMasterDir[0]));
-    if (CA_ERR_SUCCESS != caErr)
-    {
-        return caErr;
-    }
-    
-    caErr = CA_MkSubDirWithBName(szMasterDir, szRealMasterDir, 
-        sizeof(szRealMasterDir) / sizeof(szRealMasterDir[0]));
-    if (CA_ERR_SUCCESS != caErr)
-    {
-        return caErr;
-    }
-
-    /* XXX FIXME copy the template file to this path */
-
-    /* naming guest file */
-    caErr = CA_PathJoin(szRealMasterDir, szGuestSuffix, 
-        szGuestFName, sizeof(szGuestFName) / sizeof(szGuestFName[0]));
-    if (CA_ERR_SUCCESS != caErr)
-    {
-        return caErr;
-    }
-
-    for (nReNameId = 0, bFind = FALSE;
-    nReNameId < nMaxReNameCnt; nReNameId++)
-    {
-        if (0 == nReNameId)
-        {
-            nResult = CA_SNPrintf(szRealGuestFName, 
-                sizeof(szRealGuestFName) / sizeof(szRealGuestFName[0]), 
-                TEXT("%s.xml"), szGuestFName);
-        }
-        else
-        {
-            nResult = CA_SNPrintf(szRealGuestFName, 
-                sizeof(szRealGuestFName) / sizeof(szRealGuestFName[0]), 
-                TEXT("%s_%u.xml"), szGuestFName, nReNameId);
-        }
-        if (0 >= nResult)
-        {
-            return CA_ERR_FNAME_TOO_LONG;
-        }
-
-        hFind = FindFirstFile(szRealGuestFName, &findData);
-        if (INVALID_HANDLE_VALUE == hFind)
-        {
-            bFind = TRUE;
-            break;
-        }
         FindClose(hFind);
-        
-        if (FILE_ATTRIBUTE_DIRECTORY & findData.dwFileAttributes)
+        if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
-            continue;
+            return CA_ERR_FCREATE;
         }
-        else
-        {
-            bFind = TRUE;
-            break;
-        }
+
+        return CA_ERR_SUCCESS;
     }
-    if (!bFind)
+
+    /* copy file */
+    bResult = CopyFile(szStyleSrcFName, szStyleDestFName, TRUE);
+    if (!bResult)
     {
         return CA_ERR_FCREATE;
     }
 
-    nResult = CA_SNPrintf(pszSFNameBuf, dwSFNameBufCnt, 
-        TEXT("%s"), szRealGuestFName);
-    return (0 >= nResult ? CA_ERR_FNAME_TOO_LONG : CA_ERR_SUCCESS);
+    return CA_ERR_SUCCESS;
 }

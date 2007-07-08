@@ -10,7 +10,8 @@
 
 #define CA_CFG_FNAME        (TEXT("ocass.cfg"))
 
-#define CA_CFG_DEFAULT_HISTORY_PATH     (TEXT("history_path"))
+#define CA_CFG_DEFAULT_TEMPLATE_PATH    (TEXT("template"))
+#define CA_CFG_DEFAULT_HISTORY_PATH     (TEXT("history"))
 #define CA_CFG_DEFAULT_SPY_LOG          (TEXT("ocass_s.log"))
 #define CA_CFG_DEFAULT_SPY_NT_DUMP      (TEXT("ocass_ntd.log"))
 
@@ -24,6 +25,7 @@ typedef struct _CA_CFG_DATUM
     TCHAR szCommunicatorFName[MAX_PATH];
 
     TCHAR szHistoryPath[MAX_PATH];
+    TCHAR szTemplatePath[MAX_PATH];
 
     TCHAR szSpyLog[MAX_PATH];
     DWORD dwSpyLogTSize;
@@ -39,6 +41,7 @@ typedef struct _CA_CFG_DATUM
  *
  * [app]
  * communicator_fname="c:\abc\abc.exe"
+ * template_path="c:\abc"
  * [spy]
  * history_path="c:\abc"
  * spy_log="c:\abc\abc.log"
