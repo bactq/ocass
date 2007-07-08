@@ -18,6 +18,8 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     DWORD dwBufCnt;
 
     pCfgDatum->szCommunicatorFName[0] = '\0';
+    pCfgDatum->szTemplatePath[0] = '\0';
+
     pCfgDatum->szHistoryPath[0] = '\0';
     pCfgDatum->szSpyLog[0] = '\0';
     pCfgDatum->szSpyNtDump[0] = '\0';
@@ -29,6 +31,16 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     dwBufCnt = sizeof(pCfgDatum->szCommunicatorFName) / 
                sizeof(pCfgDatum->szCommunicatorFName[0]);
     caErr = CA_OFCGetFNameFromReg(pCfgDatum->szCommunicatorFName, dwBufCnt);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return caErr;
+    }
+
+    /* template path */
+    dwBufCnt = sizeof(pCfgDatum->szTemplatePath) / 
+               sizeof(pCfgDatum->szTemplatePath[0]);
+    caErr = CA_PathJoin(pszWrkPath, CA_CFG_DEFAULT_TEMPLATE_PATH, 
+        pCfgDatum->szTemplatePath, dwBufCnt);
     if (CA_ERR_SUCCESS != caErr)
     {
         return caErr;
@@ -98,6 +110,12 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
         cfgDefaultDatum.szCommunicatorFName, 
         pCfgDatum->szCommunicatorFName, dwBufCnt, pszCfgFName);
 
+    /* template path */
+    dwBufCnt = sizeof(pCfgDatum->szTemplatePath) /
+               sizeof(pCfgDatum->szTemplatePath[0]);
+    GetPrivateProfileString(TEXT("app"), TEXT("template_path"), 
+        cfgDefaultDatum.szTemplatePath, 
+        pCfgDatum->szTemplatePath, dwBufCnt, pszCfgFName);
 
     /* history dump path */
     dwBufCnt = sizeof(pCfgDatum->szHistoryPath) / 

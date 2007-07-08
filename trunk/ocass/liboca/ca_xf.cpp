@@ -419,9 +419,20 @@ CA_DECLARE(CAErrno) CA_XFSave(CAXF *pXF)
 {
     CAErrno funcErr = CA_ERR_SUCCESS;
     HRESULT hResult;
+    DWORD dwFileAttrs;
+
     if (NULL == pXF || NULL == pXF->xfDocPtr)
     {
         return CA_ERR_BAD_ARG;
+    }
+
+    /* remove read only attr */
+    dwFileAttrs = GetFileAttributes(pXF->szXFName);   
+    if (((DWORD)-1 != dwFileAttrs) &&
+        (dwFileAttrs & FILE_ATTRIBUTE_READONLY))
+    {
+        SetFileAttributes(pXF->szXFName, 
+            dwFileAttrs & (~FILE_ATTRIBUTE_READONLY));
     }
 
     try
@@ -489,4 +500,9 @@ EXIT:
         msgElementPtr.Release();
     }
     return funcErr;
+}
+
+CA_DECLARE(const TCHAR*) CA_XFGetFName(CAXF *pXF)
+{
+    return pXF->szXFName;
 }

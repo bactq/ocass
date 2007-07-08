@@ -9,15 +9,16 @@
 
 typedef struct _CA_CHART_HISTORY_REC CACHRec;
 
+#define CA_CHR_DEFAULT_CACHE_SEC        (60 * 3)
 
-CA_DECLARE(CAErrno) CA_CHRecOpen(CACHRec **pCHR);
+CA_DECLARE(CAErrno) CA_CHRecOpen(CACHRec **pCHR, DWORD nMaxCacheSec);
 
 CA_DECLARE(CAErrno) CA_CHRecClose(CACHRec *pCHR);
 
 CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR);
 
-CA_DECLARE(CAErrno) CA_CHRecFlushAll(CACHRec *pCHR, 
-                                     BOOL bNeedClose);
+CA_DECLARE(CAErrno) CA_CHRCpStyleFile(CACHRec *pCHR, 
+                                      const TCHAR *pszDestPath);
 
 typedef struct _CA_CHR_ITEM
 {
@@ -38,9 +39,5 @@ typedef struct _CA_CHR_ITEM
 
 CA_DECLARE(CAErrno) CA_CHRecAppend(CACHRec *pCHR, DWORD dwRetryCnt, 
                                    CACHRItem *pCHRItem);
-
-CA_DECLARE(CAErrno) CA_CHRecNaming(CACHRec *pCHR, CACHRItem *pCHRItem, 
-                                   TCHAR *pszSFNameBuf, 
-                                   DWORD dwSFNameBufCnt);
 
 #endif /* !defined(_CA_CHR_H_) */

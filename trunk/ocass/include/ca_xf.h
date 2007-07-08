@@ -7,7 +7,8 @@
 
 #include "ca_types.h"
 
-#define CA_XF_XSL_HDR     TEXT("type='text/xsl' href='MsgStyle.xsl'")
+#define CA_XF_XSL_FNAME   TEXT("msg_style.xsl")
+#define CA_XF_XSL_HDR     TEXT("type='text/xsl' href='msg_style.xsl'")
 
 typedef struct _CAXF CAXF;
 
@@ -26,6 +27,8 @@ CA_DECLARE(CAErrno) CA_XFOpen(const TCHAR *pszFName, BOOL bCreate,
                               CAXF **pXF);
 
 CA_DECLARE(void)    CA_XFClose(CAXF *pXF);
+
+CA_DECLARE(const TCHAR*) CA_XFGetFName(CAXF *pXF);
 
 CA_DECLARE(CAErrno) CA_XFSave(CAXF *pXF);
 

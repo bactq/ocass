@@ -57,7 +57,7 @@ CAErrno CS_ProtoCacheStartup(CSProtoCache *pCache)
     CAErrno caErr;
 
     memset(pCache, 0, sizeof(CSProtoCache));
-    caErr = CA_CHRecOpen(&pCache->pCHR);
+    caErr = CA_CHRecOpen(&pCache->pCHR, CA_CHR_DEFAULT_CACHE_SEC);
     if (CA_ERR_SUCCESS == caErr)
     {
         CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
