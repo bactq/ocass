@@ -20,6 +20,7 @@
 
 #include "liboch.h"
 #include "ca_cfg.h"
+#include "ca_mm.h"
 #include "ca_evts.h"
 #include "ocac_wrk.h"
 #include "ocac_misc.h"
@@ -138,8 +139,8 @@ static int OCAC_PWrkRun(OCACProc *pProc)
             caErr);
         nProcExit = CA_PROC_EXIT_INIT_FAILED;
         goto EXIT;
-    }    
-
+    }
+    
     OCAC_PCCWrk(pProc);
 EXIT:
     return nProcExit;

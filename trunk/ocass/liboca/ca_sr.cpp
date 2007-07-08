@@ -376,3 +376,31 @@ CA_DECLARE(void) CA_SRDatumDup(CASpyRun *pSR, CASpyDatum *pDup)
     memcpy(pDup, pSR->pSpyDatum, sizeof(CASpyDatum));
     CA_SRUnlock(pSR);
 }
+
+CA_DECLARE(CAErrno) CA_SRSmartOpen(CASpyRun **pSR, BOOL bAutoDupCfg)
+{
+    CAErrno caErr;
+
+    caErr = CA_SRCreate(pSR, bAutoDupCfg);
+    if (CA_ERR_SUCCESS == caErr)
+    {
+        return caErr;
+    }
+
+    /* attach to shmm */
+    caErr = CA_SRAttach(pSR);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return caErr;
+    }
+
+    if (bAutoDupCfg)
+    {
+        CA_SRLock(*pSR, TRUE);
+        CA_SRAutoDup((*pSR)->pSpyDatum);
+        (*pSR)->pSpyDatum->bStateIsDirty = TRUE;
+        CA_SRUnlock(*pSR);
+    }
+
+    return CA_ERR_SUCCESS;
+}

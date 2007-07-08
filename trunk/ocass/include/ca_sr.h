@@ -71,6 +71,8 @@ typedef struct _CA_SR CASpyRun;
 
 CA_DECLARE(CAErrno) CA_SRCreate(CASpyRun **pSR, BOOL bAutoDupCfg);
 CA_DECLARE(CAErrno) CA_SRAttach(CASpyRun **pSR);
+CA_DECLARE(CAErrno) CA_SRSmartOpen(CASpyRun **pSR, BOOL bAutoDupCfg);
+
 CA_DECLARE(void)    CA_SRClose(CASpyRun *pSR);
 
 CA_DECLARE(CAErrno)     CA_SRLock(CASpyRun *pSR, BOOL bWr);

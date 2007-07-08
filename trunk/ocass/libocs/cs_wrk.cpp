@@ -147,7 +147,7 @@ CAErrno CS_WrkStart(HMODULE hLib, CACfgDatum *pCfgDatum,
     }
 
     /* create spy run */
-    caErr = CA_SRCreate(&pSR, TRUE);
+    caErr = CA_SRSmartOpen(&pSR, TRUE);
     if (CA_ERR_SUCCESS != caErr)
     {
         funcErr = caErr;
