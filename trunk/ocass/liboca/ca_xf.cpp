@@ -387,7 +387,7 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             goto EXIT;
         }
 
-        subNodePtr->setAttribute(TEXT("CSeq"), varCSeq);
+        subNodePtr->setAttribute(TEXT("CSeq"), varCSeq);        
         nodeTxtPtr = subNodePtr->ownerDocument->createTextNode(
             NULL == pAttr->pszCallId ? TEXT("") : pAttr->pszCallId);
         if (NULL == nodeTxtPtr)
