@@ -522,9 +522,8 @@ CA_DECLARE(CAErrno) CA_XFOpen(const TCHAR *pszFName, BOOL bCreate,
         return CA_ERR_NO_MEM;
     }
 
-    pNewXF->szXFName[0] = '\0';
-    pNewXF->xfDocPtr = NULL;
-    pNewXF->rootNodePtr = NULL;
+    memset(pNewXF, 0, sizeof(CAXF));
+
     if (bCreate) 
     {
         caErr = CA_XmlFCreate(pszFName, pNewXF);

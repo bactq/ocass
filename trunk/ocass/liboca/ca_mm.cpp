@@ -62,7 +62,7 @@ CA_DECLARE(CAErrno) CA_ShMMCreate(UINT nReqSize, const TCHAR *pszFName,
     HANDLE hFile = INVALID_HANDLE_VALUE;
     HANDLE hMap = NULL;
     LPVOID pMapView = NULL;
-    CAShMM *pNewShMM;
+    CAShMM *pNewShMM = NULL;
     TCHAR szMapKey[MAX_PATH * 2];
     UINT nRealSize = nReqSize + sizeof(CAShmBlk);
     int nResult;
