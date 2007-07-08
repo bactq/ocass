@@ -18,6 +18,7 @@
  *
  */
 
+#include "liboca.h"
 #include "ca_xf.h"
 #include "ca_str.h"
 #include "ca_mm.h"
@@ -51,6 +52,9 @@ static CAErrno CA_XmlFLoad(const TCHAR *pszFName, CAXF *pXF)
         TEXT("%s"), pszFName);
     if (0 >= nResult)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Load xml file failed. file name (%s) is too long"), 
+            pszFName);
         return CA_ERR_FNAME_TOO_LONG;
     }
 
@@ -59,6 +63,9 @@ static CAErrno CA_XmlFLoad(const TCHAR *pszFName, CAXF *pXF)
         hResult = pXF->xfDocPtr.CreateInstance(CLSID_DOMDocument);
         if (FAILED(hResult))
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Load xml file failed. Create MSXML instance failed."));
+                
             pXF->xfDocPtr = NULL;
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
@@ -66,6 +73,9 @@ static CAErrno CA_XmlFLoad(const TCHAR *pszFName, CAXF *pXF)
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Load xml file failed. Create MSXML instance failed."));
+
         pXF->xfDocPtr = NULL;
         funcErr = CA_ERR_NO_MEM;
         goto EXIT;
@@ -76,12 +86,18 @@ static CAErrno CA_XmlFLoad(const TCHAR *pszFName, CAXF *pXF)
         varBoolRet = pXF->xfDocPtr->load(pszFName);
         if (VARIANT_TRUE != varBoolRet)
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Load xml file from (%s) failed"), pszFName);
+
             funcErr = CA_ERR_FOPEN;
             goto EXIT;
         }
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Load xml file from (%s) failed"), pszFName);
+
         funcErr = CA_ERR_FOPEN;
         goto EXIT;
     }
@@ -91,6 +107,10 @@ static CAErrno CA_XmlFLoad(const TCHAR *pszFName, CAXF *pXF)
         pXF->rootNodePtr = pXF->xfDocPtr->documentElement;
         if (NULL == pXF->rootNodePtr)
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Load xml file from (%s) failed, can't parse root node"), 
+                pszFName);
+
             funcErr = CA_ERR_FOPEN;
             goto EXIT;
         }
@@ -99,12 +119,20 @@ static CAErrno CA_XmlFLoad(const TCHAR *pszFName, CAXF *pXF)
         nResult = lstrcmpi(strVal, TEXT("MsgLog"));
         if (0 != nResult)
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Load xml file from (%s) failed, root node is bad"), 
+                pszFName);
+
             funcErr = CA_ERR_FOPEN;
             goto EXIT;
         }
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Load xml file from (%s) failed, root node is bad"), 
+            pszFName);
+
         funcErr = CA_ERR_FOPEN;
         goto EXIT;
     }
@@ -114,12 +142,26 @@ EXIT:
     {
         if (NULL != pXF->rootNodePtr)
         {
-            pXF->rootNodePtr.Release();
+            try
+            {
+                pXF->rootNodePtr.Release();
+            }
+            catch (...)
+            {
+            }
+
             pXF->rootNodePtr = NULL;
         }
         if (NULL != pXF->xfDocPtr)
         {
-            pXF->xfDocPtr.Release();
+            try
+            {
+                pXF->xfDocPtr.Release();
+            }
+            catch (...)
+            {
+            }
+
             pXF->xfDocPtr = NULL;
         }
 
@@ -144,6 +186,9 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
         TEXT("%s"), pszFName);
     if (0 >= nResult)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create xml file (%s) failed. file name too long"),
+            pszFName);
         return CA_ERR_FNAME_TOO_LONG;
     }
 
@@ -152,6 +197,9 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
         hResult = pXF->xfDocPtr.CreateInstance(CLSID_DOMDocument);
         if (FAILED(hResult))
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Load xml file failed. Create MSXML instance failed."));
+
             pXF->xfDocPtr = NULL;
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
@@ -159,6 +207,8 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Load xml file failed. Create MSXML instance failed."));
         pXF->xfDocPtr = NULL;
         funcErr = CA_ERR_NO_MEM;
         goto EXIT;
@@ -171,6 +221,9 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
             TEXT("version=\"1.0\" encoding=\"UTF-8\""));
         if (NULL == xmlPIPtr)
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Create xml failed. can't set xml hdr"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -181,6 +234,9 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
             CA_XF_XSL_HDR);
         if (NULL == xmlPIPtr)
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Create xml failed. can't set xml hdr"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -188,6 +244,9 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create xml failed. can't set xml hdr"));
+
         funcErr = CA_ERR_NO_MEM;
         goto EXIT;
     }
@@ -198,6 +257,9 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
         pXF->rootNodePtr = pXF->xfDocPtr->createElement(TEXT("MsgLog"));
         if (NULL == pXF->rootNodePtr)
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Create xml failed. can't create root node"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -206,6 +268,9 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create xml failed. can't create root node"));
+
         funcErr = CA_ERR_NO_MEM;
         goto EXIT;
     }
@@ -216,12 +281,20 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
         hResult = pXF->xfDocPtr->save(pXF->szXFName);
         if (FAILED(hResult))
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Create xml failed. can't save file to %s"), 
+                pXF->szXFName);
+
             funcErr = CA_ERR_FWRITE;
             goto EXIT;
         }
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create xml failed. can't save file to %s"), 
+            pXF->szXFName);
+
         funcErr = CA_ERR_FWRITE;
         goto EXIT;
     }
@@ -229,19 +302,39 @@ static CAErrno CA_XmlFCreate(const TCHAR *pszFName, CAXF *pXF)
 EXIT:
     if (NULL != xmlPIPtr)
     {
-        xmlPIPtr.Release();
+        try
+        {
+            xmlPIPtr.Release();
+        }
+        catch (...)
+        {
+        }
     }
 
     if (CA_ERR_SUCCESS != funcErr)
     {
         if (NULL != pXF->rootNodePtr)
         {
-            pXF->rootNodePtr.Release();
+            try
+            {
+                pXF->rootNodePtr.Release();
+            }
+            catch (...)
+            {
+            }
+
             pXF->rootNodePtr = NULL;
         }
         if (NULL != pXF->xfDocPtr)
         {
-            pXF->xfDocPtr.Release();
+            try
+            {
+                pXF->xfDocPtr.Release();
+            }
+            catch (...)
+            {
+            }
+
             pXF->xfDocPtr = NULL;
         }
 
@@ -275,6 +368,9 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
         hResult = msgElementPtr->setAttribute(TEXT("TimeStamp"), varTm);
         if (FAILED(hResult))
         {
+             CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Set timestamp to msg node failed"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -284,6 +380,9 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             msgElementPtr->ownerDocument->createElement(TEXT("MsgCallId"));
         if (NULL == subNodePtr)
         {
+             CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Create callid sub node failed"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -293,6 +392,9 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             NULL == pAttr->pszCallId ? TEXT("") : pAttr->pszCallId);
         if (NULL == nodeTxtPtr)
         {
+             CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Set callid text failed"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -304,6 +406,9 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             msgElementPtr->ownerDocument->createElement(TEXT("MsgFrom"));
         if (NULL == subNodePtr)
         {
+             CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Create from node failed"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -311,6 +416,8 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             NULL == pAttr->pszFrom ? TEXT("") : pAttr->pszFrom);
         if (NULL == nodeTxtPtr)
         {
+             CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("set from text failed"));
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -322,6 +429,9 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             msgElementPtr->ownerDocument->createElement(TEXT("MsgTo"));
         if (NULL == subNodePtr)
         {
+             CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("create to node failed"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -329,6 +439,9 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             NULL == pAttr->pszTo ? TEXT("") : pAttr->pszTo);
         if (NULL == nodeTxtPtr)
         {
+             CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("set to text failed"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -340,6 +453,9 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             msgElementPtr->ownerDocument->createElement(TEXT("MsgData"));
         if (NULL == subNodePtr)
         {
+             CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("create MsgData node failed"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -347,6 +463,9 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             NULL == pAttr->pszMsg ? TEXT("") : pAttr->pszMsg);
         if (NULL == nodeTxtPtr)
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("set MsgData text failed"));
+
             funcErr = CA_ERR_NO_MEM;
             goto EXIT;
         }
@@ -355,6 +474,8 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Create Msg item node failed"));
         funcErr = CA_ERR_NO_MEM;
         goto EXIT;
     }
@@ -362,13 +483,26 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
 EXIT:
     if (NULL != nodeTxtPtr)
     {
-        nodeTxtPtr.Release();
+        try
+        {
+            nodeTxtPtr.Release();
+        }
+        catch (...)
+        {
+        }
     }
 
     if (NULL != subNodePtr)
     {
-        subNodePtr.Release();
+        try
+        {
+            subNodePtr.Release();
+        }
+        catch (...)
+        {
+        }
     }
+
     return funcErr;
 }
 
@@ -382,6 +516,9 @@ CA_DECLARE(CAErrno) CA_XFOpen(const TCHAR *pszFName, BOOL bCreate,
     pNewXF = (CAXF*)CA_MAlloc(sizeof(CAXF));
     if (NULL == pNewXF)
     {
+         CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Open xml file (%s) failed. No memory"), 
+            pszFName);
         return CA_ERR_NO_MEM;
     }
 
@@ -398,6 +535,10 @@ CA_DECLARE(CAErrno) CA_XFOpen(const TCHAR *pszFName, BOOL bCreate,
     }
     if (CA_ERR_SUCCESS != caErr)
     {
+         CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Open xml file (%s) failed. Err %u"), 
+            pszFName, caErr);
+
         funcErr = caErr;
         goto EXIT;
     }
@@ -426,8 +567,21 @@ CA_DECLARE(void) CA_XFClose(CAXF *pXF)
         return;
     }
 
-    pXF->rootNodePtr.Release();
-    pXF->xfDocPtr.Release();
+    try
+    {
+        pXF->rootNodePtr.Release();
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        pXF->xfDocPtr.Release();
+    }
+    catch (...)
+    {
+    }
     CA_MFree(pXF);
 }
 
@@ -439,6 +593,8 @@ CA_DECLARE(CAErrno) CA_XFSave(CAXF *pXF)
 
     if (NULL == pXF || NULL == pXF->xfDocPtr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Save xml failed. Bad args"));
         return CA_ERR_BAD_ARG;
     }
 
@@ -456,11 +612,19 @@ CA_DECLARE(CAErrno) CA_XFSave(CAXF *pXF)
         hResult = pXF->xfDocPtr->save(pXF->szXFName);
         if (FAILED(hResult))
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Save xml to (%s) failed."), 
+                pXF->szXFName);
+
             funcErr = CA_ERR_FWRITE;
         }
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Save xml to (%s) failed."), 
+            pXF->szXFName);
+
         funcErr = CA_ERR_FWRITE;
     }
 
@@ -475,6 +639,8 @@ CA_DECLARE(CAErrno) CA_XFAddNode(CAXF *pXF, CAXFNode *pNode)
 
     if (NULL == pXF || NULL == pXF->rootNodePtr || NULL == pNode)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Add xml node failed. bad args"));
         return CA_ERR_BAD_ARG;
     }
 
@@ -484,17 +650,25 @@ CA_DECLARE(CAErrno) CA_XFAddNode(CAXF *pXF, CAXFNode *pNode)
             pXF->rootNodePtr->ownerDocument->createElement("MsgItem");
         if (NULL == msgElementPtr)
         {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                TEXT("Add xml node failed. Create element failed"));
             return CA_ERR_NO_MEM;
         }
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Add xml node failed. Create element failed"));
         return CA_ERR_NO_MEM;
     }
 
     caErr = CA_XmlSetMsgNodeAttr(msgElementPtr, pNode);
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Set data to xml element failed. err %u"), 
+            caErr);
+
         funcErr = caErr;
         goto EXIT;
     }
@@ -506,6 +680,9 @@ CA_DECLARE(CAErrno) CA_XFAddNode(CAXF *pXF, CAXFNode *pNode)
     }
     catch (...)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("Append sub node to root node failed"));
+
         funcErr = CA_ERR_NO_MEM;
         goto EXIT;
     }
@@ -513,8 +690,15 @@ CA_DECLARE(CAErrno) CA_XFAddNode(CAXF *pXF, CAXFNode *pNode)
 EXIT:
     if (NULL != msgElementPtr)
     {
-        msgElementPtr.Release();
+        try
+        {
+            msgElementPtr.Release();
+        }
+        catch (...)
+        {
+        }
     }
+
     return funcErr;
 }
 
