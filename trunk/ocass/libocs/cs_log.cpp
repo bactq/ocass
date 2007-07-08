@@ -194,7 +194,6 @@ void CS_LogNtDump(const TCHAR *pszSrc, int nSrcLine,
         TEXT("Time: %s, ApiSlotId: %u, Src: %s(%u) "), 
         szTmBuf, nApiSlotId, NULL == pszSrcBase ? TEXT("") : pszSrcBase, 
         nSrcLine);
-
 }
 
 void CS_RTLog(void *pCbCtx, CARTLog *pLog)

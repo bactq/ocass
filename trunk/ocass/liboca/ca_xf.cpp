@@ -31,7 +31,7 @@ struct _CAXF
 {
     TCHAR szXFName[MAX_PATH];
 
-    IXMLDOMDocument2Ptr xfDocPtr;
+    IXMLDOMDocumentPtr xfDocPtr;
     IXMLDOMElementPtr rootNodePtr;
 };
 
@@ -460,7 +460,7 @@ static CAErrno CA_XmlSetMsgNodeAttr(IXMLDOMElementPtr msgElementPtr,
             goto EXIT;
         }
         nodeTxtPtr = subNodePtr->ownerDocument->createTextNode(
-            NULL == pAttr->pszMsg ? TEXT("") : pAttr->pszMsg);
+            NULL == pAttr->pwszMsg? L"" : pAttr->pwszMsg);
         if (NULL == nodeTxtPtr)
         {
             CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 

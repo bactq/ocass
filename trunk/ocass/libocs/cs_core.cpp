@@ -48,7 +48,6 @@ const CSWrk* CS_CoreGetWrkPtr(void)
 
 void CS_CoreOnDllLoad(HINSTANCE hInst)
 {
-    /* NOP */
 }
 
 void CS_CoreOnDllUnload(HINSTANCE hInst)
@@ -136,7 +135,7 @@ CA_DECLARE_DYL(CAErrno) CS_Entry(HMODULE hLib, CACfgDatum *pCfgDatum)
         return caErr;
     }
 
-    CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+    CA_RTLog(CA_SRC_MARK, CA_RTLOG_INFO, 
         TEXT("Start spy work thread successed."));
 
     /* attach network api */

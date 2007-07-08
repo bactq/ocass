@@ -33,6 +33,9 @@ CA_DECLARE(CAErrno) CA_CHRecClose(CACHRec *pCHR);
 
 CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR);
 
+CA_DECLARE(CAErrno) CA_CHRecCloseTimeOutSlot(CACHRec *pCHR);
+CA_DECLARE(CAErrno) CA_CHRecCloseAllSlot(CACHRec *pCHR);
+
 CA_DECLARE(CAErrno) CA_CHRCpStyleFile(CACHRec *pCHR, 
                                       const TCHAR *pszDestPath);
 
@@ -48,7 +51,8 @@ typedef struct _CA_CHR_ITEM
     char *pszFrom;
     char *pszTo;
 
-    char *pszMsg;
+    char *pszMsgData;
+    WCHAR *pwszMsgData;
 } CACHRItem;
 
 #define CA_CHR_MAX_RETRY        (10)

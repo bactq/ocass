@@ -77,7 +77,8 @@ static CAErrno CA_CHRecItemAppend(CACHRec *pCHR, CACHRRecItem *pRecItem,
     xfNode.pszCallId = pAddData->pszCallId;
     xfNode.pszFrom = pAddData->pszFrom;
     xfNode.pszTo = pAddData->pszTo;
-    xfNode.pszMsg = pAddData->pszMsg;
+    xfNode.pszMsg = pAddData->pszMsgData;
+    xfNode.pwszMsg = pAddData->pwszMsgData;
     caErr = CA_XFAddNode(pRecItem->pXF, &xfNode);
     if (CA_ERR_SUCCESS != caErr)
     {
@@ -128,6 +129,7 @@ static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem,
 {
     WIN32_FIND_DATA findData;
     CACHRRecItem *pCreateItem = NULL;
+    const DWORD dwMaxXFSize = 1024 * 1024 * 1;
     CAErrno caErr;
     HANDLE hFind;
     time_t tmOpen;
@@ -215,6 +217,14 @@ static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem,
 
         if (FILE_ATTRIBUTE_DIRECTORY & findData.dwFileAttributes)
         {
+            continue;
+        }
+
+        if (dwMaxXFSize <= findData.nFileSizeLow)
+        {
+            CA_RTLog(CA_SRC_MARK, CA_RTLOG_WARN, 
+                TEXT("xml file (%s) size is too big "), 
+                szRecXFName);
             continue;
         }
 
@@ -618,4 +628,24 @@ CA_DECLARE(CAErrno) CA_CHRCpStyleFile(CACHRec *pCHR,
     }
 
     return CA_ERR_SUCCESS;
+}
+
+CA_DECLARE(CAErrno) CA_CHRecCloseTimeOutSlot(CACHRec *pCHR)
+{
+    CAErrno caErr;
+
+    EnterCriticalSection(&pCHR->chrCS);
+    caErr = CA_CHRecCloseTimeOut(pCHR);
+    LeaveCriticalSection(&pCHR->chrCS);
+    return caErr;
+}
+
+CA_DECLARE(CAErrno) CA_CHRecCloseAllSlot(CACHRec *pCHR)
+{
+    CAErrno caErr;
+
+    EnterCriticalSection(&pCHR->chrCS);
+    caErr = CA_CHRecCloseAll(pCHR);
+    LeaveCriticalSection(&pCHR->chrCS);
+    return caErr;
 }
