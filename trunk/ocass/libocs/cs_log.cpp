@@ -107,6 +107,7 @@ CAErrno CS_LogStartup(CSLogCfg *pCSLogCfg)
         g_csLog.pNtDumpLog = NULL;
     }
 
+    g_csLog.spyLogMask = pCSLogCfg->spyLogMask;
     g_pCSLog = &g_csLog;
     return funcErr;
 }
@@ -222,7 +223,7 @@ void CS_RTLog(void *pCbCtx, CARTLog *pLog)
         szTmBuf[0] = '\0';
     }
 
-    CA_LogLine(pCSLog->pSpyLog, TEXT("%s %s %s(%u): %s\n"), 
+    CA_LogLine(pCSLog->pSpyLog, TEXT("%s %s %s(%u): %s"), 
         szTmBuf, CA_RTLogFlagsDesc(pLog->logFlags), 
         pLog->pszSrcBase, pLog->nSrcLine, pLog->pszLog);
 }

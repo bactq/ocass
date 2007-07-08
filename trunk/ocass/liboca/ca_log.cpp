@@ -79,8 +79,8 @@ CA_DECLARE(CAErrno) CA_LogOpen(CALogOpt *pOpt, CALog **pLog)
     caErr = CA_GetFSize(pNewLog->szLogFName, &pNewLog->logFSize);
     if (CA_ERR_SUCCESS != caErr)
     {
-        funcErr = caErr;
-        goto EXIT;
+        pNewLog->logFSize.dwFSize = 0;
+        pNewLog->logFSize.dwFSizeHigh = 0;
     }
 
     pNewLog->pLogFD = fopen(pNewLog->szLogFName, "a+");
