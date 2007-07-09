@@ -23,6 +23,18 @@
 #include "ocaw_wrk.h"
 #include "resource.h"
 
+BOOL OCAS_OnMainDlgCmd(HWND hWnd, UINT wParam, LPARAM lParam)
+{
+    DWORD dwCmd = LOWORD(wParam);
+    switch (dwCmd)
+    {
+    case ID_SYSTEM_EXIT:
+        SendMessage(hWnd, WM_CLOSE, NULL, NULL);
+        break;
+    }
+    return TRUE;
+}
+
 static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg, 
                                       WPARAM wParam, LPARAM lParam)
 {
@@ -34,6 +46,9 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
     case WM_DESTROY:
         PostQuitMessage(0);
         return TRUE;
+
+    case WM_COMMAND:
+        return OCAS_OnMainDlgCmd(hWnd, wParam, lParam);
 
     case WM_CLOSE:
         DestroyWindow(hWnd);
