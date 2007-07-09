@@ -92,6 +92,7 @@ int OCAS_PWrk(OCAWProc *pProc)
     if (!pProc->bIsBackground)
     {
         ShowWindow(hMainDlg, SW_SHOWNORMAL);
+        SetForegroundWindow(hMainDlg);
     }
 
     /* add notify icon */
