@@ -23,4 +23,8 @@
 
 #include "ca_types.h"
 
+void CAS_Panic(const TCHAR *pszSrc, UINT nSrcLine, 
+               int nProcExit, const TCHAR *pszReasonFmt, ...);
+
+
 #endif /* !defined(_OCAW_PANIC_H_) */

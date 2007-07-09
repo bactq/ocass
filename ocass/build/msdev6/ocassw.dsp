@@ -52,7 +52,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 user32.lib libocc.lib liboca.lib /nologo /subsystem:windows /machine:I386 /libpath:"./release"
+# ADD LINK32 shell32.lib user32.lib libocc.lib liboca.lib /nologo /subsystem:windows /machine:I386 /libpath:"./release"
 
 !ELSEIF  "$(CFG)" == "ocassw - Win32 Debug"
 
@@ -78,7 +78,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 user32.lib libocc.lib liboca.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"./debug"
+# ADD LINK32 shell32.lib user32.lib libocc.lib liboca.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"./debug"
 
 !ENDIF 
 
@@ -91,11 +91,23 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\..\shell\ocaw_about.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_evts.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\shell\ocaw_main.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\shell\ocaw_misc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_opt.cpp
 # End Source File
 # Begin Source File
 
@@ -115,11 +127,23 @@ SOURCE=..\..\shell\ocaw_wrk.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=..\..\shell\ocaw_about.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_evts.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\shell\ocaw_main.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\shell\ocaw_misc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_opt.h
 # End Source File
 # Begin Source File
 
@@ -133,13 +157,25 @@ SOURCE=..\..\shell\ocaw_proc.h
 
 SOURCE=..\..\shell\ocaw_wrk.h
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\resource.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=..\..\shell\bitmap_about.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\shell\ocassw.rc
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_app.ico
 # End Source File
 # End Group
 # End Target

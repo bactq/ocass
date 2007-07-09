@@ -18,25 +18,19 @@
  *
  */
 
-#ifndef _OCAW_MAIN_H_
-#define _OCAW_MAIN_H_ 1
+#ifndef _OCAW_EVTS_H_
+#define _OCAW_EVTS_H_ 1
 
-#include "ca_types.h"
-#include "ocaw_proc.h"
-#include "ocaw_misc.h"
-#include "resource.h"
+BOOL OCAS_OnMainDlgCmdEvt(HWND hWnd, UINT wParam, LPARAM lParam, 
+                          DWORD dwCtlId);
 
-#define OCAW_MSG_NOTIFY_ICON    (WM_USER + 101)
+BOOL OCAS_OnMainDlgClose(HWND hWnd);
+BOOL OCAS_OnMainDlgInit(HWND hWnd);
 
-#define OCAW_MAIN_NOTIFY_ICON_ID        (101)
+BOOL OCAS_ShowTrayPopMenu(HWND hWnd);
 
-const OCASMenuItem g_popMenuItems[] = 
-{
-    { TEXT("&Open") , ID_POPMENU_OPEN, TRUE, FALSE }, 
-    { TEXT("E&xit") , ID_POPMENU_CLOSE, TRUE, FALSE }, 
-};
+BOOL OCAS_MainDlgShow(HWND hWnd);
+BOOL OCAS_MainDlgHide(HWND hWnd);
 
-const HINSTANCE CAS_MGetAppInst(void);
-OCAWProc* CAS_MGetProcPtr(void);
+#endif /* !defined(_OCAW_EVTS_H_) */
 
-#endif /* !defined(_OCAW_MAIN_H_) */

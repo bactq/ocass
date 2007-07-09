@@ -21,18 +21,27 @@
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
 #include "ocaw_wrk.h"
+#include "ocaw_evts.h"
+#include "ocaw_panic.h"
 #include "resource.h"
 
 BOOL OCAS_OnMainDlgCmd(HWND hWnd, UINT wParam, LPARAM lParam)
 {
     DWORD dwCmd = LOWORD(wParam);
-    switch (dwCmd)
+    return OCAS_OnMainDlgCmdEvt(hWnd, wParam, lParam, dwCmd);
+}
+
+BOOL OCAS_OnMainDlgNotifyIconMsg(HWND hWnd, UINT wParam, LPARAM lParam)
+{
+    switch (lParam)
     {
-    case ID_SYSTEM_EXIT:
-        SendMessage(hWnd, WM_CLOSE, NULL, NULL);
-        break;
+    case WM_RBUTTONDOWN:
+        return OCAS_ShowTrayPopMenu(hWnd);
+    case WM_LBUTTONDBLCLK:
+        return OCAS_MainDlgShow(hWnd);
+    default:
+        return TRUE;
     }
-    return TRUE;
 }
 
 static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg, 
@@ -41,7 +50,7 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
     switch (nMsg)
     {
     case WM_INITDIALOG:
-        return TRUE;
+        return OCAS_OnMainDlgInit(hWnd);
 
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -50,9 +59,11 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
     case WM_COMMAND:
         return OCAS_OnMainDlgCmd(hWnd, wParam, lParam);
 
+    case OCAW_MSG_NOTIFY_ICON:
+        return OCAS_OnMainDlgNotifyIconMsg(hWnd, wParam, lParam);
+
     case WM_CLOSE:
-        DestroyWindow(hWnd);
-        return TRUE;
+        return OCAS_OnMainDlgClose(hWnd);        
 
     default:
         return FALSE;
@@ -61,20 +72,46 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
 
 int OCAS_PWrk(OCAWProc *pProc)
 {
+    NOTIFYICONDATA notifyIconData;
     HWND hMainDlg = NULL;
     BOOL bResult;
     MSG  wndMsg;
     int nProcExit = CA_PROC_EXIT_OK;
 
     hMainDlg = CreateDialog(CAS_MGetAppInst(), 
-        MAKEINTRESOURCE(IDD_DLG_MAIN), 0, OCAS_MainDlgProc);
+        MAKEINTRESOURCE(IDD_DLG_MAIN), NULL, OCAS_MainDlgProc);
     if (NULL == hMainDlg)
     {
-        /* XXX  */
+        CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+            TEXT("Create Main dialog failed. System Last Error is %u"), 
+            GetLastError());
         return CA_PROC_EXIT_INIT_FAILED;
     }
 
-    ShowWindow(hMainDlg, SW_SHOWNORMAL);   
+    pProc->hMainDlg = hMainDlg;
+    if (!pProc->bIsBackground)
+    {
+        ShowWindow(hMainDlg, SW_SHOWNORMAL);
+    }
+
+    /* add notify icon */
+    notifyIconData.cbSize = sizeof(notifyIconData);
+    notifyIconData.hIcon = LoadIcon(CAS_MGetAppInst(), 
+        MAKEINTRESOURCE(IDI_ICON_MAIN));
+    notifyIconData.hWnd = hMainDlg;
+    notifyIconData.szTip[0] = '\0';
+    notifyIconData.uID = OCAW_MAIN_NOTIFY_ICON_ID;
+    notifyIconData.uCallbackMessage = OCAW_MSG_NOTIFY_ICON;
+    notifyIconData.uFlags = NIF_ICON|NIF_MESSAGE;
+    bResult = Shell_NotifyIcon(NIM_ADD, &notifyIconData);
+    if (!bResult)
+    {
+        CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+            TEXT("Create Main notify icon failed. System Last Error is %u"), 
+            GetLastError());
+        return CA_PROC_EXIT_INIT_FAILED;
+    }
+
     for (;;)
     {
         bResult = GetMessage(&wndMsg, 0, 0, 0);
@@ -91,5 +128,10 @@ int OCAS_PWrk(OCAWProc *pProc)
         }
     }
 
+    /* remove notify icon */
+    notifyIconData.cbSize = sizeof(notifyIconData);
+    notifyIconData.uID = OCAW_MAIN_NOTIFY_ICON_ID;
+    notifyIconData.uFlags = NIF_ICON;
+    Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
     return nProcExit;
 }

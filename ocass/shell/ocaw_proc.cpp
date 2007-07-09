@@ -44,6 +44,7 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
     pProc->argv = pArgv;
     pProc->dwShellProcId = GetCurrentProcessId();
     pProc->shellProcType = OCASP_TYPE_WRK;
+    pProc->bIsBackground = FALSE;
 
     return CA_ERR_SUCCESS;
 }

@@ -23,5 +23,20 @@
 
 #include "ca_types.h"
 
+typedef struct OCAS_MenuItem
+{
+    TCHAR *pszName;
+    UINT nMenuId;
+    BOOL bDefault;
+    BOOL bDisabled;
+} OCASMenuItem;
+
+BOOL OCAS_AppendMenuItem(HMENU hMenu, UINT nMenuId, TCHAR *pszName, 
+                         BOOL bDefault, BOOL bDisabled);
+
+BOOL OCAS_AppendMenuItems(HMENU hMenu, const OCASMenuItem *pItems, 
+                          DWORD dwItemsCnt);
+
+
 #endif /* !defined(_OCAW_MISC_H_) */
 

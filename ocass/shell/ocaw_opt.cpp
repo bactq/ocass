@@ -18,25 +18,35 @@
  *
  */
 
-#ifndef _OCAW_MAIN_H_
-#define _OCAW_MAIN_H_ 1
-
-#include "ca_types.h"
-#include "ocaw_proc.h"
-#include "ocaw_misc.h"
+#include "ocaw_main.h"
+#include "ocaw_opt.h"
 #include "resource.h"
 
-#define OCAW_MSG_NOTIFY_ICON    (WM_USER + 101)
-
-#define OCAW_MAIN_NOTIFY_ICON_ID        (101)
-
-const OCASMenuItem g_popMenuItems[] = 
+static BOOL CALLBACK Test_DlgProc(HWND hWnd, UINT nMsg, 
+                                  UINT wParam, LPARAM lParam)
 {
-    { TEXT("&Open") , ID_POPMENU_OPEN, TRUE, FALSE }, 
-    { TEXT("E&xit") , ID_POPMENU_CLOSE, TRUE, FALSE }, 
-};
+    switch (nMsg)
+    {
+    case WM_INITDIALOG:
+        return TRUE;
 
-const HINSTANCE CAS_MGetAppInst(void);
-OCAWProc* CAS_MGetProcPtr(void);
+    case WM_CLOSE:
+        EndDialog(hWnd, TRUE);
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
 
-#endif /* !defined(_OCAW_MAIN_H_) */
+BOOL OCAS_OnMainDlgCfg(HWND hWnd)
+{
+    INT_PTR nDlgResult;
+
+    nDlgResult = DialogBox(CAS_MGetAppInst(), MAKEINTRESOURCE(IDD_DLG_CFG), 
+        hWnd, (DLGPROC)Test_DlgProc);
+    if (0 != nDlgResult)
+    {
+        InvalidateRect(hWnd, NULL, TRUE);
+    }
+    return TRUE;
+}

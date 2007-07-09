@@ -20,3 +20,59 @@
 
 #include "ocaw_misc.h"
 
+BOOL OCAS_AppendMenuItem(HMENU hMenu, UINT nMenuId, TCHAR *pszName, 
+                         BOOL bDefault, BOOL bDisabled)
+{
+    MENUITEMINFO menuItemInfo = {0};
+
+    menuItemInfo.wID = nMenuId;
+    menuItemInfo.cbSize = sizeof(menuItemInfo);
+    menuItemInfo.fMask = MIIM_ID|MIIM_TYPE|MIIM_STATE;
+    if (NULL != pszName)
+    {
+        if (bDefault) 
+        {
+            menuItemInfo.fState = MFS_DEFAULT;
+        }
+        if (bDisabled)
+        {
+            menuItemInfo.fState |= MFS_DISABLED;
+        }
+
+        menuItemInfo.fType = MFT_STRING;
+        menuItemInfo.dwTypeData = pszName;
+    }
+    else
+    {
+        menuItemInfo.fType = MFT_SEPARATOR;
+    }
+
+    return InsertMenuItem(hMenu, nMenuId, FALSE, &menuItemInfo);
+}
+
+BOOL OCAS_AppendMenuItems(HMENU hMenu, const OCASMenuItem *pItems, 
+                          DWORD dwItemsCnt)
+{
+    const OCASMenuItem *pItem;
+    DWORD dwItemId;
+    BOOL bResult;
+    BOOL bRetVal = TRUE;
+
+    for (dwItemId = 0; dwItemId < dwItemsCnt; dwItemId++)
+    {
+        pItem = &pItems[dwItemId];
+        if (NULL == pItem)
+        {
+            continue;
+        }
+
+        bResult = OCAS_AppendMenuItem(hMenu, pItem->nMenuId, 
+            pItem->pszName, pItem->bDefault, pItem->bDisabled);
+        if (!bResult)
+        {
+            bRetVal = FALSE;
+        }
+    }
+
+    return bRetVal;
+}
