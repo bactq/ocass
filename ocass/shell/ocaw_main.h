@@ -21,4 +21,8 @@
 #ifndef _OCAW_MAIN_H_
 #define _OCAW_MAIN_H_ 1
 
+#include "ca_types.h"
+
+const HINSTANCE CAS_MGetAppInst(void);
+
 #endif /* !defined(_OCAW_MAIN_H_) */

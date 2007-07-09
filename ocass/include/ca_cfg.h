@@ -28,8 +28,8 @@
 
 #define CA_CFG_DEFAULT_TEMPLATE_PATH    (TEXT("template"))
 #define CA_CFG_DEFAULT_HISTORY_PATH     (TEXT("history"))
-#define CA_CFG_DEFAULT_SPY_LOG          (TEXT("ocass_s.log"))
-#define CA_CFG_DEFAULT_SPY_NT_DUMP      (TEXT("ocass_ntd.log"))
+#define CA_CFG_DEFAULT_SPY_LOG          (TEXT("log\\ocass_s.log"))
+#define CA_CFG_DEFAULT_SPY_NT_DUMP      (TEXT("log\\ocass_ntd.log"))
 
 #define CA_CFG_DEFAULT_SPY_LOG_TSIZE_B        (1024 * 1024 * 3)
 #define CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_B    (1024 * 1024 * 5)

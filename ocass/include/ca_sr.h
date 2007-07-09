@@ -64,8 +64,8 @@ typedef struct _CA_SD
     CASpyLogMask logMask;
 } CASpyDatum;
 
-#define CA_SPY_RUN_DATUM_FNAME      (TEXT("ocass_s.datum"))
-#define CA_SPY_RUN_LOCK_FNAME       (TEXT("ocass_s.lock"))
+#define CA_SPY_RUN_DATUM_FNAME      (TEXT("datum\\ocass_s.datum"))
+#define CA_SPY_RUN_LOCK_FNAME       (TEXT("datum\\ocass_s.lock"))
 
 typedef struct _CA_SR CASpyRun;
 
