@@ -18,37 +18,9 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <windows.h>
-#include "ocaw_main.h"
-#include "ocaw_proc.h"
+#ifndef _OCAW_PANIC_H_
+#define _OCAW_PANIC_H_ 1
 
-static HINSTANCE g_hInstance = NULL;
+#include "ca_types.h"
 
-const HINSTANCE CAS_MGetAppInst(void)
-{
-    return g_hInstance;
-}
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
-                   LPSTR lpCmdLine, int nCmdShow)
-{
-    OCAWProc ocawProc;
-    CAErrno caErr;
-    int nProcExit = CA_PROC_EXIT_OK;
-
-    g_hInstance = hInstance;
-
-    caErr = CAS_PStartup(__argc, __argv, &ocawProc);
-    if (CA_ERR_SUCCESS != caErr)
-    {
-        /* XXX panic */
-        return CA_PROC_EXIT_INIT_FAILED;
-    }
-
-    nProcExit = CAS_PRun(&ocawProc);
-    CAS_PCleanup(&ocawProc);
-    return nProcExit;
-}
+#endif /* !defined(_OCAW_PANIC_H_) */

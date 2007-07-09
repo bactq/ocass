@@ -67,7 +67,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "ocasswDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "../../shell" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "../../shell" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x804 /d "_DEBUG"
@@ -94,6 +94,10 @@ SOURCE=..\..\shell\ocaw_main.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\shell\ocaw_panic.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\shell\ocaw_proc.cpp
 # End Source File
 # End Group
@@ -106,12 +110,20 @@ SOURCE=..\..\shell\ocaw_main.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\shell\ocaw_panic.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\shell\ocaw_proc.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=..\..\shell\ocassw.rc
+# End Source File
 # End Group
 # End Target
 # End Project

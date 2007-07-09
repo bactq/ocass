@@ -21,4 +21,43 @@
 #ifndef _OCAW_RPOC_H_
 #define _OCAW_RPOC_H_ 1
 
+#include "ca_types.h"
+
+typedef enum
+{
+    OCASP_TYPE_WRK = 0, 
+    OCASP_TYPE_WAKEUP, 
+    OCASP_TYPE_USEAGE, 
+} OCASPType;
+
+typedef struct _OCAWProcSubWrk
+{
+    HWND hMWnd;
+} OCAWProcSubWrk;
+
+typedef struct _OCAWProcSubWakeUp
+{
+    int x;
+} OCAWProcSubWakeUp;
+
+typedef struct _OCAWProc
+{
+    DWORD dwShellProcId;
+    int argc;
+    char **argv;
+    OCASPType shellProcType;
+    union
+    {
+        OCAWProcSubWrk wrk;
+        OCAWProcSubWakeUp wakeup;
+    } SubData;
+} OCAWProc;
+
+CAErrno CAS_PStartup(int nArgc, char **pArgv, 
+                     OCAWProc *pProc);
+
+void CAS_PCleanup(OCAWProc *pProc);
+
+int CAS_PRun(OCAWProc *pProc);
+
 #endif /* !defined(_OCAW_RPOC_H_) */

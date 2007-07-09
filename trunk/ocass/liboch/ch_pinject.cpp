@@ -107,6 +107,9 @@ CA_DECLARE(CAErrno) CH_PInject(DWORD dwProcId, DWORD dwTimeOut)
         return caErr;
     }
 
+    /* we need wait the Communicator proc startuped */
+    Sleep(1000 * 5);
+
     CA_CfgDupRT(&(pHDatum->cfgDatum));
     pHDatum->hInjectWndHook = SetWindowsHookEx(WH_CBT, 
             (HOOKPROC)CH_HookCBTProc, CH_GetDllInstance(), dwThId);
