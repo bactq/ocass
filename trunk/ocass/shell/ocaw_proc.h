@@ -59,5 +59,7 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
 void CAS_PCleanup(OCAWProc *pProc);
 
 int CAS_PRun(OCAWProc *pProc);
+int OCAS_PUseage(OCAWProc *pProc);
+int OCAS_PWakeUp(OCAWProc *pProc);
 
 #endif /* !defined(_OCAW_RPOC_H_) */

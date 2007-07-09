@@ -26,29 +26,34 @@
 #include "ocaw_proc.h"
 
 static HINSTANCE g_hInstance = NULL;
+static OCAWProc  g_ocawProc = {0};
 
 const HINSTANCE CAS_MGetAppInst(void)
 {
     return g_hInstance;
 }
 
+OCAWProc* CAS_MGetProcPtr(void)
+{
+    return &g_ocawProc;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
                    LPSTR lpCmdLine, int nCmdShow)
 {
-    OCAWProc ocawProc;
     CAErrno caErr;
     int nProcExit = CA_PROC_EXIT_OK;
 
     g_hInstance = hInstance;
 
-    caErr = CAS_PStartup(__argc, __argv, &ocawProc);
+    caErr = CAS_PStartup(__argc, __argv, &g_ocawProc);
     if (CA_ERR_SUCCESS != caErr)
     {
         /* XXX panic */
         return CA_PROC_EXIT_INIT_FAILED;
     }
 
-    nProcExit = CAS_PRun(&ocawProc);
-    CAS_PCleanup(&ocawProc);
+    nProcExit = CAS_PRun(&g_ocawProc);
+    CAS_PCleanup(&g_ocawProc);
     return nProcExit;
 }
