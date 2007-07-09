@@ -95,6 +95,10 @@ SOURCE=..\..\shell\ocaw_main.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\shell\ocaw_misc.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\shell\ocaw_panic.cpp
 # End Source File
 # Begin Source File
@@ -112,6 +116,10 @@ SOURCE=..\..\shell\ocaw_wrk.cpp
 # Begin Source File
 
 SOURCE=..\..\shell\ocaw_main.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_misc.h
 # End Source File
 # Begin Source File
 

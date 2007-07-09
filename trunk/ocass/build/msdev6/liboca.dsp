@@ -236,6 +236,10 @@ SOURCE=..\..\include\ca_types.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\include\ca_ver.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\include\ca_xf.h
 # End Source File
 # Begin Source File
