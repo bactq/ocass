@@ -30,27 +30,15 @@ typedef enum
     OCASP_TYPE_USEAGE, 
 } OCASPType;
 
-typedef struct _OCAWProcSubWrk
-{
-    HWND hMWnd;
-} OCAWProcSubWrk;
-
-typedef struct _OCAWProcSubWakeUp
-{
-    int x;
-} OCAWProcSubWakeUp;
-
 typedef struct _OCAWProc
 {
     DWORD dwShellProcId;
     int argc;
     char **argv;
+    BOOL bIsBackground;
     OCASPType shellProcType;
-    union
-    {
-        OCAWProcSubWrk wrk;
-        OCAWProcSubWakeUp wakeup;
-    } SubData;
+
+    HWND hMainDlg;
 } OCAWProc;
 
 CAErrno CAS_PStartup(int nArgc, char **pArgv, 

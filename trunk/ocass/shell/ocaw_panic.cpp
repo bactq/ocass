@@ -21,3 +21,10 @@
 #include <windows.h>
 #include "ocaw_panic.h"
 
+void CAS_Panic(const TCHAR *pszSrc, UINT nSrcLine, 
+               int nProcExit, const TCHAR *pszReasonFmt, ...)
+{
+    /* message box */
+    MessageBox(NULL, "TEST", "TEST", MB_OK);
+    ExitProcess(nProcExit);
+}
