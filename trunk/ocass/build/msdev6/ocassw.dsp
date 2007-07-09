@@ -92,10 +92,22 @@ LINK32=link.exe
 
 SOURCE=..\..\shell\ocaw_main.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_proc.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_main.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_proc.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 

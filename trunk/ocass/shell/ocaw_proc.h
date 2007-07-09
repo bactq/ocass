@@ -18,11 +18,7 @@
  *
  */
 
-#include <windows.h>
-#include "ocaw_main.h"
+#ifndef _OCAW_RPOC_H_
+#define _OCAW_RPOC_H_ 1
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
-                   LPSTR lpCmdLine, int nCmdShow)
-{
-    return 0;
-}
+#endif /* !defined(_OCAW_RPOC_H_) */
