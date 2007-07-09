@@ -18,13 +18,11 @@
  *
  */
 
-#ifndef _OCAW_MAIN_H_
-#define _OCAW_MAIN_H_ 1
+#ifndef _OCAW_WRK_H_
+#define _OCAW_WRK_H_ 1
 
 #include "ca_types.h"
-#include "ocaw_proc.h"
 
-const HINSTANCE CAS_MGetAppInst(void);
-OCAWProc* CAS_MGetProcPtr(void);
+int OCAS_PWrk(OCAWProc *pProc);
 
-#endif /* !defined(_OCAW_MAIN_H_) */
+#endif /* !defined(_OCAW_WRK_H_) */

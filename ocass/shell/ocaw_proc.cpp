@@ -20,29 +20,16 @@
 
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
-#include "resource.h"
+#include "ocaw_wrk.h"
 
-static int OCAS_PWrk(OCAWProc *pProc)
-{
-    HWND hMainDlg = NULL;
-    int nProcExit = CA_PROC_EXIT_OK;
-
-#if 0
-    hMainDlg = CreateDialog(CAS_MGetAppInst(), 
-        MAKEINTRESOURCE(IDD_DLG_MAIN), 0, DialogProc);
-#endif
-
-    return nProcExit;
-}
-
-static int OCAS_PUseage(OCAWProc *pProc)
+int OCAS_PUseage(OCAWProc *pProc)
 {
     int nProcExit = CA_PROC_EXIT_USEAGE;
     /* XXX show useage */
     return nProcExit;
 }
 
-static int OCAS_PWakeUp(OCAWProc *pProc)
+int OCAS_PWakeUp(OCAWProc *pProc)
 {
     int nProcExit = CA_PROC_EXIT_OK;
     /* XXX wake up */
@@ -52,6 +39,12 @@ static int OCAS_PWakeUp(OCAWProc *pProc)
 CAErrno CAS_PStartup(int nArgc, char **pArgv, 
                      OCAWProc *pProc)
 {
+    memset(pProc, 0, sizeof(OCAWProc));
+    pProc->argc = nArgc;
+    pProc->argv = pArgv;
+    pProc->dwShellProcId = GetCurrentProcessId();
+    pProc->shellProcType = OCASP_TYPE_WRK;
+
     return CA_ERR_SUCCESS;
 }
 
