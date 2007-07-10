@@ -116,6 +116,11 @@ int OCAS_PWrk(OCAWProc *pProc)
     pProc->hShWrkEvt    = NULL;
     pProc->hShWrkTh     = NULL;
     pProc->bWrkStop     = FALSE;
+    pProc->pCCWrk       = NULL;
+    pProc->wrkDesc.bIsDirty = FALSE;
+    pProc->wrkDesc.startTime = time(NULL);
+    pProc->wrkDesc.wrkMod = CC_WRK_MOD_PAUSE;
+    pProc->wrkDesc.wrkState = CC_WRK_STATE_IDLE;
 
     /* create wrk evt */
     hEvt = OpenEvent(EVENT_ALL_ACCESS, TRUE, OCASS_EVT_NAME_SHELL_WRK);

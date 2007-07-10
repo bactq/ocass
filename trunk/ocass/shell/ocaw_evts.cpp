@@ -52,7 +52,13 @@ BOOL OCAS_BrowseHistoryPath(HWND hWnd)
     return TRUE;
 }
 
-BOOL OCAS_ChangeHistoryPath(HWND hWnd)
+BOOL OCAS_ChangeHistoryPath(HWND hWnd, TCHAR *pszHistoryPath)
+{
+    /* XXX */
+    return TRUE;
+}
+
+BOOL OCAS_OnChangeHistoryPath(HWND hWnd)
 {
     ITEMIDLIST *pBrowsed;
     BROWSEINFO browseInfo = {0};
@@ -75,9 +81,8 @@ BOOL OCAS_ChangeHistoryPath(HWND hWnd)
     {
         return FALSE;
     }
-    
-    /* XXX change save path */
-    return TRUE;
+
+    return OCAS_ChangeHistoryPath(hWnd, szPath);
 }
 
 BOOL OCAS_OnMainDlgInit(HWND hWnd)
@@ -94,7 +99,6 @@ BOOL OCAS_OnMainDlgInit(HWND hWnd)
     /* set value to ctls */
     CA_CfgDupRT(&cfgDatum);
     OCAS_SetHistoryPath(hWnd, cfgDatum.szHistoryPath);
-
     return TRUE;
 }
 
@@ -127,7 +131,7 @@ BOOL OCAS_OnMainDlgCmdEvt(HWND hWnd, UINT wParam, LPARAM lParam,
         return OCAS_BrowseHistoryPath(hWnd);
 
     case IDC_BUTTON_CHANGE:
-        return OCAS_ChangeHistoryPath(hWnd);
+        return OCAS_OnChangeHistoryPath(hWnd);
 
     default:
         return FALSE;
