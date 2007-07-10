@@ -18,6 +18,7 @@
  *
  */
 
+#include "liboca.h"
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
 #include "ocaw_wrk.h"
@@ -45,7 +46,7 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
     pProc->dwShellProcId = GetCurrentProcessId();
     pProc->shellProcType = OCASP_TYPE_WRK;
     pProc->bIsBackground = FALSE;
-
+    CA_Startup();
     return CA_ERR_SUCCESS;
 }
 
