@@ -22,6 +22,7 @@
 #define _OCAW_RPOC_H_ 1
 
 #include "ca_types.h"
+#include "libocc.h"
 
 typedef enum
 {
@@ -38,6 +39,7 @@ typedef struct _OCAWProc
     BOOL bIsBackground;
     TCHAR szCfgFName[MAX_PATH];
     TCHAR szWrkPath[MAX_PATH];
+    CRITICAL_SECTION shellCS;
 
     OCASPType shellProcType;
 
@@ -45,6 +47,8 @@ typedef struct _OCAWProc
     HWND    hMainDlg;
     HANDLE  hShWrkEvt;
     HANDLE  hShWrkTh;
+    CCWrk   *pCCWrk;
+    CCWrkStateDesc wrkDesc;
 } OCAWProc;
 
 CAErrno CAS_PStartup(int nArgc, char **pArgv, 

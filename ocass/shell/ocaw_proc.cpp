@@ -44,8 +44,7 @@ int OCAS_PWakeUp(OCAWProc *pProc)
 
     hEvt = OpenEvent(EVENT_ALL_ACCESS, TRUE, OCASS_EVT_NAME_SHELL_WRK);
     if (NULL == hEvt)
-    {        
-        /* XXX panic */
+    {
         return CA_PROC_EXIT_INIT_FAILED;
     }
 
