@@ -39,6 +39,7 @@ typedef int CAErrno;
 #define CA_ERR_OPT_CANCEL           (-908)
 #define CA_ERR_OBJ_CANNOT_FIND      (-909)
 #define CA_ERR_OBJ_NAME_TOO_LONG    (-920)
+#define CA_ERR_USER_CANCEL          (-925)
 
 #define CA_ERR_FNAME_TOO_LONG       (-1000)
 #define CA_ERR_FNAME_CANNOT_FIND    (-1001)

@@ -18,6 +18,7 @@
  *
  */
 
+#include "liboca.h"
 #include "ca_types.h"
 #include "ca_misc.h"
 #include "ca_mod.h"
@@ -92,29 +93,38 @@ void CH_OnInjectComplete(CHHDatum *pHDatum)
     pHDatum->hInjectWndHook = NULL;
 }
 
-CA_DECLARE(CAErrno) CH_PInject(DWORD dwProcId, DWORD dwTimeOut)
+CA_DECLARE(CAErrno) CH_PInject(DWORD dwProcId, void *pCbCtx, 
+                               CH_PInjectCancelCbFunc pCancelCbFunc)
 {
     CHHDatum *pHDatum = CH_HDatumPtrGet();
     CAErrno funcErr = CA_ERR_SUCCESS;
     CAErrno caErr;
     DWORD dwWaitTime;
     DWORD dwThId;
+    BOOL bHookFailed = FALSE;
 
     caErr = CA_GetProcFirstThread(dwProcId, &dwThId);
     if (CA_ERR_SUCCESS != caErr)
     {
-        /* XXX log */
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR|CA_RTLOG_OSERR, 
+            TEXT("Can't get the first thread id from process %u "), 
+            dwProcId);
         return caErr;
     }
 
+    CA_RTLog(CA_SRC_MARK, CA_RTLOG_INFO, 
+        TEXT("Start inject thread %u"), dwThId);
+
     /* we need wait the Communicator proc startuped */
     Sleep(1000 * 5);
-
     CA_CfgDupRT(&(pHDatum->cfgDatum));
     pHDatum->hInjectWndHook = SetWindowsHookEx(WH_CBT, 
             (HOOKPROC)CH_HookCBTProc, CH_GetDllInstance(), dwThId);
     if (NULL == pHDatum->hInjectWndHook)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR|CA_RTLOG_OSERR, 
+            TEXT("Can't inject to thread %u"), 
+            dwThId);
         return CA_ERR_SYS_CALL;
     }
 
@@ -130,11 +140,26 @@ CA_DECLARE(CAErrno) CH_PInject(DWORD dwProcId, DWORD dwTimeOut)
 
         Sleep(500);
         dwWaitTime += 500;
-        if (0 != dwTimeOut && dwWaitTime < dwTimeOut )
+
+        if (NULL != pCancelCbFunc)
         {
-            funcErr = CA_ERR_TIMEOUT;
-            break;
+            if (pCancelCbFunc(pCbCtx))
+            {
+                CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+                    TEXT("User cancel the inject operate, wait time %u"), 
+                    dwWaitTime);
+
+                funcErr = CA_ERR_USER_CANCEL;
+                bHookFailed = TRUE;
+                break;
+            }
         }
+    }
+
+    if (bHookFailed && NULL != pHDatum->hInjectWndHook)
+    {
+        UnhookWindowsHookEx(pHDatum->hInjectWndHook);
+        pHDatum->hInjectWndHook = NULL;
     }
 
     return funcErr;
