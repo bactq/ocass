@@ -6,6 +6,7 @@
 #define ID_POPMENU_OPEN                 101
 #define ID_POPMENU_CLOSE                102
 #define IDR_MENU_MAIN                   103
+#define ID_POPMENU_BROWSE_HISTORY       103
 #define IDI_ICON_MAIN                   105
 #define IDD_DLG_ABOUT                   107
 #define IDD_DLG_CFG                     108
@@ -13,7 +14,6 @@
 #define IDC_BUTTON1                     1000
 #define IDC_EDIT_HISTORY_PATH           1002
 #define IDC_BUTTON_CHANGE               1003
-#define IDC_BUTTON_OPEN                 1004
 #define IDC_BUTTON_BROWSE               1004
 #define ID_SYSTEM_EXIT                  40001
 #define ID_SYSTEM_OPTIONS               40002
@@ -26,6 +26,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40006
 #define _APS_NEXT_CONTROL_VALUE         1005
-#define _APS_NEXT_SYMED_VALUE           103
+#define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

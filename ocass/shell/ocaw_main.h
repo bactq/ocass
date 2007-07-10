@@ -31,9 +31,12 @@
 #define OCAW_MAIN_NOTIFY_ICON_ID        (101)
 
 const OCASMenuItem g_popMenuItems[] = 
-{
-    { TEXT("&Open") , ID_POPMENU_OPEN, TRUE, FALSE }, 
-    { TEXT("E&xit") , ID_POPMENU_CLOSE, TRUE, FALSE }, 
+{    
+    { TEXT("&Browse history folder ..."), 
+      ID_POPMENU_BROWSE_HISTORY, FALSE , FALSE }, 
+    { NULL, -1, FALSE , FALSE }, 
+    { TEXT("&Open"), ID_POPMENU_OPEN, FALSE , FALSE }, 
+    { TEXT("E&xit"), ID_POPMENU_CLOSE, TRUE, FALSE }
 };
 
 const HINSTANCE CAS_MGetAppInst(void);

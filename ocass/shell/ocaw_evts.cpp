@@ -116,6 +116,9 @@ BOOL OCAS_OnMainDlgCmdEvt(HWND hWnd, UINT wParam, LPARAM lParam,
     case ID_POPMENU_OPEN:
         return OCAS_MainDlgShow(hWnd);
 
+    case ID_POPMENU_BROWSE_HISTORY:
+        return OCAS_BrowseHistoryPath(hWnd);
+
     case ID_POPMENU_CLOSE:
         DestroyWindow(hWnd);
         return TRUE;
