@@ -18,38 +18,4 @@
  *
  */
 
-#ifndef _OCAW_RPOC_H_
-#define _OCAW_RPOC_H_ 1
-
-#include "ca_types.h"
-
-typedef enum
-{
-    OCASP_TYPE_WRK = 0, 
-    OCASP_TYPE_WAKEUP, 
-    OCASP_TYPE_USEAGE, 
-} OCASPType;
-
-typedef struct _OCAWProc
-{
-    DWORD dwShellProcId;
-    int argc;
-    char **argv;
-    BOOL bIsBackground;
-    TCHAR szCfgFName[MAX_PATH];
-    TCHAR szWrkPath[MAX_PATH];
-
-    OCASPType shellProcType;
-    HWND hMainDlg;
-} OCAWProc;
-
-CAErrno CAS_PStartup(int nArgc, char **pArgv, 
-                     OCAWProc *pProc);
-
-void CAS_PCleanup(OCAWProc *pProc);
-
-int CAS_PRun(OCAWProc *pProc);
-int OCAS_PUseage(OCAWProc *pProc);
-int OCAS_PWakeUp(OCAWProc *pProc);
-
-#endif /* !defined(_OCAW_RPOC_H_) */
+#include "ocaw_log.h"

@@ -99,6 +99,10 @@ SOURCE=..\..\shell\ocaw_evts.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\shell\ocaw_log.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\shell\ocaw_main.cpp
 # End Source File
 # Begin Source File
@@ -132,6 +136,10 @@ SOURCE=..\..\shell\ocaw_about.h
 # Begin Source File
 
 SOURCE=..\..\shell\ocaw_evts.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\shell\ocaw_log.h
 # End Source File
 # Begin Source File
 
