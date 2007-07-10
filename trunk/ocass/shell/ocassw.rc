@@ -13,12 +13,12 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (P.R.C.) resources
+// English (U.S.) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
-LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
-#pragma code_page(936)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -40,6 +40,25 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 10, "System"
 BEGIN
+END
+
+IDD_DLG_MAIN DIALOG DISCARDABLE  0, 0, 275, 137
+STYLE DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ocass"
+MENU IDR_MENU_MAIN
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Save my conversations in this folder:",IDC_STATIC,14,91,
+                    121,8
+    GROUPBOX        "Message History",IDC_STATIC,7,74,261,56
+    EDITTEXT        IDC_EDIT_HISTORY_PATH,14,103,132,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "&Browse ...",IDC_BUTTON_BROWSE,156,103,50,14
+    PUSHBUTTON      "&Change ...",IDC_BUTTON_CHANGE,212,103,50,14
+    GROUPBOX        "General information",IDC_STATIC,7,7,261,64
+    LTEXT           "Monitor state: ",IDC_STATIC,17,20,106,8
+    LTEXT           "Communicator Process Name:",IDC_STATIC,17,36,106,8
+    LTEXT           "Program version:",IDC_STATIC,17,52,106,8
 END
 
 
@@ -66,6 +85,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 122
     END
+
+    IDD_DLG_MAIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 268
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 130
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -85,18 +112,6 @@ IDI_ICON_MAIN           ICON    DISCARDABLE     "ocaw_app.ico"
 //
 
 IDB_BITMAP_ABOUT        BITMAP  DISCARDABLE     "bitmap_about.bmp"
-#endif    // Chinese (P.R.C.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -121,39 +136,6 @@ BEGIN
     "\0"
 END
 
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_DLG_MAIN DIALOG DISCARDABLE  0, 0, 180, 154
-STYLE DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "ocass"
-MENU IDR_MENU_MAIN
-FONT 8, "MS Sans Serif"
-BEGIN
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
-BEGIN
-    IDD_DLG_MAIN, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 173
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 147
-    END
-END
 #endif    // APSTUDIO_INVOKED
 
 

@@ -11,6 +11,10 @@
 #define IDD_DLG_CFG                     108
 #define IDB_BITMAP_ABOUT                110
 #define IDC_BUTTON1                     1000
+#define IDC_EDIT_HISTORY_PATH           1002
+#define IDC_BUTTON_CHANGE               1003
+#define IDC_BUTTON_OPEN                 1004
+#define IDC_BUTTON_BROWSE               1004
 #define ID_SYSTEM_EXIT                  40001
 #define ID_SYSTEM_OPTIONS               40002
 #define ID_ABOUT                        40004
@@ -21,7 +25,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40006
-#define _APS_NEXT_CONTROL_VALUE         1001
+#define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

@@ -18,6 +18,8 @@
  *
  */
 
+#include <shlobj.h>
+#include "ca_cfg.h"
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
 #include "ocaw_wrk.h"
@@ -26,8 +28,61 @@
 #include "ocaw_evts.h"
 #include "resource.h"
 
+BOOL OCAS_SetHistoryPath(HWND hMainWnd, const TCHAR *pszPath)
+{
+    HWND hDlgItem;
+
+    hDlgItem = GetDlgItem(hMainWnd, IDC_EDIT_HISTORY_PATH);
+    if (NULL == hDlgItem)
+    {
+        return FALSE;
+    }
+
+    SendMessage(hDlgItem, WM_SETTEXT, NULL, (LPARAM)pszPath);
+    return TRUE;
+}
+
+BOOL OCAS_BrowseHistoryPath(HWND hWnd)
+{
+    CACfgDatum cfgDatum;
+
+    CA_CfgDupRT(&cfgDatum);
+    ShellExecute(hWnd, TEXT("open"), cfgDatum.szHistoryPath, 
+        NULL, NULL, SW_SHOWNORMAL);
+    return TRUE;
+}
+
+BOOL OCAS_ChangeHistoryPath(HWND hWnd)
+{
+    ITEMIDLIST *pBrowsed;
+    BROWSEINFO browseInfo = {0};
+    TCHAR szPath[MAX_PATH];
+    BOOL bResult;
+
+    browseInfo.hwndOwner = hWnd;
+    browseInfo.ulFlags = BIF_RETURNONLYFSDIRS;
+    browseInfo.lpszTitle = TEXT("Open folder");
+    browseInfo.lpfn = NULL;
+    browseInfo.lParam = (LPARAM)hWnd;
+    pBrowsed = SHBrowseForFolder(&browseInfo);
+    if (NULL == pBrowsed)
+    {
+        return FALSE;
+    }
+
+    bResult = SHGetPathFromIDList(pBrowsed, szPath);
+    if (!bResult)
+    {
+        return FALSE;
+    }
+    
+    /* XXX change save path */
+    return TRUE;
+}
+
 BOOL OCAS_OnMainDlgInit(HWND hWnd)
 {
+    CACfgDatum cfgDatum;
     HICON hAppIcon; 
     
     hAppIcon = LoadIcon(CAS_MGetAppInst(), MAKEINTRESOURCE(IDI_ICON_MAIN));
@@ -36,6 +91,10 @@ BOOL OCAS_OnMainDlgInit(HWND hWnd)
         SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)hAppIcon);
     }
     
+    /* set value to ctls */
+    CA_CfgDupRT(&cfgDatum);
+    OCAS_SetHistoryPath(hWnd, cfgDatum.szHistoryPath);
+
     return TRUE;
 }
 
@@ -60,6 +119,12 @@ BOOL OCAS_OnMainDlgCmdEvt(HWND hWnd, UINT wParam, LPARAM lParam,
     case ID_POPMENU_CLOSE:
         DestroyWindow(hWnd);
         return TRUE;
+
+    case IDC_BUTTON_BROWSE:
+        return OCAS_BrowseHistoryPath(hWnd);
+
+    case IDC_BUTTON_CHANGE:
+        return OCAS_ChangeHistoryPath(hWnd);
 
     default:
         return FALSE;
