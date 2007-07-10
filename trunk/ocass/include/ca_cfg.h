@@ -30,11 +30,14 @@
 #define CA_CFG_DEFAULT_HISTORY_PATH     (TEXT("history"))
 #define CA_CFG_DEFAULT_SPY_LOG          (TEXT("log\\ocass_s.log"))
 #define CA_CFG_DEFAULT_SPY_NT_DUMP      (TEXT("log\\ocass_ntd.log"))
+#define CA_CFG_DEFAULT_SHELL_LOG        (TEXT("log\\ocass.log"))
 
-#define CA_CFG_DEFAULT_SPY_LOG_TSIZE_B        (1024 * 1024 * 3)
+#define CA_CFG_DEFAULT_SPY_LOG_TSIZE_B        (1024 * 1024 * 2)
 #define CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_B    (1024 * 1024 * 5)
-#define CA_CFG_DEFAULT_SPY_LOG_TSIZE_M        (3)
+#define CA_CFG_DEFAULT_SHELL_TSIZE_B          (1024 * 1024 * 2)
+#define CA_CFG_DEFAULT_SPY_LOG_TSIZE_M        (2)
 #define CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_M    (5)
+#define CA_CFG_DEFAULT_SHELL_TSIZE_M          (2)
 
 typedef struct _CA_CFG_DATUM
 {
@@ -49,6 +52,10 @@ typedef struct _CA_CFG_DATUM
     TCHAR szSpyNtDump[MAX_PATH];
     DWORD dwSpyNtDumpTSize;
 
+    TCHAR szShellLog[MAX_PATH];
+    DWORD dwShellTSize;
+
+    CAShellLogMask shellLogMask;
     CASpyLogMask spyLogMask;
 } CACfgDatum;
 
@@ -58,6 +65,9 @@ typedef struct _CA_CFG_DATUM
  * [app]
  * communicator_fname="c:\abc\abc.exe"
  * template_path="c:\abc"
+ * log_fname="abc"
+ * log_ts=5
+ * log_mask=0
  * [spy]
  * history_path="c:\abc"
  * spy_log="c:\abc\abc.log"

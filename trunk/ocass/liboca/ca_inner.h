@@ -33,7 +33,6 @@ typedef struct _CART
     CRITICAL_SECTION rtCS;
     CAFLock rtPL;
 
-    CRITICAL_SECTION rtLogCS;
     void *pRTLogCbCtx;
     CA_RTLogFunc pRTLogFunc;
 } CART;

@@ -142,6 +142,7 @@ CAErrno CS_LogUpdateCfg(CSLogCfg *pCSLogCfg)
     logAct = (pCSLogCfg->spyLogMask & CA_SPY_LOG_RENAME_OLD ?
         CA_LOG_TRUNCATE_RNAME : CA_LOG_TRUNCATE_DEL);
     
+    /* FIXME this mask value is not thread safe */
     pCSLog->spyLogMask = pCSLogCfg->spyLogMask;
 
     logOpt.pszLogFName = pCSLogCfg->pszSpyLogFName;

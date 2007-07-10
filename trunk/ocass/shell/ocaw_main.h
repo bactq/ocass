@@ -27,6 +27,7 @@
 #include "resource.h"
 
 #define OCAW_MSG_NOTIFY_ICON    (WM_USER + 101)
+#define OCAW_MSG_WAKEUP         (WM_USER + 102)
 
 #define OCAW_MAIN_NOTIFY_ICON_ID        (101)
 

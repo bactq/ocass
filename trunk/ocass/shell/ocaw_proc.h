@@ -40,7 +40,11 @@ typedef struct _OCAWProc
     TCHAR szWrkPath[MAX_PATH];
 
     OCASPType shellProcType;
-    HWND hMainDlg;
+
+    BOOL    bWrkStop;
+    HWND    hMainDlg;
+    HANDLE  hShWrkEvt;
+    HANDLE  hShWrkTh;
 } OCAWProc;
 
 CAErrno CAS_PStartup(int nArgc, char **pArgv, 
