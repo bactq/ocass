@@ -24,7 +24,7 @@
 #include "libocc.h"
 #include "cc_inner.h"
 
-CA_DECLARE(CAErrno) CC_Startup(CCWrk **pCWrk)
+CA_DECLARE(CAErrno) CC_Startup(CCWrkMod wrkMod, CCWrk **pCWrk)
 {
     CRITICAL_SECTION *pWrkCS = NULL;
     CAErrno funcErr = CA_ERR_SUCCESS;
@@ -56,7 +56,7 @@ CA_DECLARE(CAErrno) CC_Startup(CCWrk **pCWrk)
     pNewCWrk->bStateDirty = TRUE;
     pNewCWrk->stateStartTime = time(NULL);
     pNewCWrk->wrkState = CC_WRK_STATE_IDLE;
-    pNewCWrk->wrkMod = CC_WRK_MOD_NORMAL;
+    pNewCWrk->wrkMod = wrkMod;
     pNewCWrk->pSR = NULL;
     pNewCWrk->hWrkTh = CreateThread(NULL, 0, 
         CC_WrkThread, pNewCWrk, 0, &dwThId);

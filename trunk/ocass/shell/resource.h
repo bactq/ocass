@@ -15,6 +15,8 @@
 #define IDC_EDIT_HISTORY_PATH           1002
 #define IDC_BUTTON_CHANGE               1003
 #define IDC_BUTTON_BROWSE               1004
+#define IDC_EDIT_MONSTATE               1005
+#define IDC_EDIT_MONPROC                1006
 #define ID_SYSTEM_EXIT                  40001
 #define ID_SYSTEM_OPTIONS               40002
 #define ID_ABOUT                        40004
@@ -25,7 +27,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40006
-#define _APS_NEXT_CONTROL_VALUE         1005
+#define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

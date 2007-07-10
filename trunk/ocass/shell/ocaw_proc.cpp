@@ -76,6 +76,7 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
     pProc->dwShellProcId = GetCurrentProcessId();
     pProc->shellProcType = OCASP_TYPE_WRK;
     pProc->bIsBackground = TRUE;
+    InitializeCriticalSection(&pProc->shellCS);
     caErr = CA_GetModPath(NULL, pProc->szWrkPath, 
         sizeof(pProc->szWrkPath) / sizeof(pProc->szWrkPath[0]));
     if (CA_ERR_SUCCESS != caErr)
@@ -159,6 +160,7 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
 
 void CAS_PCleanup(OCAWProc *pProc)
 {
+    DeleteCriticalSection(&pProc->shellCS);
     CAS_LogCleanup();
     CA_Cleanup();
 }

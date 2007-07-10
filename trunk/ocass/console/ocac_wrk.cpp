@@ -76,7 +76,7 @@ static int OCAC_PCCWrk(OCACProc *pProc)
         goto EXIT;
     }
 
-    caErr = CC_Startup(&pCWrk);
+    caErr = CC_Startup(CC_WRK_MOD_NORMAL, &pCWrk);
     if (CA_ERR_SUCCESS != caErr)
     {
         CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 

@@ -56,7 +56,7 @@ typedef struct _CC_WRK_STATE_DESC
     BOOL bIsDirty;
 } CCWrkStateDesc;
 
-CA_DECLARE(CAErrno) CC_Startup(CCWrk **pCWrk);
+CA_DECLARE(CAErrno) CC_Startup(CCWrkMod wrkMod, CCWrk **pCWrk);
 CA_DECLARE(void)    CC_Cleanup(CCWrk *pCWrk);
 
 CA_DECLARE(CAErrno) CC_State(CCWrk *pCWrk, BOOL bClearDirtyFlag,

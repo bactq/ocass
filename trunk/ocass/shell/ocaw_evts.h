@@ -32,5 +32,7 @@ BOOL OCAS_ShowTrayPopMenu(HWND hWnd);
 BOOL OCAS_MainDlgShow(HWND hWnd);
 BOOL OCAS_MainDlgHide(HWND hWnd);
 
+BOOL OCAS_OnWrkDescChange(HWND hWnd);
+
 #endif /* !defined(_OCAW_EVTS_H_) */
 
