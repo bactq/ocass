@@ -63,12 +63,24 @@ EXIT:
     CC_UpdateState(pCWrk, wrkState);
 }
 
+static BOOL CH_PInjectCancelCb(void *pCbCtx)
+{
+    CCWrk *pCWrk = (CCWrk *)pCbCtx;
+
+    if (NULL == pCWrk)
+    {
+        return FALSE;
+    }
+
+    return (pCWrk->bStopWrkTh ? TRUE : FALSE);
+}
+
 static void CC_DoInject(CCWrk *pCWrk, DWORD dwProcId)
 {
     CAErrno caErr;
 
     CC_UpdateState(pCWrk, CC_WRK_STATE_INJECTING);
-    caErr = CH_PInject(dwProcId, 0);
+    caErr = CH_PInject(dwProcId, pCWrk, CH_PInjectCancelCb);
     if (CA_ERR_SUCCESS == caErr)
     {
         CC_UpdateState(pCWrk, CC_WRK_STATE_INJECTED);

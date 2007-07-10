@@ -23,6 +23,9 @@
 
 #include "liboca.h"
 
-CA_DECLARE(CAErrno) CH_PInject(DWORD dwProcId, DWORD dwTimeOut);
+typedef BOOL (*CH_PInjectCancelCbFunc)(void *pCbCtx);
+
+CA_DECLARE(CAErrno) CH_PInject(DWORD dwProcId, void *pCbCtx, 
+                               CH_PInjectCancelCbFunc pCancelCbFunc);
 
 #endif /* !defined(_LIBOCH_H_) */
