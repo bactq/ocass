@@ -39,9 +39,13 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     pCfgDatum->szHistoryPath[0] = '\0';
     pCfgDatum->szSpyLog[0] = '\0';
     pCfgDatum->szSpyNtDump[0] = '\0';
-    pCfgDatum->spyLogMask = CA_SPY_LOG_NONE;
+    pCfgDatum->szShellLog[0] = '\0';
+
+    pCfgDatum->spyLogMask = CA_SPY_LOG_ERR|CA_SPY_LOG_DEL_OLD;
+    pCfgDatum->shellLogMask = CA_SH_LOG_ERR|CA_SH_LOG_DEL_OLD;
     pCfgDatum->dwSpyLogTSize = CA_CFG_DEFAULT_SPY_LOG_TSIZE_B;
     pCfgDatum->dwSpyNtDumpTSize = CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_B;
+    pCfgDatum->dwShellTSize = CA_CFG_DEFAULT_SHELL_TSIZE_B;
 
     /* Communicator file name */
     dwBufCnt = sizeof(pCfgDatum->szCommunicatorFName) / 
@@ -91,7 +95,16 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     {
         return caErr;
     }
-    
+
+    /* shell log */
+    dwBufCnt = sizeof(pCfgDatum->szShellLog) / 
+               sizeof(pCfgDatum->szShellLog[0]);
+    caErr = CA_PathJoin(pszWrkPath, CA_CFG_DEFAULT_SHELL_LOG, 
+        pCfgDatum->szShellLog, dwBufCnt);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return caErr;
+    }
 
     return CA_ERR_SUCCESS;
 }
@@ -150,7 +163,7 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
         CA_CFG_DEFAULT_SPY_LOG_TSIZE_M, pszCfgFName);
      pCfgDatum->dwSpyLogTSize = (nVal * 1024 * 1024);
 
-    /* spy log */
+    /* spy net log */
     dwBufCnt = sizeof(pCfgDatum->szSpyNtDump) / 
                sizeof(pCfgDatum->szSpyNtDump[0]);
     GetPrivateProfileString(TEXT("spy"), TEXT("spy_ntdump"), 
@@ -163,6 +176,20 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
     /* spy log mask */
     pCfgDatum->spyLogMask = GetPrivateProfileInt(TEXT("spy"), 
         TEXT("spy_logmask"), cfgDefaultDatum.spyLogMask, pszCfgFName);
+
+    /* shell log */
+    dwBufCnt = sizeof(pCfgDatum->szShellLog) / 
+               sizeof(pCfgDatum->szShellLog[0]);
+    GetPrivateProfileString(TEXT("app"), TEXT("log_fname"), 
+        cfgDefaultDatum.szShellLog, pCfgDatum->szShellLog, 
+        dwBufCnt, pszCfgFName);
+    nVal = GetPrivateProfileInt(TEXT("app"), TEXT("log_ts"), 
+        CA_CFG_DEFAULT_SHELL_TSIZE_M, pszCfgFName);
+     pCfgDatum->dwShellTSize = (nVal * 1024 * 1024);
+
+     /* shell log mask */
+    pCfgDatum->shellLogMask = GetPrivateProfileInt(TEXT("app"), 
+        TEXT("log_mask"), cfgDefaultDatum.shellLogMask, pszCfgFName);
 
     return CA_ERR_SUCCESS;
 }

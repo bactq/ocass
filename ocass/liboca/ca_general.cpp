@@ -35,7 +35,6 @@ CART* CA_GetPtrRT(void)
 static CAErrno CA_RTStartup(void)
 {
     CRITICAL_SECTION *pRTCS = NULL;
-    CRITICAL_SECTION *pRTLogCS = NULL;
     HRESULT hResult;
     CAFLock *pRTPL = NULL;
     CAErrno caErr;
@@ -63,9 +62,6 @@ static CAErrno CA_RTStartup(void)
 
     InitializeCriticalSection(&g_caRT.rtCS);
     pRTCS = &g_caRT.rtCS;
-
-    InitializeCriticalSection(&g_caRT.rtLogCS);
-    pRTLogCS = &g_caRT.rtLogCS;
 
     caErr = CA_FLockCreate(szRTFLock, &g_caRT.rtPL);
     if (CA_ERR_SUCCESS != caErr)
@@ -97,11 +93,6 @@ EXIT:
             DeleteCriticalSection(pRTCS);
         }
 
-        if (NULL != pRTLogCS)
-        {
-            DeleteCriticalSection(pRTLogCS);
-        }
-
         if (NULL != pRTPL)
         {
             CA_FLockDestroy(pRTPL, FALSE);
@@ -118,21 +109,8 @@ static CAErrno CA_RTCleanup(void)
     g_caRT.hCADll = NULL;
     g_caRT.szRTWrkPath[0] = '\0';
     DeleteCriticalSection(&g_caRT.rtCS);
-    DeleteCriticalSection(&g_caRT.rtLogCS);
     CA_FLockDestroy(&g_caRT.rtPL, FALSE);
     CoUninitialize();
-    return CA_ERR_SUCCESS;
-}
-
-static CAErrno CA_RTLogCSEnter(void)
-{
-    EnterCriticalSection(&(CA_GetPtrRT()->rtLogCS));
-    return CA_ERR_SUCCESS;
-}
-
-static CAErrno CA_RTLogCSLeave(void)
-{
-    LeaveCriticalSection(&(CA_GetPtrRT()->rtLogCS));
     return CA_ERR_SUCCESS;
 }
 
@@ -203,12 +181,11 @@ CA_DECLARE(void) CA_RTLog(const TCHAR *pszSrc, int nSrcLine,
     void *pCbCtx;
     int nResult;
 
-    CA_RTLogCSEnter();
     pCbCtx = CA_GetPtrRT()->pRTLogCbCtx;
     pLogFunc = CA_GetPtrRT()->pRTLogFunc;
     if (NULL == pLogFunc)
     {
-        goto EXIT;
+        return;
     }
 
     va_start(pArgList, pszFmt);
@@ -217,7 +194,7 @@ CA_DECLARE(void) CA_RTLog(const TCHAR *pszSrc, int nSrcLine,
     va_end(pArgList);
     if (0 >= nResult)
     {
-        goto EXIT;
+        return;
     }
 
     rtLog.logFlags = logFlags;
@@ -226,8 +203,6 @@ CA_DECLARE(void) CA_RTLog(const TCHAR *pszSrc, int nSrcLine,
     rtLog.nSrcLine = nSrcLine;
     rtLog.pszLog = szRTLog;
     pLogFunc(pCbCtx, &rtLog);
-EXIT:
-    CA_RTLogCSLeave();
 }
 
 CA_DECLARE(const TCHAR*) CA_RTLogFlagsDesc(CARTLogFlags logFlags)

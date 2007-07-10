@@ -37,6 +37,16 @@ typedef int CASpyLogMask;
 #define CA_SPY_LOG_DEL_OLD      (1<<20)
 #define CA_SPY_LOG_RENAME_OLD   (1<<21)
 
+typedef int CAShellLogMask;
+#define CA_SH_LOG_NONE         (0)
+#define CA_SH_LOG_ERR          (1<< 0)
+#define CA_SH_LOG_DBG          (1<< 1)
+#define CA_SH_LOG_WARN         (1<< 2)
+#define CA_SH_LOG_INFO         (1<< 3)
+
+#define CA_SH_LOG_DEL_OLD      (1<<20)
+#define CA_SH_LOG_RENAME_OLD   (1<<21)
+
 typedef enum
 {
     CA_SPY_STATE_PREPARE = 0,

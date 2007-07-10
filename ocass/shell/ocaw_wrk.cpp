@@ -18,12 +18,42 @@
  *
  */
 
+#include "ca_evts.h"
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
 #include "ocaw_wrk.h"
 #include "ocaw_evts.h"
 #include "ocaw_panic.h"
 #include "resource.h"
+
+static DWORD WINAPI OCAS_ShWrkTh(VOID *pArg)
+{
+    OCAWProc *pProc = (OCAWProc *)pArg;
+    DWORD dwResult;
+
+    for (;;)
+    {
+        dwResult = WaitForSingleObject(pProc->hShWrkEvt, INFINITE);
+        if (pProc->bWrkStop)
+        {
+            break;
+        }
+
+        if (WAIT_FAILED == dwResult)
+        {
+            Sleep(1000);
+            continue;
+        }
+
+        /* send msg to main dlg */
+        if (NULL != pProc->hMainDlg)
+        {
+            SendMessage(pProc->hMainDlg, OCAW_MSG_WAKEUP, NULL, NULL);
+        }
+    }
+
+    return CA_THREAD_EXIT_OK;
+}
 
 BOOL OCAS_OnMainDlgCmd(HWND hWnd, UINT wParam, LPARAM lParam)
 {
@@ -62,6 +92,9 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
     case OCAW_MSG_NOTIFY_ICON:
         return OCAS_OnMainDlgNotifyIconMsg(hWnd, wParam, lParam);
 
+    case OCAW_MSG_WAKEUP:
+        return OCAS_MainDlgShow(hWnd);
+
     case WM_CLOSE:
         return OCAS_OnMainDlgClose(hWnd);        
 
@@ -73,33 +106,68 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
 int OCAS_PWrk(OCAWProc *pProc)
 {
     NOTIFYICONDATA notifyIconData;
-    HWND hMainDlg = NULL;
+    HANDLE hEvt;
+    DWORD dwThId;
     BOOL bResult;
     MSG  wndMsg;
     int nProcExit = CA_PROC_EXIT_OK;
 
-    hMainDlg = CreateDialog(CAS_MGetAppInst(), 
+    pProc->hMainDlg     = NULL;
+    pProc->hShWrkEvt    = NULL;
+    pProc->hShWrkTh     = NULL;
+    pProc->bWrkStop     = FALSE;
+
+    /* create wrk evt */
+    hEvt = OpenEvent(EVENT_ALL_ACCESS, TRUE, OCASS_EVT_NAME_SHELL_WRK);
+    if (NULL != hEvt)
+    {
+        CloseHandle(hEvt);
+
+        /* XXX panic */
+        nProcExit = CA_PROC_EXIT_INIT_FAILED;
+        goto EXIT;
+    }
+
+    pProc->hShWrkEvt = CreateEvent(NULL, FALSE, FALSE, 
+        OCASS_EVT_NAME_SHELL_WRK);
+    if (NULL == pProc->hShWrkEvt)
+    {
+        /* XXX panic */
+        nProcExit = CA_PROC_EXIT_INIT_FAILED;
+        goto EXIT;
+    }
+
+    /* create wrk thread */
+    pProc->hShWrkTh = CreateThread(NULL, 0, OCAS_ShWrkTh, pProc, 0, &dwThId);
+    if (NULL == pProc->hShWrkTh)
+    {
+        /* XXX panic */
+        nProcExit = CA_PROC_EXIT_INIT_FAILED;
+        goto EXIT;
+    }
+
+    pProc->hMainDlg = CreateDialog(CAS_MGetAppInst(), 
         MAKEINTRESOURCE(IDD_DLG_MAIN), NULL, OCAS_MainDlgProc);
-    if (NULL == hMainDlg)
+    if (NULL == pProc->hMainDlg)
     {
         CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
             TEXT("Create Main dialog failed. System Last Error is %u"), 
             GetLastError());
-        return CA_PROC_EXIT_INIT_FAILED;
+        nProcExit = CA_PROC_EXIT_INIT_FAILED;
+        goto EXIT;
     }
 
-    pProc->hMainDlg = hMainDlg;
     if (!pProc->bIsBackground)
     {
-        ShowWindow(hMainDlg, SW_SHOWNORMAL);
-        SetForegroundWindow(hMainDlg);
+        ShowWindow(pProc->hMainDlg, SW_SHOWNORMAL);
+        SetForegroundWindow(pProc->hMainDlg);
     }
 
     /* add notify icon */
     notifyIconData.cbSize = sizeof(notifyIconData);
     notifyIconData.hIcon = LoadIcon(CAS_MGetAppInst(), 
         MAKEINTRESOURCE(IDI_ICON_MAIN));
-    notifyIconData.hWnd = hMainDlg;
+    notifyIconData.hWnd = pProc->hMainDlg;
     notifyIconData.szTip[0] = '\0';
     notifyIconData.uID = OCAW_MAIN_NOTIFY_ICON_ID;
     notifyIconData.uCallbackMessage = OCAW_MSG_NOTIFY_ICON;
@@ -110,7 +178,10 @@ int OCAS_PWrk(OCAWProc *pProc)
         CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
             TEXT("Create Main notify icon failed. System Last Error is %u"), 
             GetLastError());
-        return CA_PROC_EXIT_INIT_FAILED;
+
+        DestroyWindow(pProc->hMainDlg);
+        nProcExit = CA_PROC_EXIT_INIT_FAILED;
+        goto EXIT;
     }
 
     for (;;)
@@ -121,7 +192,7 @@ int OCAS_PWrk(OCAWProc *pProc)
             break;
         }
 
-        bResult = IsDialogMessage(hMainDlg, &wndMsg);
+        bResult = IsDialogMessage(pProc->hMainDlg, &wndMsg);
         if (!bResult)
         {
             TranslateMessage(&wndMsg);
@@ -134,5 +205,22 @@ int OCAS_PWrk(OCAWProc *pProc)
     notifyIconData.uID = OCAW_MAIN_NOTIFY_ICON_ID;
     notifyIconData.uFlags = NIF_ICON;
     Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+
+    pProc->hMainDlg = NULL;
+EXIT:
+    pProc->bWrkStop = TRUE;
+    if (NULL != pProc->hShWrkTh)
+    {
+        SetEvent(pProc->hShWrkEvt);
+        WaitForSingleObject(pProc->hShWrkTh, INFINITE);
+        CloseHandle(pProc->hShWrkTh);
+        pProc->hShWrkTh = NULL;
+    }
+
+    if (NULL != pProc->hShWrkEvt)
+    {
+        CloseHandle(pProc->hShWrkEvt);
+        pProc->hShWrkEvt = NULL;
+    }
     return nProcExit;
 }
