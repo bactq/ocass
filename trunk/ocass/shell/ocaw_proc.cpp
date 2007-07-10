@@ -19,6 +19,9 @@
  */
 
 #include "liboca.h"
+#include "ca_getopt.h"
+#include "ca_misc.h"
+#include "ca_cfg.h"
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
 #include "ocaw_wrk.h"
@@ -40,13 +43,67 @@ int OCAS_PWakeUp(OCAWProc *pProc)
 CAErrno CAS_PStartup(int nArgc, char **pArgv, 
                      OCAWProc *pProc)
 {
+    CAGetoptDatum datumGetOpt;
+    CAErrno caErr;
+    char *pzOptArg;
+    char cOptCh;
+
+    caErr = CA_Startup();
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        /* XXX panic */
+        return caErr;
+    }
+
     memset(pProc, 0, sizeof(OCAWProc));
     pProc->argc = nArgc;
     pProc->argv = pArgv;
     pProc->dwShellProcId = GetCurrentProcessId();
     pProc->shellProcType = OCASP_TYPE_WRK;
-    pProc->bIsBackground = FALSE;
-    CA_Startup();
+    pProc->bIsBackground = TRUE;
+    caErr = CA_GetModPath(NULL, pProc->szWrkPath, 
+        sizeof(pProc->szWrkPath) / sizeof(pProc->szWrkPath[0]));
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        /* XXX panic */
+        return caErr;
+    }
+
+    CA_InitGetOpt(nArgc, pArgv, &datumGetOpt);
+    for (;;)
+    {
+        caErr = CA_GetOpt(&datumGetOpt, "?hHf:", &cOptCh, &pzOptArg);
+        if (CA_ERR_SUCCESS != caErr)
+        {
+            break;
+        }
+
+    }
+    if (CA_ERR_EOF != caErr)
+    {
+        pProc->shellProcType = OCASP_TYPE_USEAGE;
+    }
+    if ('\0' == pProc->szCfgFName[0])
+    {
+        caErr = CA_CfgGetFName(pProc->szWrkPath, pProc->szCfgFName, 
+            sizeof(pProc->szCfgFName) / sizeof(pProc->szCfgFName[0]));
+        if (CA_ERR_SUCCESS != caErr)
+        {
+            /* XXX panic */
+            return caErr;
+        }
+    }
+    if (OCASP_TYPE_USEAGE != pProc->shellProcType)
+    {
+        caErr = CA_CfgSetRTFromFile(pProc->szCfgFName, pProc->szWrkPath);
+        if (CA_ERR_SUCCESS != caErr)
+        {
+            /* XXX panic */
+            return caErr;
+        }
+    }
+
+    
     return CA_ERR_SUCCESS;
 }
 
