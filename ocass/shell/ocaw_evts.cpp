@@ -28,18 +28,42 @@
 #include "ocaw_evts.h"
 #include "resource.h"
 
-BOOL OCAS_SetHistoryPath(HWND hMainWnd, const TCHAR *pszPath)
-{
-    HWND hDlgItem;
 
-    hDlgItem = GetDlgItem(hMainWnd, IDC_EDIT_HISTORY_PATH);
-    if (NULL == hDlgItem)
+BOOL OCAS_ChangeHistoryPath(HWND hWnd, TCHAR *pszHistoryPath)
+{
+    /* XXX */
+    return TRUE;
+}
+
+BOOL OCAS_SetMonStateToUI(HWND hWnd, const TCHAR *pszState)
+{
+    return OCAS_SetDlgItemTxt(hWnd, IDC_EDIT_MONSTATE, 
+        NULL == pszState || '\0' == pszState ? TEXT("Unknown") : pszState);
+}
+
+BOOL OCAS_OnWrkDescChange(HWND hWnd)
+{
+    const TCHAR *pszWrkState;
+    OCAWProc *pProc = CAS_MGetProcPtr();
+    if (NULL == pProc)
     {
         return FALSE;
     }
+    
+    EnterCriticalSection(&pProc->shellCS);
+    pszWrkState = CC_StateDesc(pProc->wrkDesc.wrkState);
+    LeaveCriticalSection(&pProc->shellCS);
+    return OCAS_SetMonStateToUI(hWnd, pszWrkState);
+}
 
-    SendMessage(hDlgItem, WM_SETTEXT, NULL, (LPARAM)pszPath);
-    return TRUE;
+BOOL OCAS_SetMonProcNameToUI(HWND hWnd, const TCHAR *pszFName)
+{
+    return OCAS_SetDlgItemTxt(hWnd, IDC_EDIT_MONPROC, pszFName);
+}
+
+BOOL OCAS_SetHistoryPathToUI(HWND hMainWnd, const TCHAR *pszPath)
+{
+    return OCAS_SetDlgItemTxt(hMainWnd, IDC_EDIT_HISTORY_PATH, pszPath);
 }
 
 BOOL OCAS_BrowseHistoryPath(HWND hWnd)
@@ -49,12 +73,6 @@ BOOL OCAS_BrowseHistoryPath(HWND hWnd)
     CA_CfgDupRT(&cfgDatum);
     ShellExecute(hWnd, TEXT("open"), cfgDatum.szHistoryPath, 
         NULL, NULL, SW_SHOWNORMAL);
-    return TRUE;
-}
-
-BOOL OCAS_ChangeHistoryPath(HWND hWnd, TCHAR *pszHistoryPath)
-{
-    /* XXX */
     return TRUE;
 }
 
@@ -98,7 +116,8 @@ BOOL OCAS_OnMainDlgInit(HWND hWnd)
     
     /* set value to ctls */
     CA_CfgDupRT(&cfgDatum);
-    OCAS_SetHistoryPath(hWnd, cfgDatum.szHistoryPath);
+    OCAS_SetHistoryPathToUI(hWnd, cfgDatum.szHistoryPath);
+    OCAS_SetMonProcNameToUI(hWnd, cfgDatum.szCommunicatorFName);
     return TRUE;
 }
 

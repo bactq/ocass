@@ -76,3 +76,18 @@ BOOL OCAS_AppendMenuItems(HMENU hMenu, const OCASMenuItem *pItems,
 
     return bRetVal;
 }
+
+BOOL OCAS_SetDlgItemTxt(HWND hDlg, UINT nItemId, const TCHAR *pszTxt)
+{
+    HWND hDlgItem;
+
+    hDlgItem = GetDlgItem(hDlg, nItemId);
+    if (NULL == hDlgItem)
+    {
+        return FALSE;
+    }
+
+    SendMessage(hDlgItem, WM_SETTEXT, NULL, 
+        (LPARAM)(NULL == pszTxt ? TEXT("") : pszTxt));
+    return TRUE;
+}

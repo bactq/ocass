@@ -28,12 +28,15 @@
 
 static DWORD WINAPI OCAS_ShWrkTh(VOID *pArg)
 {
+    CCWrkStateDesc wrkState;
     OCAWProc *pProc = (OCAWProc *)pArg;
+    CAErrno caErr;
+    DWORD dwWrkCycle = 1000 * 2;
     DWORD dwResult;
 
     for (;;)
     {
-        dwResult = WaitForSingleObject(pProc->hShWrkEvt, INFINITE);
+        dwResult = WaitForSingleObject(pProc->hShWrkEvt, dwWrkCycle);
         if (pProc->bWrkStop)
         {
             break;
@@ -42,6 +45,31 @@ static DWORD WINAPI OCAS_ShWrkTh(VOID *pArg)
         if (WAIT_FAILED == dwResult)
         {
             Sleep(1000);
+            continue;
+        }
+        if (WAIT_TIMEOUT == dwResult)
+        {
+            caErr = CC_State(pProc->pCCWrk, TRUE, &wrkState);
+            if (CA_ERR_SUCCESS != caErr)
+            {
+                /* XXX write log */
+                continue;
+            }
+
+            if (!wrkState.bIsDirty)
+            {
+                continue;
+            }
+            
+            EnterCriticalSection(&pProc->shellCS);
+            memcpy(&pProc->wrkDesc, &wrkState, sizeof(wrkState));
+            LeaveCriticalSection(&pProc->shellCS);
+
+            if (NULL != pProc->hMainDlg)
+            {
+                SendMessage(pProc->hMainDlg, OCAW_MSG_STATE_CHANGE, 
+                    NULL, NULL);
+            }
             continue;
         }
 
@@ -96,7 +124,10 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
         return OCAS_MainDlgShow(hWnd);
 
     case WM_CLOSE:
-        return OCAS_OnMainDlgClose(hWnd);        
+        return OCAS_OnMainDlgClose(hWnd);
+
+    case OCAW_MSG_STATE_CHANGE:
+        return OCAS_OnWrkDescChange(hWnd);
 
     default:
         return FALSE;
@@ -106,6 +137,7 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
 int OCAS_PWrk(OCAWProc *pProc)
 {
     NOTIFYICONDATA notifyIconData;
+    CAErrno caErr;
     HANDLE hEvt;
     DWORD dwThId;
     BOOL bResult;
@@ -138,6 +170,15 @@ int OCAS_PWrk(OCAWProc *pProc)
     if (NULL == pProc->hShWrkEvt)
     {
         /* XXX panic */
+        nProcExit = CA_PROC_EXIT_INIT_FAILED;
+        goto EXIT;
+    }
+
+    caErr = CC_Startup(CC_WRK_MOD_SAFE, &pProc->pCCWrk);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        /* panic */
+        DestroyWindow(pProc->hMainDlg);
         nProcExit = CA_PROC_EXIT_INIT_FAILED;
         goto EXIT;
     }
@@ -189,6 +230,8 @@ int OCAS_PWrk(OCAWProc *pProc)
         goto EXIT;
     }
 
+    CC_SetWrkMod(pProc->pCCWrk, CC_WRK_MOD_NORMAL);
+
     for (;;)
     {
         bResult = GetMessage(&wndMsg, 0, 0, 0);
@@ -220,6 +263,12 @@ EXIT:
         WaitForSingleObject(pProc->hShWrkTh, INFINITE);
         CloseHandle(pProc->hShWrkTh);
         pProc->hShWrkTh = NULL;
+    }
+
+    if (NULL != pProc->pCCWrk)
+    {
+        CC_Cleanup(pProc->pCCWrk);
+        pProc->pCCWrk = NULL;
     }
 
     if (NULL != pProc->hShWrkEvt)
