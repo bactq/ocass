@@ -28,18 +28,40 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 IDD_DLG_ABOUT DIALOG DISCARDABLE  0, 0, 278, 144
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
-FONT 10, "System"
+CAPTION "About"
+FONT 8, "MS Sans Serif"
 BEGIN
-    PUSHBUTTON      "Button1",IDC_BUTTON1,161,85,50,14
+    PUSHBUTTON      "&Close",IDC_BUTTON1,221,123,50,14
     CONTROL         110,IDC_STATIC,"Static",SS_BITMAP,15,14,20,20
 END
 
-IDD_DLG_CFG DIALOG DISCARDABLE  0, 0, 227, 129
+IDD_DLG_CFG DIALOG DISCARDABLE  0, 0, 313, 178
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
-FONT 10, "System"
+CAPTION "Options"
+FONT 8, "MS Sans Serif"
 BEGIN
+    GROUPBOX        "General",IDC_STATIC,7,7,299,71
+    CONTROL         "Automatically run ocass &when I log on to Windows",
+                    IDC_CHK_AUTOSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    18,20,191,10
+    CONTROL         "Allow automatic &inject to MS Office Communicator 2005 process",
+                    IDC_CHK_AUTOINJECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    18,33,222,10
+    LTEXT           "Set MS Office Communicator 2005 process Name:",
+                    IDC_STATIC,18,46,167,8
+    GROUPBOX        "Log",IDC_STATIC,7,83,299,69
+    EDITTEXT        IDC_EDIT_CPN,18,57,167,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Save log files in this folder:",IDC_STATIC,19,114,102,8
+    EDITTEXT        IDC_EDIT_LOGDIR,18,128,224,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "&Cancel",IDC_BTN_CANCEL,256,160,50,14
+    PUSHBUTTON      "&Ok",IDC_BTN_OK,202,160,50,14
+    LTEXT           "&Log mode:",IDC_STATIC,20,98,35,8
+    COMBOBOX        IDC_COMBO_LOGMOD,66,94,87,16,CBS_DROPDOWN | 
+                    CBS_OWNERDRAWFIXED | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Browse ...",IDC_BTN_BRCPN,248,57,50,14
+    PUSHBUTTON      "&Auto Scan",IDC_BTN_SCANCPN,191,57,50,14
+    PUSHBUTTON      "B&rowse ...",IDC_BTN_BRLOGDIR,248,128,50,14
 END
 
 IDD_DLG_MAIN DIALOG DISCARDABLE  0, 0, 294, 122
@@ -84,9 +106,9 @@ BEGIN
     IDD_DLG_CFG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 220
+        RIGHTMARGIN, 306
         TOPMARGIN, 7
-        BOTTOMMARGIN, 122
+        BOTTOMMARGIN, 171
     END
 
     IDD_DLG_MAIN, DIALOG
@@ -206,6 +228,27 @@ BEGIN
 END
 
 #endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_DLG_CFG DLGINIT
+BEGIN
+    IDC_COMBO_LOGMOD, 0x403, 6, 0
+0x7245, 0x6f72, 0x0072, 
+    IDC_COMBO_LOGMOD, 0x403, 8, 0
+0x6157, 0x6e72, 0x6e69, 0x0067, 
+    IDC_COMBO_LOGMOD, 0x403, 5, 0
+0x6e49, 0x6f66, "\000" 
+    IDC_COMBO_LOGMOD, 0x403, 6, 0
+0x6544, 0x7562, 0x0067, 
+    IDC_COMBO_LOGMOD, 0x403, 16, 0
+0x6544, 0x7562, 0x2067, 0x6128, 0x6372, 0x6968, 0x6576, 0x0029, 
+    0
+END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
