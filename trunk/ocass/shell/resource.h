@@ -30,7 +30,6 @@
 #define IDC_EDIT_ABOUT_TXT              1021
 #define IDC_STATIC_VER                  1022
 #define IDC_STATIC_BTM                  1023
-#define IDC_LIST1                       1024
 #define ID_SYSTEM_EXIT                  40001
 #define ID_SYSTEM_OPTIONS               40002
 #define ID_ABOUT                        40004
@@ -41,7 +40,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        112
 #define _APS_NEXT_COMMAND_VALUE         40006
-#define _APS_NEXT_CONTROL_VALUE         1025
+#define _APS_NEXT_CONTROL_VALUE         1026
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

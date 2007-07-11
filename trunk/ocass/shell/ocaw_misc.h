@@ -44,9 +44,11 @@ typedef struct _OCAS_ComboBoxItem
 } OCASComboBoxItem;
 
 BOOL OCAS_ComboBoxSetSelWithId(HWND hComboBox, int nSelId);
-BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData);
+BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData, 
+                                 int nDefault);
 
 BOOL OCAS_ComboBoxGetCurSelItemData(HWND hComboBox, void **pData);
+
 
 BOOL OCAS_ComboBoxDelAllItems(HWND hComboBox);
 BOOL OCAS_ComboBoxAddItem(HWND hComboBox, const OCASComboBoxItem *pItem);
@@ -60,6 +62,12 @@ BOOL OCAS_SelPath(HWND hParentWnd, TCHAR *pszBuf, DWORD dwBufCnt);
 
 BOOL OCAS_SelFile(HWND hParentWnd, const TCHAR *pszFilter, 
                   TCHAR *pszBuf, DWORD dwBufCnt);
+
+BOOL OCAS_GetDlgCheckBoxState(HWND hDlg, UINT nCtrlItem, 
+                              BOOL *pbState);
+
+BOOL OCAS_SetDlgCheckBoxState(HWND hDlg, UINT nCtrlItem, 
+                              BOOL bState);
 
 #endif /* !defined(_OCAW_MISC_H_) */
 

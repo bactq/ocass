@@ -235,9 +235,10 @@ BOOL OCAS_ComboBoxSetSelWithId(HWND hComboBox, int nSelId)
     return (CB_ERR == nResult ? FALSE : TRUE);
 }
 
-BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData)
+BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData, int nDefault)
 {
     BOOL bFind;
+    int nItemsCnt;
     int nResult;
     int nNeedSelId = -1;
     int i;
@@ -247,8 +248,9 @@ BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData)
     {
         return TRUE;
     }
+    nItemsCnt = nResult;
 
-    for (i = 0, bFind = FALSE; i < nResult; i++)
+    for (i = 0, bFind = FALSE; i < nItemsCnt; i++)
     {
         nResult = SendMessage(hComboBox, CB_GETITEMDATA, (WPARAM)i, NULL);  
         if (CB_ERR == nResult)
@@ -264,9 +266,13 @@ BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData)
         }
     }
 
-    if (!bFind)
+    if (!bFind && nDefault > nItemsCnt)
     {
         return FALSE;
+    }
+    if (!bFind)
+    {
+        nNeedSelId = nDefault;
     }
 
     return OCAS_ComboBoxSetSelWithId(hComboBox, nNeedSelId);
@@ -283,5 +289,30 @@ BOOL OCAS_ComboBoxGetCurSelItemData(HWND hComboBox, void **pData)
     }
 
     *pData = (void*)nResult;
+    return TRUE;
+}
+
+BOOL OCAS_GetDlgCheckBoxState(HWND hDlg, UINT nCtrlItem, 
+                              BOOL *pbState)
+{
+    UINT nResult;
+    nResult = IsDlgButtonChecked(hDlg, nCtrlItem);
+    *pbState = (nResult & BST_CHECKED ? TRUE : FALSE);
+    return TRUE;
+}
+
+BOOL OCAS_SetDlgCheckBoxState(HWND hDlg, UINT nCtrlItem, 
+                              BOOL bState)
+{
+    HWND hDlgItem;
+
+    hDlgItem = GetDlgItem(hDlg, nCtrlItem);
+    if (NULL == hDlgItem)
+    {
+        return FALSE;
+    }
+
+    SendMessage(hDlgItem, BM_SETCHECK, 
+        (WPARAM)(bState ? BST_CHECKED : BST_UNCHECKED), NULL);
     return TRUE;
 }
