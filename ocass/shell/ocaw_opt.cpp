@@ -20,19 +20,69 @@
 
 #include "ocaw_main.h"
 #include "ocaw_opt.h"
+#include "ocaw_misc.h"
 #include "resource.h"
 
-static BOOL CALLBACK Test_DlgProc(HWND hWnd, UINT nMsg, 
+static BOOL OCAS_CfgOnBtnOkClick(HWND hWnd)
+{
+    /* save config */
+
+    SendMessage(hWnd, WM_CLOSE, NULL, NULL);
+    return TRUE;
+}
+
+static BOOL OCAS_CfgOnInit(HWND hWnd)
+{
+    /* XXX */
+    return TRUE;
+}
+
+static BOOL OCAS_CfgOnCPNameClick(HWND hWnd)
+{
+    TCHAR szFName[MAX_PATH];
+    BOOL bResult;
+
+    bResult = OCAS_SelFile(hWnd, TEXT("Programs (*.exe)\0*.exe\0"), 
+        szFName, sizeof(szFName) / sizeof(szFName[0]));
+    if (!bResult)
+    {
+        return FALSE;
+    }
+
+    /* XXX sel file */
+    return TRUE;
+}
+
+static BOOL CALLBACK OCAS_CfgProc(HWND hWnd, UINT nMsg, 
                                   UINT wParam, LPARAM lParam)
 {
     switch (nMsg)
     {
     case WM_INITDIALOG:
+        return OCAS_CfgOnInit(hWnd);
+
+    case WM_COMMAND:
+        switch (LOWORD(wParam))
+        {
+        case IDC_BTN_CFG_OK:
+            return OCAS_CfgOnBtnOkClick(hWnd);
+
+        case IDC_BTN_CFG_CANCEL:
+            EndDialog(hWnd, TRUE);
+            return TRUE;
+
+        case IDC_BTN_BRCPN:
+            return OCAS_CfgOnCPNameClick(hWnd);
+
+        default:
+            return FALSE;
+        }
         return TRUE;
 
     case WM_CLOSE:
         EndDialog(hWnd, TRUE);
         return TRUE;
+
     default:
         return FALSE;
     }
@@ -43,7 +93,7 @@ BOOL OCAS_OnMainDlgCfg(HWND hWnd)
     INT_PTR nDlgResult;
 
     nDlgResult = DialogBox(CAS_MGetAppInst(), MAKEINTRESOURCE(IDD_DLG_CFG), 
-        hWnd, (DLGPROC)Test_DlgProc);
+        hWnd, (DLGPROC)OCAS_CfgProc);
     if (0 != nDlgResult)
     {
         InvalidateRect(hWnd, NULL, TRUE);
