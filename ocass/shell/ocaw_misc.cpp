@@ -153,3 +153,135 @@ BOOL OCAS_SelFile(HWND hParentWnd, const TCHAR *pszFilter,
     nResult = CA_SNPrintf(pszBuf, dwBufCnt, TEXT("%s"), szFileBuf);
     return (0 >= nResult ? FALSE : TRUE);
 }
+
+BOOL OCAS_ComboBoxDelAllItems(HWND hComboBox)
+{
+    int nResult;
+    for (;;)
+    {
+        nResult = SendMessage(hComboBox, CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
+        if (CB_ERR == nResult || 0 >= nResult)
+        {
+            break;
+        }
+
+        SendMessage(hComboBox, CB_DELETESTRING, (WPARAM)0, (LPARAM)0);
+    }
+
+    return TRUE;
+}
+
+BOOL OCAS_ComboBoxAddItem(HWND hComboBox, const OCASComboBoxItem *pItem)
+{
+    int nResult;
+
+    if (NULL == hComboBox || NULL == pItem || 
+        NULL == pItem->pszTxt || '\0' == pItem->pszTxt[0])
+    {
+        return FALSE;
+    }
+
+    nResult = SendMessage(hComboBox, CB_ADDSTRING, (WPARAM)0, 
+            (LPARAM)pItem->pszTxt);
+    if (CB_ERR == nResult)
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+    nResult = SendMessage(hComboBox, CB_SETITEMDATA, (WPARAM)nResult,
+            (LPARAM)pItem->pData);  
+    return (CB_ERR == nResult ? FALSE : TRUE);
+}
+
+BOOL OCAS_ComboBoxAddItems(HWND hComboBox, const OCASComboBoxItem *pItems, 
+                           DWORD dwItemsCnt)
+{
+    const OCASComboBoxItem *pItem;
+    DWORD dwId;
+    BOOL bRetVal = TRUE;
+    BOOL bResult;
+
+    for (dwId = 0; dwId < dwItemsCnt; dwId++)
+    {
+        pItem = &pItems[dwId];
+        bResult = OCAS_ComboBoxAddItem(hComboBox, pItem);
+        if (!bResult)
+        {
+            bRetVal = FALSE;
+        }
+    }
+
+    return bRetVal;
+}
+
+BOOL OCAS_ComboBoxSetSelWithId(HWND hComboBox, int nSelId)
+{
+    int nResult;
+
+    nResult = SendMessage(hComboBox, CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
+    if (CB_ERR == nResult || 0 >= nResult)
+    {
+        return FALSE;
+    }
+
+    if (nSelId > nResult)
+    {
+        return FALSE;
+    }
+
+    nResult = SendMessage(hComboBox, CB_SETCURSEL, 
+        (WPARAM)nSelId, (LPARAM)0);
+    return (CB_ERR == nResult ? FALSE : TRUE);
+}
+
+BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData)
+{
+    BOOL bFind;
+    int nResult;
+    int nNeedSelId = -1;
+    int i;
+
+    nResult = SendMessage(hComboBox, CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
+    if (CB_ERR == nResult || 0 >= nResult)
+    {
+        return TRUE;
+    }
+
+    for (i = 0, bFind = FALSE; i < nResult; i++)
+    {
+        nResult = SendMessage(hComboBox, CB_GETITEMDATA, (WPARAM)i, NULL);  
+        if (CB_ERR == nResult)
+        {
+            continue;
+        }
+
+        if ((void*)nResult == pData)
+        {
+            bFind = TRUE;
+            nNeedSelId = nResult;
+            break;
+        }
+    }
+
+    if (!bFind)
+    {
+        return FALSE;
+    }
+
+    return OCAS_ComboBoxSetSelWithId(hComboBox, nNeedSelId);
+}
+
+BOOL OCAS_ComboBoxGetCurSelItemData(HWND hComboBox, void **pData)
+{
+    int nResult;
+
+    nResult = SendMessage(hComboBox, CB_GETCURSEL, NULL, NULL);
+    if (CB_ERR == nResult)
+    {
+        return FALSE;
+    }
+
+    *pData = (void*)nResult;
+    return TRUE;
+}

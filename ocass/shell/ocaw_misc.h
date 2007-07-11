@@ -37,6 +37,22 @@ BOOL OCAS_AppendMenuItem(HMENU hMenu, UINT nMenuId, TCHAR *pszName,
 BOOL OCAS_AppendMenuItems(HMENU hMenu, const OCASMenuItem *pItems, 
                           DWORD dwItemsCnt);
 
+typedef struct _OCAS_ComboBoxItem
+{
+    const TCHAR *pszTxt;
+    void *pData;
+} OCASComboBoxItem;
+
+BOOL OCAS_ComboBoxSetSelWithId(HWND hComboBox, int nSelId);
+BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData);
+
+BOOL OCAS_ComboBoxGetCurSelItemData(HWND hComboBox, void **pData);
+
+BOOL OCAS_ComboBoxDelAllItems(HWND hComboBox);
+BOOL OCAS_ComboBoxAddItem(HWND hComboBox, const OCASComboBoxItem *pItem);
+BOOL OCAS_ComboBoxAddItems(HWND hComboBox, const OCASComboBoxItem *pItems, 
+                           DWORD dwItemsCnt);
+
 BOOL OCAS_SetDlgItemTxt(HWND hDlg, UINT nItemId, const TCHAR *pszTxt);
 
 

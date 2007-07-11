@@ -17,7 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
-
+#include <shlobj.h>
 #include "liboca.h"
 #include "ca_ofc.h"
 #include "ca_mod.h"
@@ -98,6 +98,29 @@ EXIT:
         RegCloseKey(hKeyInstallDir);
     }
     return funcErr;
+}
+
+CA_DECLARE(CAErrno) CA_OFCGetFNameUntruth(TCHAR *pszFNameBuf, DWORD dwBufCnt)
+{
+    int nResult;
+
+    nResult = CA_SNPrintf(pszFNameBuf, dwBufCnt, 
+        TEXT("C:\\Program Files\\Microsoft Office Communicator\\"
+        "communicator.exe"));
+    return (0 >= nResult ? CA_ERR_FNAME_TOO_LONG : CA_ERR_SUCCESS);
+}
+
+CA_DECLARE(CAErrno) CA_OFCGetFName(TCHAR *pszFNameBuf, DWORD dwBufCnt)
+{
+    CAErrno caErr;
+
+    caErr = CA_OFCGetFNameFromReg(pszFNameBuf, dwBufCnt);
+    if (CA_ERR_SUCCESS == caErr)
+    {
+        return caErr;
+    }
+
+    return CA_OFCGetFNameUntruth(pszFNameBuf, dwBufCnt);
 }
 
 CA_DECLARE(CAErrno) CA_OFCGetRunProcId(DWORD *pdwProcId)

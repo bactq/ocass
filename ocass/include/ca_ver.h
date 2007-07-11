@@ -23,6 +23,7 @@
 
 #include "ca_types.h"
 
+#define CA_VER_PRODUCT_STR      TEXT("0.0.0.1 alpha")
 
 
 #endif /* !defined(_CA_VER_H_) */

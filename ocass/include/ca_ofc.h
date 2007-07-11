@@ -32,5 +32,9 @@ CA_DECLARE(CAErrno) CA_OFCGetRunProcId(DWORD *pdwProcId);
 CA_DECLARE(BOOL)    CA_OFCProcIsAttached(DWORD dwProcId);
 CA_DECLARE(BOOL)    CA_OFCIsCommunicatorMod(HMODULE hMod);
 
+CA_DECLARE(CAErrno) CA_OFCGetFName(TCHAR *pszFNameBuf, DWORD dwBufCnt);
+
+CA_DECLARE(CAErrno) CA_OFCGetFNameUntruth(TCHAR *pszFNameBuf, DWORD dwBufCnt);
+
 #endif /* !defined(_CA_OFC_H_) */
 
