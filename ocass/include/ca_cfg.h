@@ -40,13 +40,17 @@
 #define CA_CFG_DEFAULT_SHELL_TSIZE_M          (2)
 
 typedef int CALogMod;
-
+#define CA_LOGMOD_ERR       1
+#define CA_LOGMOD_WARN      2
+#define CA_LOGMOD_NONE      3
+#define CA_LOGMOD_DBG       4
+#define CA_LOGMOD_DBG_ARC   5
 
 typedef struct _CA_CFG_DATUM
 {
     TCHAR szLogPath[MAX_PATH];
     CALogMod logMode;
-
+    BOOL bIsAutoInject;
 
     TCHAR szCommunicatorFName[MAX_PATH];
 
@@ -99,5 +103,10 @@ CA_DECLARE(CAErrno)     CA_CfgSetRT(CACfgDatum *pCfgDatum);
 CA_DECLARE(CAErrno)     CA_CfgSetRTDefault(void);
 CA_DECLARE(CAErrno)     CA_CfgSetRTFromFile(const TCHAR *pszCfgFName, 
                                             const TCHAR *pszWrkPath);
+
+#define CA_CFG_REG_RUN_KEY      TEXT("ocass_autorun")
+
+CA_DECLARE(CAErrno)     CA_CfgOCASSIsAutoRun(BOOL *pbIsAutoRun);
+CA_DECLARE(CAErrno)     CA_CfgOCASSAutoRunSet(BOOL bIsAutoRun);
 
 #endif /* !defined(_CA_CFG_H_) */

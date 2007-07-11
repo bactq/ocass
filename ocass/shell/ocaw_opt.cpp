@@ -27,7 +27,17 @@
 
 static BOOL OCAS_CfgOnBtnOkClick(HWND hWnd)
 {
-    /* XXX save config */
+    BOOL bResult;
+    BOOL bIsChecked;
+
+    bIsChecked = FALSE;
+    bResult = OCAS_GetDlgCheckBoxState(hWnd, 
+        IDC_CHK_AUTOSTART, &bIsChecked);
+    if (!bResult)
+    {
+        bIsChecked = FALSE;
+    }
+    CA_CfgOCASSAutoRunSet(bIsChecked);
 
     SendMessage(hWnd, WM_CLOSE, NULL, NULL);
     return TRUE;
@@ -37,22 +47,26 @@ static BOOL OCAS_CfgOnInit(HWND hWnd)
 {
     CACfgDatum cfgDatum;
     HWND hLogMod;
+    BOOL bIsAutoRun;
 
     CA_CfgDupRT(&cfgDatum);
     OCAS_SetDlgItemTxt(hWnd, IDC_EDIT_CPN, cfgDatum.szCommunicatorFName);
-    OCAS_SetDlgItemTxt(hWnd, IDC_EDIT_LOGDIR, cfgDatum.szShellLog);
+    OCAS_SetDlgItemTxt(hWnd, IDC_EDIT_LOGDIR, cfgDatum.szLogPath);
 
     hLogMod = GetDlgItem(hWnd, IDC_COMBO_LOGMOD);
     if (NULL != hLogMod)
     {
         OCAS_ComboBoxDelAllItems(hLogMod);
         OCAS_ComboBoxAddItems(hLogMod, g_logModComboItems, 
-            sizeof(g_logModComboItems) / sizeof(g_logModComboItems[0]));
-        OCAS_ComboBoxSetSelWithId(hLogMod, 0);
-        UpdateWindow(hLogMod);
+            sizeof(g_logModComboItems) / sizeof(g_logModComboItems[0]));        
+        OCAS_ComboBoxSetSelWithData(hLogMod, (void*)cfgDatum.logMode, 0);
     }
 
-    UpdateWindow(hWnd);
+    OCAS_SetDlgCheckBoxState(hWnd, IDC_CHK_AUTOINJECT, 
+        cfgDatum.bIsAutoInject);
+
+    CA_CfgOCASSIsAutoRun(&bIsAutoRun);
+    OCAS_SetDlgCheckBoxState(hWnd, IDC_CHK_AUTOSTART, bIsAutoRun);
     return TRUE;
 }
 

@@ -40,6 +40,9 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     pCfgDatum->szSpyLog[0] = '\0';
     pCfgDatum->szSpyNtDump[0] = '\0';
     pCfgDatum->szShellLog[0] = '\0';
+    pCfgDatum->szLogPath[0] = '\0';
+    pCfgDatum->bIsAutoInject = TRUE;
+    pCfgDatum->logMode = CA_LOGMOD_ERR;
 
     pCfgDatum->spyLogMask = CA_SPY_LOG_ERR|CA_SPY_LOG_DEL_OLD;
     pCfgDatum->shellLogMask = CA_SH_LOG_ERR|CA_SH_LOG_DEL_OLD;
@@ -131,6 +134,7 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
 
     pCfgDatum->szHistoryPath[0] = '\0';
     pCfgDatum->szCommunicatorFName[0] = '\0';
+    pCfgDatum->szLogPath[0] = '\0';
 
     /* Communicator file name */
     dwBufCnt = sizeof(pCfgDatum->szCommunicatorFName) /
@@ -225,7 +229,7 @@ CA_DECLARE(CAErrno) CA_CfgSetRTDefault(void)
 {        
     CAErrno funcErr = CA_ERR_SUCCESS;
 
-    CA_RTCSEnter();     
+    CA_RTCSEnter();
     funcErr = CA_CfgGetDefaultSetVals(CA_GetPtrRT()->szRTWrkPath, 
         &g_rtCfgDatum);
     CA_RTCSLeave();
@@ -235,7 +239,7 @@ CA_DECLARE(CAErrno) CA_CfgSetRTDefault(void)
 CA_DECLARE(CAErrno) CA_CfgSetRTFromFile(const TCHAR *pszCfgFName, 
                                         const TCHAR *pszWrkPath)
 {
-    CACfgDatum cfgDatum;
+    CACfgDatum cfgDatum = {0};
     CAErrno caErr;
 
     caErr = CA_CfgRd(pszCfgFName, pszWrkPath, &cfgDatum);
@@ -253,4 +257,96 @@ CA_DECLARE(CAErrno) CA_CfgDupRT(CACfgDatum *pResult)
     memcpy(pResult, CA_CfgGetRT(), sizeof(CACfgDatum));
     CA_RTCSLeave();
     return CA_ERR_SUCCESS;
+}
+
+CA_DECLARE(CAErrno) CA_CfgOCASSIsAutoRun(BOOL *pbIsAutoRun)
+{
+    TCHAR szOCASSProc[MAX_PATH];
+    DWORD dwDataLen;
+    HKEY hKeyAutoRun = NULL;    
+    LONG nResult;
+
+    *pbIsAutoRun = FALSE;
+    nResult = RegOpenKeyEx(HKEY_LOCAL_MACHINE, 
+        TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"), 
+        0, KEY_READ, &hKeyAutoRun);
+    if (ERROR_SUCCESS != nResult)
+    {
+        return CA_ERR_SUCCESS;
+    }
+
+    dwDataLen = sizeof(szOCASSProc) / sizeof(szOCASSProc[0]);
+    nResult = RegQueryValueEx(hKeyAutoRun, CA_CFG_REG_RUN_KEY, 
+        NULL, NULL, (LPBYTE)szOCASSProc, &dwDataLen);
+    if (ERROR_SUCCESS != nResult)
+    {
+        goto EXIT;
+    }
+
+    /* XXX FIXME we need compare the process name ??? */
+    *pbIsAutoRun = TRUE;
+EXIT:
+    if (NULL != hKeyAutoRun)
+    {
+        RegCloseKey(hKeyAutoRun);
+    }
+
+    return CA_ERR_SUCCESS;
+}
+
+CA_DECLARE(CAErrno) CA_CfgOCASSAutoRunSet(BOOL bIsAutoRun)
+{
+    CAErrno funcErr = CA_ERR_SUCCESS;
+    TCHAR szOCASSProc[MAX_PATH];
+    DWORD dwResult;
+    HKEY hKeyAutoRun = NULL;    
+    LONG nResult;
+
+    szOCASSProc[0] = '\0';
+    dwResult = GetModuleFileName(NULL, szOCASSProc, 
+        sizeof(szOCASSProc) / sizeof(szOCASSProc[0]));
+    if (0 >= dwResult)
+    {
+        return CA_ERR_FNAME_TOO_LONG;
+    }
+
+    nResult =  RegOpenKeyEx(HKEY_LOCAL_MACHINE, 
+        TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"), 
+        0, KEY_ALL_ACCESS, &hKeyAutoRun);
+    if (ERROR_SUCCESS != nResult)
+    {
+        return CA_ERR_SUCCESS;
+    }
+
+
+    nResult = RegDeleteValue(hKeyAutoRun, CA_CFG_REG_RUN_KEY);
+    if (ERROR_SUCCESS != nResult)
+    {
+        funcErr = CA_ERR_SYS_CALL;
+    }
+
+    if (bIsAutoRun)
+    {
+        nResult =  RegSetValueEx(hKeyAutoRun, 
+            TEXT("ocass_autorun"), 
+            0, REG_SZ, (LPBYTE)szOCASSProc, 
+            lstrlen(szOCASSProc) * sizeof(szOCASSProc[0]));
+        if (ERROR_SUCCESS != nResult)
+        {
+            funcErr = CA_ERR_SYS_CALL;
+            goto EXIT;
+        }
+        else
+        {
+            funcErr = ERROR_SUCCESS;
+        }
+    }
+
+EXIT:
+    if (NULL != hKeyAutoRun)
+    {
+        RegCloseKey(hKeyAutoRun);
+    }
+
+    return funcErr;
 }

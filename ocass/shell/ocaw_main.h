@@ -22,6 +22,7 @@
 #define _OCAW_MAIN_H_ 1
 
 #include "ca_types.h"
+#include "ca_cfg.h"
 #include "ocaw_proc.h"
 #include "ocaw_misc.h"
 #include "resource.h"
@@ -43,11 +44,11 @@ const OCASMenuItem g_popMenuItems[] =
 
 const OCASComboBoxItem g_logModComboItems[] =
 {
-    { TEXT("Error"),              0 },
-    { TEXT("Warning"),            0 },
-    { TEXT("None"),               0 },
-    { TEXT("Debug"),              0 },
-    { TEXT("Debug (archive)"),    0 },
+    { TEXT("Error"),              (void*)CA_LOGMOD_ERR },
+    { TEXT("Warning"),            (void*)CA_LOGMOD_WARN },
+    { TEXT("None"),               (void*)CA_LOGMOD_NONE },
+    { TEXT("Debug"),              (void*)CA_LOGMOD_DBG },
+    { TEXT("Debug (archive)"),    (void*)CA_LOGMOD_DBG_ARC }
 };
 
 const HINSTANCE CAS_MGetAppInst(void);
