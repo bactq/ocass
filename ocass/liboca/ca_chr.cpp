@@ -129,7 +129,7 @@ static CACHRRecItem* CA_CHRecItemCreate(CACHRec *pCHR, CACHRItem *pCHRItem,
 {
     WIN32_FIND_DATA findData;
     CACHRRecItem *pCreateItem = NULL;
-    const DWORD dwMaxXFSize = 1024 * 1024 * 1;
+    const DWORD dwMaxXFSize = 1024 * 888;
     CAErrno caErr;
     HANDLE hFind;
     time_t tmOpen;

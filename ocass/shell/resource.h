@@ -17,6 +17,16 @@
 #define IDC_BUTTON_BROWSE               1004
 #define IDC_EDIT_MONSTATE               1005
 #define IDC_EDIT_MONPROC                1006
+#define IDC_CHK_AUTOSTART               1006
+#define IDC_CHK_AUTOINJECT              1007
+#define IDC_EDIT_CPN                    1008
+#define IDC_EDIT_LOGDIR                 1009
+#define IDC_BTN_OK                      1011
+#define IDC_COMBO_LOGMOD                1012
+#define IDC_BTN_BRCPN                   1013
+#define IDC_BTN_BRLOGDIR                1014
+#define IDC_BTN_SCANCPN                 1015
+#define IDC_BTN_CANCEL                  1017
 #define ID_SYSTEM_EXIT                  40001
 #define ID_SYSTEM_OPTIONS               40002
 #define ID_ABOUT                        40004
@@ -25,9 +35,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        111
+#define _APS_NEXT_RESOURCE_VALUE        112
 #define _APS_NEXT_COMMAND_VALUE         40006
-#define _APS_NEXT_CONTROL_VALUE         1006
+#define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

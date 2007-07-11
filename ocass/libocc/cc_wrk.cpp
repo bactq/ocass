@@ -170,21 +170,21 @@ CA_DECLARE(const TCHAR*) CC_StateDesc(CCWrkState wrkState)
     switch (wrkState)
     {
     case CC_WRK_STATE_IDLE:
-        return TEXT("IDLE");
     case CC_WRK_STATE_NOT_RUNNING:
-        return TEXT("Not running");
     case CC_WRK_STATE_NOT_INJECTED:
-        return TEXT("Not injected");
+        return TEXT("Prepare Inject");
+
     case CC_WRK_STATE_INJECTING:
         return TEXT("Injecting");
+
+    case CC_WRK_STATE_WORKING:
     case CC_WRK_STATE_INJECTED:
         return TEXT("Injected");
-    case CC_WRK_STATE_INJECT_FAILED:
-        return TEXT("Inject failed");
+
     case CC_WRK_STATE_CORPSE:
-        return TEXT("Corpse");
-    case CC_WRK_STATE_WORKING:
-        return TEXT("Working");
+    case CC_WRK_STATE_INJECT_FAILED:
+        return TEXT("Injection failed");
+
     default:
         return TEXT("Unknown");
     }
