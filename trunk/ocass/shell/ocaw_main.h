@@ -41,6 +41,15 @@ const OCASMenuItem g_popMenuItems[] =
     { TEXT("E&xit"), ID_POPMENU_CLOSE, TRUE, FALSE }
 };
 
+const OCASComboBoxItem g_logModComboItems[] =
+{
+    { TEXT("Error"),              0 },
+    { TEXT("Warning"),            0 },
+    { TEXT("None"),               0 },
+    { TEXT("Debug"),              0 },
+    { TEXT("Debug (archive)"),    0 },
+};
+
 const HINSTANCE CAS_MGetAppInst(void);
 OCAWProc* CAS_MGetProcPtr(void);
 

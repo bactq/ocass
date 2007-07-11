@@ -39,8 +39,15 @@
 #define CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_M    (5)
 #define CA_CFG_DEFAULT_SHELL_TSIZE_M          (2)
 
+typedef int CALogMod;
+
+
 typedef struct _CA_CFG_DATUM
 {
+    TCHAR szLogPath[MAX_PATH];
+    CALogMod logMode;
+
+
     TCHAR szCommunicatorFName[MAX_PATH];
 
     TCHAR szHistoryPath[MAX_PATH];

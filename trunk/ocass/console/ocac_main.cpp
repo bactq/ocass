@@ -23,6 +23,7 @@
 
 #include "ocac_proc.h"
 #include "ocac_wrk.h"
+#include "ca_ofc.h"
 
 int main(int argc, char **argv)
 {

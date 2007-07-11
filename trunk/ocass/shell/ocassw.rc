@@ -26,13 +26,19 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_DLG_ABOUT DIALOG DISCARDABLE  0, 0, 278, 144
+IDD_DLG_ABOUT DIALOG DISCARDABLE  0, 0, 278, 148
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Sans Serif"
 BEGIN
-    PUSHBUTTON      "&Close",IDC_BUT_ABOUT_CLOSE,221,123,50,14
-    CONTROL         110,IDC_STATIC,"Static",SS_BITMAP,15,14,20,20
+    PUSHBUTTON      "&Close",IDC_BUT_ABOUT_CLOSE,214,127,50,14
+    LTEXT           "Version:",IDC_STATIC,86,15,45,8
+    CONTROL         110,IDC_STATIC,"Static",SS_BITMAP,7,7,72,87
+    LTEXT           "Build time:",IDC_STATIC,86,33,45,8
+    EDITTEXT        IDC_EDIT_ABOUT_TXT,86,51,177,69,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "{Version}",IDC_STATIC_VER,143,15,118,8
+    LTEXT           "{BuildTM}",IDC_STATIC_BTM,143,33,118,8
 END
 
 IDD_DLG_CFG DIALOG DISCARDABLE  0, 0, 313, 183
@@ -56,9 +62,9 @@ BEGIN
                     ES_READONLY
     PUSHBUTTON      "&Cancel",IDC_BTN_CFG_CANCEL,256,160,50,14
     PUSHBUTTON      "&Ok",IDC_BTN_CFG_OK,202,160,50,14
-    LTEXT           "&Log mode:",IDC_STATIC,20,98,35,8
-    COMBOBOX        IDC_COMBO_LOGMOD,66,94,87,16,CBS_DROPDOWN | 
-                    CBS_OWNERDRAWFIXED | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Log mode:",IDC_STATIC,20,98,49,8
+    COMBOBOX        IDC_COMBO_LOGMOD,94,95,111,16,CBS_DROPDOWNLIST | 
+                    CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Browse ...",IDC_BTN_BRCPN,248,57,50,14
     PUSHBUTTON      "&Auto Scan",IDC_BTN_SCANCPN,191,57,50,14
     PUSHBUTTON      "B&rowse ...",IDC_BTN_BRLOGDIR,248,128,50,14
@@ -100,7 +106,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 271
         TOPMARGIN, 7
-        BOTTOMMARGIN, 137
+        BOTTOMMARGIN, 141
     END
 
     IDD_DLG_CFG, DIALOG
@@ -228,27 +234,6 @@ BEGIN
 END
 
 #endif    // !_MAC
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog Info
-//
-
-IDD_DLG_CFG DLGINIT
-BEGIN
-    IDC_COMBO_LOGMOD, 0x403, 6, 0
-0x7245, 0x6f72, 0x0072, 
-    IDC_COMBO_LOGMOD, 0x403, 8, 0
-0x6157, 0x6e72, 0x6e69, 0x0067, 
-    IDC_COMBO_LOGMOD, 0x403, 5, 0
-0x6e49, 0x6f66, "\000" 
-    IDC_COMBO_LOGMOD, 0x403, 6, 0
-0x6544, 0x7562, 0x0067, 
-    IDC_COMBO_LOGMOD, 0x403, 16, 0
-0x6544, 0x7562, 0x2067, 0x6128, 0x6372, 0x6968, 0x6576, 0x0029, 
-    0
-END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

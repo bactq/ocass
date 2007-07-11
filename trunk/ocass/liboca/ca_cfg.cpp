@@ -50,7 +50,7 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     /* Communicator file name */
     dwBufCnt = sizeof(pCfgDatum->szCommunicatorFName) / 
                sizeof(pCfgDatum->szCommunicatorFName[0]);
-    caErr = CA_OFCGetFNameFromReg(pCfgDatum->szCommunicatorFName, dwBufCnt);
+    caErr = CA_OFCGetFName(pCfgDatum->szCommunicatorFName, dwBufCnt);
     if (CA_ERR_SUCCESS != caErr)
     {
         return caErr;

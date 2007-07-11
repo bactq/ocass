@@ -18,6 +18,7 @@
  *
  */
 
+#include "ca_ver.h"
 #include "ocaw_main.h"
 #include "ocaw_about.h"
 #include "resource.h"
@@ -28,13 +29,21 @@ static BOOL OCAS_AboutOnClose(HWND hWnd)
     return TRUE;
 }
 
+static BOOL OCAS_AboutOnInit(HWND hWnd)
+{
+    OCAS_SetDlgItemTxt(hWnd, IDC_STATIC_VER, CA_VER_PRODUCT_STR);
+    OCAS_SetDlgItemTxt(hWnd, IDC_STATIC_BTM, __DATE__);
+    OCAS_SetDlgItemTxt(hWnd, IDC_EDIT_ABOUT_TXT, "test\r\ntest2");
+    return TRUE;
+}
+
 static BOOL CALLBACK OCAS_AboutDlgProc(HWND hWnd, UINT nMsg, 
                                        UINT wParam, LPARAM lParam)
 {
     switch (nMsg)
     {
     case WM_INITDIALOG:
-        return TRUE;
+        return OCAS_AboutOnInit(hWnd);
 
     case WM_CLOSE:
         EndDialog(hWnd, TRUE);
