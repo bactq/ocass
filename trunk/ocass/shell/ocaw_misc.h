@@ -39,5 +39,11 @@ BOOL OCAS_AppendMenuItems(HMENU hMenu, const OCASMenuItem *pItems,
 
 BOOL OCAS_SetDlgItemTxt(HWND hDlg, UINT nItemId, const TCHAR *pszTxt);
 
+
+BOOL OCAS_SelPath(HWND hParentWnd, TCHAR *pszBuf, DWORD dwBufCnt);
+
+BOOL OCAS_SelFile(HWND hParentWnd, const TCHAR *pszFilter, 
+                  TCHAR *pszBuf, DWORD dwBufCnt);
+
 #endif /* !defined(_OCAW_MISC_H_) */
 

@@ -18,7 +18,6 @@
  *
  */
 
-#include <shlobj.h>
 #include "ca_cfg.h"
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
@@ -26,8 +25,8 @@
 #include "ocaw_opt.h"
 #include "ocaw_about.h"
 #include "ocaw_evts.h"
+#include "ocaw_misc.h"
 #include "resource.h"
-
 
 BOOL OCAS_ChangeHistoryPath(HWND hWnd, TCHAR *pszHistoryPath)
 {
@@ -78,23 +77,11 @@ BOOL OCAS_BrowseHistoryPath(HWND hWnd)
 
 BOOL OCAS_OnChangeHistoryPath(HWND hWnd)
 {
-    ITEMIDLIST *pBrowsed;
-    BROWSEINFO browseInfo = {0};
     TCHAR szPath[MAX_PATH];
     BOOL bResult;
 
-    browseInfo.hwndOwner = hWnd;
-    browseInfo.ulFlags = BIF_RETURNONLYFSDIRS;
-    browseInfo.lpszTitle = TEXT("Open folder");
-    browseInfo.lpfn = NULL;
-    browseInfo.lParam = (LPARAM)hWnd;
-    pBrowsed = SHBrowseForFolder(&browseInfo);
-    if (NULL == pBrowsed)
-    {
-        return FALSE;
-    }
-
-    bResult = SHGetPathFromIDList(pBrowsed, szPath);
+    bResult = OCAS_SelPath(hWnd, szPath, 
+        sizeof(szPath) / sizeof(szPath[0]));
     if (!bResult)
     {
         return FALSE;

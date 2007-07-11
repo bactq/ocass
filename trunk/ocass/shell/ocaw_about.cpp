@@ -22,8 +22,14 @@
 #include "ocaw_about.h"
 #include "resource.h"
 
-static BOOL CALLBACK Test_DlgProc(HWND hWnd, UINT nMsg, 
-                                  UINT wParam, LPARAM lParam)
+static BOOL OCAS_AboutOnClose(HWND hWnd)
+{
+    SendMessage(hWnd, WM_CLOSE, NULL, NULL);
+    return TRUE;
+}
+
+static BOOL CALLBACK OCAS_AboutDlgProc(HWND hWnd, UINT nMsg, 
+                                       UINT wParam, LPARAM lParam)
 {
     switch (nMsg)
     {
@@ -33,6 +39,18 @@ static BOOL CALLBACK Test_DlgProc(HWND hWnd, UINT nMsg,
     case WM_CLOSE:
         EndDialog(hWnd, TRUE);
         return TRUE;
+
+    case WM_COMMAND:
+        switch (LOWORD(wParam))
+        {
+        case IDC_BUT_ABOUT_CLOSE:
+            return OCAS_AboutOnClose(hWnd);
+
+        default:
+            return FALSE;
+        }
+        return TRUE;
+
     default:
         return FALSE;
     }
@@ -43,7 +61,7 @@ BOOL OCAS_OnMainDlgAbout(HWND hWnd)
     INT_PTR nDlgResult;
 
     nDlgResult = DialogBox(CAS_MGetAppInst(), MAKEINTRESOURCE(IDD_DLG_ABOUT), 
-        hWnd, (DLGPROC)Test_DlgProc);
+        hWnd, (DLGPROC)OCAS_AboutDlgProc);
     if (0 != nDlgResult)
     {
         InvalidateRect(hWnd, NULL, TRUE);

@@ -11,7 +11,7 @@
 #define IDD_DLG_ABOUT                   107
 #define IDD_DLG_CFG                     108
 #define IDB_BITMAP_ABOUT                110
-#define IDC_BUTTON1                     1000
+#define IDC_BUT_ABOUT_CLOSE             1000
 #define IDC_EDIT_HISTORY_PATH           1002
 #define IDC_BUTTON_CHANGE               1003
 #define IDC_BUTTON_BROWSE               1004
@@ -21,12 +21,12 @@
 #define IDC_CHK_AUTOINJECT              1007
 #define IDC_EDIT_CPN                    1008
 #define IDC_EDIT_LOGDIR                 1009
-#define IDC_BTN_OK                      1011
+#define IDC_BTN_CFG_OK                  1011
 #define IDC_COMBO_LOGMOD                1012
 #define IDC_BTN_BRCPN                   1013
 #define IDC_BTN_BRLOGDIR                1014
 #define IDC_BTN_SCANCPN                 1015
-#define IDC_BTN_CANCEL                  1017
+#define IDC_BTN_CFG_CANCEL              1017
 #define ID_SYSTEM_EXIT                  40001
 #define ID_SYSTEM_OPTIONS               40002
 #define ID_ABOUT                        40004

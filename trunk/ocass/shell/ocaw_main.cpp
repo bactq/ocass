@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+#include <commctrl.h>
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
 
@@ -46,6 +47,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     g_hInstance = hInstance;
 
+    InitCommonControls();
     caErr = CAS_PStartup(__argc, __argv, &g_ocawProc);
     if (CA_ERR_SUCCESS != caErr)
     {
