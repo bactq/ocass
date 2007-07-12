@@ -21,6 +21,7 @@
 #include "ocaw_main.h"
 #include "ocaw_opt.h"
 #include "ocaw_misc.h"
+#include "ocaw_log.h"
 #include "ca_ofc.h"
 #include "ca_cfg.h"
 #include "resource.h"
@@ -65,6 +66,7 @@ static BOOL OCAS_CfgOnBtnOkClick(HWND hWnd)
 {
     CACfgDatum cfgDatum;
     OCAWProc *pProc = CAS_MGetProcPtr();
+    CAErrno caErr;
     BOOL bResult;
     BOOL bIsChecked;
 
@@ -86,7 +88,11 @@ static BOOL OCAS_CfgOnBtnOkClick(HWND hWnd)
     bResult = OCAS_CfgUpdateCfgFromUI(hWnd, &cfgDatum);
     if (bResult)
     {
-        CC_UpdateCfg(pProc->pCCWrk, pProc->szCfgFName, &cfgDatum);
+        caErr = CC_UpdateCfg(pProc->pCCWrk, pProc->szCfgFName, &cfgDatum);
+        if (CA_ERR_SUCCESS == caErr)
+        {
+            CAS_LogUpdateCfg();
+        }
     }
 
 EXIT:

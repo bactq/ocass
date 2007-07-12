@@ -71,5 +71,6 @@ BOOL OCAS_GetDlgCheckBoxState(HWND hDlg, UINT nCtrlItem,
 BOOL OCAS_SetDlgCheckBoxState(HWND hDlg, UINT nCtrlItem, 
                               BOOL bState);
 
-#endif /* !defined(_OCAW_MISC_H_) */
+BOOL OCAS_SetDlgItemEnable(HWND hDlg, UINT nCtrlItem, BOOL bEnable);
 
+#endif /* !defined(_OCAW_MISC_H_) */

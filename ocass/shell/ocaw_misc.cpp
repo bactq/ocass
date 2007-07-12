@@ -338,3 +338,16 @@ BOOL OCAS_SetDlgCheckBoxState(HWND hDlg, UINT nCtrlItem,
         (WPARAM)(bState ? BST_CHECKED : BST_UNCHECKED), NULL);
     return TRUE;
 }
+
+BOOL OCAS_SetDlgItemEnable(HWND hDlg, UINT nCtrlItem, BOOL bEnable)
+{
+    HWND hDlgItem;
+
+    hDlgItem = GetDlgItem(hDlg, nCtrlItem);
+    if (NULL == hDlgItem)
+    {
+        return FALSE;
+    }
+
+    return EnableWindow(hDlgItem, bEnable);
+}

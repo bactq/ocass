@@ -19,12 +19,50 @@
  */
 
 #include <windows.h>
+#include "liboca.h"
+#include "ca_str.h"
+#include "ca_misc.h"
 #include "ocaw_panic.h"
 
 void CAS_Panic(const TCHAR *pszSrc, UINT nSrcLine, 
                int nProcExit, const TCHAR *pszReasonFmt, ...)
 {
-    /* message box */
-    MessageBox(NULL, "TEST", "TEST", MB_OK);
+    const TCHAR *pszBaseName;
+    va_list pArgList;
+    TCHAR szOutMsg[1024 * 4];
+    TCHAR szMsg[1024 * 3];
+    int nResult;
+
+    va_start(pArgList, pszReasonFmt);
+    nResult = CA_VSNPrintf(szMsg, sizeof(szMsg) / sizeof(szMsg[0]), 
+        pszReasonFmt, pArgList);
+    va_end(pArgList);
+    if (0 >= nResult)
+    {
+        goto EXIT;
+    }
+
+    CA_PathGetBaseName(pszSrc, &pszBaseName);
+    nResult = CA_SNPrintf(szOutMsg, sizeof(szOutMsg) / sizeof(szOutMsg[0]), 
+        TEXT("Panic:        %s (%u)\r\n"
+             "Exit code:    %u\r\n"
+             "Reason:       \r\n\r\n"
+             "%s\r\n"),
+             pszBaseName, nSrcLine, nProcExit, szMsg);
+    if (0 >= nResult)
+    {
+        goto EXIT;
+    }
+
+    MessageBox(NULL, szOutMsg, TEXT("ocass - panic"), 
+        MB_ICONWARNING|MB_OK);
+EXIT:
+    ExitProcess(nProcExit);
+}
+
+void CAS_PanicNoMsg(const TCHAR *pszSrc, UINT nSrcLine, int nProcExit)
+{
+    CA_RTLog(pszSrc, nSrcLine, CA_RTLOG_WARN, 
+        TEXT("ocass shell panic no reason, exit code %u"), nProcExit);
     ExitProcess(nProcExit);
 }
