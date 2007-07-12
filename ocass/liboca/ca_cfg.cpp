@@ -187,7 +187,6 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
     pCfgDatum->bIsAutoInject = GetPrivateProfileInt(TEXT("app"), 
         TEXT("is_auto_inject"), cfgDefaultDatum.bIsAutoInject, 
         pszCfgFName);
-
     
     /* spy log size, mask, name  */
     nVal = GetPrivateProfileInt(TEXT("spy"), TEXT("spy_log_ts"), 
@@ -435,15 +434,9 @@ CA_DECLARE(CAShellLogMask) CA_CfgLogMod2ShLogMask(CALogMod logMod)
 }
 
 CA_DECLARE(CAErrno) CA_CfgShWr(const TCHAR *pszCfgFName, 
+                               const CACfgDatum *pOldCfgDatum, 
                                CACfgDatum *pCfgDatum)
 {
-    /* XXX FIXME if the path is not FULL */
-    WritePrivateProfileString(TEXT("app"), TEXT("communicator_fname"), 
-        pCfgDatum->szCommunicatorFName, pszCfgFName);
-
-    WritePrivateProfileString(TEXT("app"), TEXT("history_path"), 
-        pCfgDatum->szHistoryPath, pszCfgFName);
-
     /* XXX XXX */
     return CA_ERR_SUCCESS;
 }

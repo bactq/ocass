@@ -56,6 +56,8 @@ BOOL OCAS_ComboBoxAddItems(HWND hComboBox, const OCASComboBoxItem *pItems,
                            DWORD dwItemsCnt);
 
 BOOL OCAS_SetDlgItemTxt(HWND hDlg, UINT nItemId, const TCHAR *pszTxt);
+BOOL OCAS_GetDlgItemTxt(HWND hDlg, UINT nItemId, 
+                        TCHAR *pszTxtBuf, DWORD dwBufCnt);
 
 
 BOOL OCAS_SelPath(HWND hParentWnd, TCHAR *pszBuf, DWORD dwBufCnt);

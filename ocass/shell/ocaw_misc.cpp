@@ -79,6 +79,21 @@ BOOL OCAS_AppendMenuItems(HMENU hMenu, const OCASMenuItem *pItems,
     return bRetVal;
 }
 
+BOOL OCAS_GetDlgItemTxt(HWND hDlg, UINT nItemId, 
+                        TCHAR *pszTxtBuf, DWORD dwBufCnt)
+{
+    HWND hDlgItem;
+
+    hDlgItem = GetDlgItem(hDlg, nItemId);
+    if (NULL == hDlgItem)
+    {
+        return FALSE;
+    }
+
+    SendMessage(hDlgItem, WM_GETTEXT, (WPARAM)dwBufCnt, (LPARAM)pszTxtBuf);
+    return TRUE;
+}
+
 BOOL OCAS_SetDlgItemTxt(HWND hDlg, UINT nItemId, const TCHAR *pszTxt)
 {
     HWND hDlgItem;
@@ -279,9 +294,17 @@ BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData, int nDefault)
 
 BOOL OCAS_ComboBoxGetCurSelItemData(HWND hComboBox, void **pData)
 {
+    int nSelId = 0;
     int nResult;
 
     nResult = SendMessage(hComboBox, CB_GETCURSEL, NULL, NULL);
+    if (CB_ERR == nResult)
+    {
+        return FALSE;
+    }
+    nSelId = nResult;
+
+    nResult = SendMessage(hComboBox, CB_GETITEMDATA, (WPARAM)nSelId, NULL);
     if (CB_ERR == nResult)
     {
         return FALSE;
