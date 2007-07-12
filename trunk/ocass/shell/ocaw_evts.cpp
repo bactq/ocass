@@ -19,6 +19,8 @@
  */
 
 #include "ca_cfg.h"
+#include "ca_str.h"
+#include "libocc.h"
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
 #include "ocaw_wrk.h"
@@ -30,8 +32,28 @@
 
 BOOL OCAS_ChangeHistoryPath(HWND hWnd, TCHAR *pszHistoryPath)
 {
-    /* XXX */
-    return TRUE;
+    CACfgDatum cfgDatum;
+    OCAWProc *pProc = CAS_MGetProcPtr();
+    CAErrno caErr;
+    int nResult;
+
+    if (NULL == pszHistoryPath || '\0' == pszHistoryPath[0] ||
+        NULL == pProc || NULL == pProc->pCCWrk)
+    {
+        return FALSE;
+    }
+
+    CA_CfgDupRT(&cfgDatum);
+    nResult = CA_SNPrintf(cfgDatum.szHistoryPath, 
+        sizeof(cfgDatum.szHistoryPath) / sizeof(cfgDatum.szHistoryPath[0]), 
+        TEXT("%s"), pszHistoryPath);
+    if (0 >= nResult)
+    {
+        return FALSE;
+    }
+
+    caErr = CC_UpdateCfg(pProc->pCCWrk, &cfgDatum);
+    return (CA_ERR_SUCCESS == caErr ? TRUE : FALSE);
 }
 
 BOOL OCAS_SetMonStateToUI(HWND hWnd, const TCHAR *pszState)
@@ -176,7 +198,6 @@ BOOL OCAS_ShowTrayPopMenu(HWND hWnd)
 
     if (NULL == hMenu)
     {
-        /* XXX write log */
         return FALSE;
     }
 
@@ -187,7 +208,7 @@ BOOL OCAS_ShowTrayPopMenu(HWND hWnd)
         cursorPos.x, cursorPos.y, 0, hWnd, NULL);
     if (!bResult)
     {
-        /* XXX write log */
+
     }
 
     DestroyMenu(hMenu);

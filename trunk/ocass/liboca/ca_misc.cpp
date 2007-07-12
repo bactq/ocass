@@ -278,7 +278,7 @@ CA_DECLARE(CAErrno) CA_MkSubDirWithBName(const TCHAR *pszDir,
         goto EXIT;
     }
     
-    /* XXX fixme set max retry count */
+    /* XXX FIXME set max retry count */
     for (nRNameId = 1;; nRNameId++)
     {
         nResult = CA_SNPrintf(szReName, sizeof(szReName) / sizeof(szReName[0]), 

@@ -58,7 +58,7 @@ CA_DECLARE(CAErrno) CA_FLockCreate(const char *pszFileName, CAFLock *pFLock)
     bResult = WriteFile(hFile, "1", 1, &dwWrBytes, NULL);
     if (!bResult)
     {
-        /* XXX disk over ??? */
+        /* XXX FIXME disk over (no free space) ??? */
         caErrFunc = CA_ERR_SYS_CALL;
         goto FAILED_EXIT;
     }
@@ -101,7 +101,7 @@ CA_DECLARE(CAErrno) CA_FLockDestroy(CAFLock *pFLock, BOOL bUnlinkLockFile)
         pFLock->overLapped.hEvent = NULL;
     }
 
-    /* XXX delete the lock file */
+    /* XXX FIXME delete the lock file */
     return CA_ERR_SUCCESS;
 }
 

@@ -25,8 +25,46 @@
 #include "ca_cfg.h"
 #include "resource.h"
 
+static BOOL OCAS_CfgUpdateCfgFromUI(HWND hWnd, CACfgDatum *pCfgDatum)
+{
+    CALogMod logMod;
+    BOOL bResult;
+    BOOL bState;
+
+    /* auto inject */
+    bState = FALSE;
+    bResult = OCAS_GetDlgCheckBoxState(hWnd, IDC_CHK_AUTOINJECT, &bState);
+    if (!bResult)
+    {
+        bState = FALSE;
+    }
+    pCfgDatum->bIsAutoInject = bState;
+
+    /* oc proc */
+    OCAS_GetDlgItemTxt(hWnd, IDC_EDIT_CPN, pCfgDatum->szCommunicatorFName, 
+        sizeof(pCfgDatum->szCommunicatorFName) / 
+        sizeof(pCfgDatum->szCommunicatorFName[0]));
+
+    /* log mod */
+    logMod = CA_LOGMOD_ERR;    
+    bResult = OCAS_ComboBoxGetCurSelItemData(GetDlgItem(hWnd, 
+        IDC_COMBO_LOGMOD), (void**)&logMod);
+    if (!bResult)
+    {
+        logMod = CA_LOGMOD_ERR;
+    }
+    pCfgDatum->logMode = logMod;
+
+    /* log file */
+    OCAS_GetDlgItemTxt(hWnd, IDC_EDIT_LOGDIR, pCfgDatum->szLogPath, 
+        sizeof(pCfgDatum->szLogPath) / sizeof(pCfgDatum->szLogPath[0]));
+    return TRUE;
+}
+
 static BOOL OCAS_CfgOnBtnOkClick(HWND hWnd)
 {
+    CACfgDatum cfgDatum;
+    OCAWProc *pProc = CAS_MGetProcPtr();
     BOOL bResult;
     BOOL bIsChecked;
 
@@ -38,7 +76,20 @@ static BOOL OCAS_CfgOnBtnOkClick(HWND hWnd)
         bIsChecked = FALSE;
     }
     CA_CfgOCASSAutoRunSet(bIsChecked);
+    
+    if (NULL == pProc || NULL == pProc->pCCWrk)
+    {
+        goto EXIT;
+    }
 
+    CA_CfgDupRT(&cfgDatum);
+    bResult = OCAS_CfgUpdateCfgFromUI(hWnd, &cfgDatum);
+    if (bResult)
+    {
+        CC_UpdateCfg(pProc->pCCWrk, &cfgDatum);
+    }
+
+EXIT:
     SendMessage(hWnd, WM_CLOSE, NULL, NULL);
     return TRUE;
 }

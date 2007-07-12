@@ -200,10 +200,13 @@ EXIT:
     return funcErr;
 }
 
-CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, BOOL bPause)
+CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, 
+                                 CACfgDatum *pCfgDatum)
 {
     CAErrno funcErr = CA_ERR_SUCCESS;
 
     /* XXX read new config from rt */
     return funcErr;
 }
+
+

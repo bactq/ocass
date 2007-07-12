@@ -99,6 +99,7 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
                              const TCHAR *pszWrkPath, CACfgDatum *pCfgDatum);
 
 CA_DECLARE(CAErrno) CA_CfgShWr(const TCHAR *pszCfgFName, 
+                               const CACfgDatum *pOldCfgDatum, 
                                CACfgDatum *pCfgDatum);
 
 CA_DECLARE(CAErrno)     CA_CfgDupRT(CACfgDatum *pResult);
