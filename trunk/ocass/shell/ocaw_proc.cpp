@@ -26,14 +26,19 @@
 #include "ca_evts.h"
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
+#include "ocaw_panic.h"
 #include "ocaw_wrk.h"
 #include "ocaw_log.h"
+
+const TCHAR *OCAS_USAGE_TXT = TEXT("Useage");
 
 int OCAS_PUseage(OCAWProc *pProc)
 {
     int nProcExit = CA_PROC_EXIT_USEAGE;
-    /* XXX show useage */
-    MessageBox(NULL, TEXT("Useage "), TEXT("Tips"), MB_OK);
+
+    MessageBox(NULL, OCAS_USAGE_TXT, TEXT("ocass - panic"), 
+        MB_ICONINFORMATION|MB_OK);
+    ExitProcess(nProcExit);
     return nProcExit;
 }
 
@@ -66,7 +71,9 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
     caErr = CA_Startup();
     if (CA_ERR_SUCCESS != caErr)
     {
-        /* XXX panic */
+        CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+            TEXT("Startup failed. Can't load run time library or config."
+                 "Last Error code (%u). "), caErr);
         return caErr;
     }
 
@@ -82,7 +89,9 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
         sizeof(pProc->szWrkPath) / sizeof(pProc->szWrkPath[0]));
     if (CA_ERR_SUCCESS != caErr)
     {
-        /* XXX panic */
+        CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+            TEXT("Startup failed. Can't load run time library or config."
+                 "Last Error code (%u). "), caErr);
         return caErr;
     }
 
@@ -133,7 +142,9 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
             sizeof(pProc->szCfgFName) / sizeof(pProc->szCfgFName[0]));
         if (CA_ERR_SUCCESS != caErr)
         {
-            /* XXX panic */
+            CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+                TEXT("Startup failed. Can't load config."
+                     "Last Error code (%u). "), caErr);
             return caErr;
         }
     }
@@ -153,7 +164,9 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
         caErr = CA_CfgSetRTFromFile(pProc->szCfgFName, pProc->szWrkPath);
         if (CA_ERR_SUCCESS != caErr)
         {
-            /* XXX panic */
+            CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+                TEXT("Startup failed. Read config from (%s) failed."
+                     "Last Error code (%u). "), pProc->szCfgFName, caErr);
             return caErr;
         }
 

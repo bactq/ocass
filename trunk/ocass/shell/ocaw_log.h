@@ -25,6 +25,6 @@
 
 CAErrno CAS_LogStartup(void);
 void    CAS_LogCleanup(void);
-CAErrno CAS_UpdateCfg(void);
+CAErrno CAS_LogUpdateCfg(void);
 
 #endif /* !defined(_OCAW_LOG_H_) */

@@ -350,7 +350,6 @@ CA_DECLARE(CAErrno) CA_CfgOCASSAutoRunSet(BOOL bIsAutoRun)
         return CA_ERR_SUCCESS;
     }
 
-
     nResult = RegDeleteValue(hKeyAutoRun, CA_CFG_REG_RUN_KEY);
     if (ERROR_SUCCESS != nResult)
     {

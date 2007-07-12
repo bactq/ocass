@@ -25,6 +25,7 @@
 #include <commctrl.h>
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
+#include "ocaw_panic.h"
 
 static HINSTANCE g_hInstance = NULL;
 static OCAWProc  g_ocawProc = {0};
@@ -51,7 +52,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     caErr = CAS_PStartup(__argc, __argv, &g_ocawProc);
     if (CA_ERR_SUCCESS != caErr)
     {
-        /* XXX panic */
+        CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+            TEXT("Startup failed. Can't load run time library or config."
+                 "Last Error code (%u). "), caErr);
         return CA_PROC_EXIT_INIT_FAILED;
     }
 

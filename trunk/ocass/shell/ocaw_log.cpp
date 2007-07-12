@@ -150,7 +150,7 @@ void CAS_LogCleanup(void)
     g_casLog.shellLogMask = CA_SH_LOG_NONE;
 }
 
-CAErrno CAS_UpdateCfg(void)
+CAErrno CAS_LogUpdateCfg(void)
 {
     CACfgDatum cfgDatum;
     CALogOpt logOpt;

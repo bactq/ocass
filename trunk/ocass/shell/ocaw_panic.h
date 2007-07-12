@@ -27,4 +27,6 @@ void CAS_Panic(const TCHAR *pszSrc, UINT nSrcLine,
                int nProcExit, const TCHAR *pszReasonFmt, ...);
 
 
+void CAS_PanicNoMsg(const TCHAR *pszSrc, UINT nSrcLine, int nProcExit);
+
 #endif /* !defined(_OCAW_PANIC_H_) */

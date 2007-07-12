@@ -30,6 +30,35 @@
 #include "ocaw_misc.h"
 #include "resource.h"
 
+BOOL OCAS_OnUpdateMonBtnState(HWND hWnd)
+{
+    OCAWProc *pProc = CAS_MGetProcPtr();
+    BOOL bIsPause;
+
+    if (NULL == pProc || NULL == pProc->pCCWrk)
+    {
+        bIsPause = FALSE;
+    }
+    else
+    {
+        bIsPause = CC_IsPause(pProc->pCCWrk);
+    }
+
+
+    if (bIsPause)
+    {
+        OCAS_SetDlgItemEnable(hWnd, IDC_BTN_MONCTLP, FALSE);
+        OCAS_SetDlgItemEnable(hWnd, IDC_BTN_MONCTLS, TRUE);
+    }
+    else
+    {
+        OCAS_SetDlgItemEnable(hWnd, IDC_BTN_MONCTLP, TRUE);
+        OCAS_SetDlgItemEnable(hWnd, IDC_BTN_MONCTLS, FALSE);
+    }
+
+    return TRUE;
+}
+
 BOOL OCAS_ChangeHistoryPath(HWND hWnd, TCHAR *pszHistoryPath)
 {
     CACfgDatum cfgDatum;
@@ -74,7 +103,10 @@ BOOL OCAS_OnWrkDescChange(HWND hWnd)
     EnterCriticalSection(&pProc->shellCS);
     pszWrkState = CC_StateDesc(pProc->wrkDesc.wrkState);
     LeaveCriticalSection(&pProc->shellCS);
-    return OCAS_SetMonStateToUI(hWnd, pszWrkState);
+
+    OCAS_SetMonStateToUI(hWnd, pszWrkState);
+    OCAS_OnUpdateMonBtnState(hWnd);
+    return TRUE;
 }
 
 BOOL OCAS_SetMonProcNameToUI(HWND hWnd, const TCHAR *pszFName)
@@ -110,24 +142,6 @@ BOOL OCAS_OnChangeHistoryPath(HWND hWnd)
     }
 
     return OCAS_ChangeHistoryPath(hWnd, szPath);
-}
-
-BOOL OCAS_OnUpdateMonBtnState(HWND hWnd)
-{
-    OCAWProc *pProc = CAS_MGetProcPtr();
-    BOOL bIsPause;
-
-    if (NULL == pProc || NULL == pProc->pCCWrk)
-    {
-        bIsPause = FALSE;
-    }
-    else
-    {
-        bIsPause = CC_IsPause(pProc->pCCWrk);
-    }
-
-    return OCAS_SetDlgItemTxt(hWnd, IDC_BTN_MONCTL, 
-        bIsPause ? TEXT("Start") : TEXT("Pause"));
 }
 
 BOOL OCAS_OnMonCtlClick(HWND hWnd)
@@ -201,7 +215,8 @@ BOOL OCAS_OnMainDlgCmdEvt(HWND hWnd, UINT wParam, LPARAM lParam,
     case IDC_BUTTON_CHANGE:
         return OCAS_OnChangeHistoryPath(hWnd);
 
-    case IDC_BTN_MONCTL:
+    case IDC_BTN_MONCTLS:
+    case IDC_BTN_MONCTLP:
         return OCAS_OnMonCtlClick(hWnd);
 
     default:

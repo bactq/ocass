@@ -19,10 +19,63 @@
  */
 
 #include <process.h>
+
+#include "liboca.h"
 #include "ca_types.h"
 #include "ca_mm.h"
+#include "ca_str.h"
 #include "libocc.h"
 #include "cc_inner.h"
+
+static CAErrno CC_UpdateCfgToShMM(CCWrk *pCWrk, CACfgDatum *pCfgDatum)
+{
+    CASpyDatum *pSDatum;
+    CASpyRun *pSR = NULL;
+    CAErrno caErr;
+    CAErrno funcErr = CA_ERR_SUCCESS;
+    BOOL bNeedTouch = FALSE;
+
+    if (NULL == pCWrk || NULL == pCWrk->pSR)
+    {
+        return CA_ERR_BAD_SEQ;
+    }
+
+    pSR = pCWrk->pSR;
+    caErr = CA_SRLock(pSR, TRUE);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_WARN|CA_RTLOG_OSERR, 
+            TEXT("core update pause state failed. can't open the flock"));
+        return caErr;
+    }
+
+    pSDatum = CA_SRGetDatum(pSR);
+    if (NULL == pSDatum)
+    {
+        funcErr = CA_ERR_BAD_ARG;
+        goto EXIT;
+    }
+
+    pSDatum->bStateIsDirty = TRUE;
+    CA_TruncateStrnCpy(pSDatum->szHistoryPath, pCfgDatum->szHistoryPath, 
+        sizeof(pSDatum->szHistoryPath) / sizeof(pSDatum->szHistoryPath[0]));
+    CA_TruncateStrnCpy(pSDatum->szSpyLog, pCfgDatum->szSpyLog,
+        sizeof(pSDatum->szSpyLog) / sizeof(pSDatum->szSpyLog[0]));
+    CA_TruncateStrnCpy(pSDatum->szSpyNtDump, pCfgDatum->szSpyNtDump,
+        sizeof(pSDatum->szSpyNtDump) / sizeof(pSDatum->szSpyNtDump[0]));
+
+    pSDatum->dwSpyLogTSize = pCfgDatum->dwSpyLogTSize;
+    pSDatum->dwSpyNtDumpTSize = pCfgDatum->dwSpyNtDumpTSize;
+    pSDatum->logMask = pCfgDatum->spyLogMask;
+    bNeedTouch = TRUE;
+EXIT:
+    CA_SRUnlock(pSR);
+    if (bNeedTouch)
+    {
+        CA_SRTouch(pSR);
+    }
+    return funcErr;
+}
 
 CA_DECLARE(CAErrno) CC_Startup(CCWrkMod wrkMod, CCWrk **pCWrk)
 {
@@ -36,6 +89,9 @@ CA_DECLARE(CAErrno) CC_Startup(CCWrkMod wrkMod, CCWrk **pCWrk)
     pNewCWrk = (CCWrk *)CA_MAlloc(sizeof(CCWrk));
     if (NULL == pNewCWrk)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR|CA_RTLOG_OSERR, 
+            TEXT("core startup failed. no memory"));
+
         funcErr = CA_ERR_NO_MEM;
         goto EXIT;
     }
@@ -44,6 +100,9 @@ CA_DECLARE(CAErrno) CC_Startup(CCWrkMod wrkMod, CCWrk **pCWrk)
     hWrkEvt = CreateEvent(NULL, FALSE, TRUE, NULL);
     if (NULL == hWrkEvt)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR|CA_RTLOG_OSERR, 
+            TEXT("core startup failed. create event failed"));
+
         funcErr = CA_ERR_SYS_CALL;
         goto EXIT;
     }
@@ -62,9 +121,15 @@ CA_DECLARE(CAErrno) CC_Startup(CCWrkMod wrkMod, CCWrk **pCWrk)
         CC_WrkThread, pNewCWrk, 0, &dwThId);
     if (NULL == pNewCWrk->hWrkTh)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR|CA_RTLOG_OSERR, 
+            TEXT("core startup failed. create thread failed"));
+
         funcErr = CA_ERR_SYS_CALL;
         goto EXIT;
     }
+
+    CA_RTLog(CA_SRC_MARK, CA_RTLOG_INFO, 
+        TEXT("core startup success, core thread id %u"), dwThId);
 
     *pCWrk = pNewCWrk;
 EXIT:
@@ -88,8 +153,13 @@ EXIT:
 
 CA_DECLARE(void) CC_Cleanup(CCWrk *pCWrk)
 {
+    CA_RTLog(CA_SRC_MARK, CA_RTLOG_INFO, 
+        TEXT("core start cleanup"));
+
     if (NULL == pCWrk)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_WARN, 
+            TEXT("core cleanup failed. bad arg"));
         return;
     }
 
@@ -105,6 +175,9 @@ CA_DECLARE(void) CC_Cleanup(CCWrk *pCWrk)
         CA_SRClose(pCWrk->pSR);
     }
     CA_MFree(pCWrk);
+
+    CA_RTLog(CA_SRC_MARK, CA_RTLOG_INFO, 
+            TEXT("core cleanup successed"));
 }
 
 CA_DECLARE(CAErrno) CC_State(CCWrk *pCWrk, BOOL bClearDirtyFlag,
@@ -128,6 +201,11 @@ CA_DECLARE(CAErrno) CC_Touch(CCWrk *pCWrk)
 {
     BOOL bResult;
     bResult = SetEvent(pCWrk->hWrkEvt);
+    if (!bResult)
+    {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_WARN|CA_RTLOG_OSERR, 
+            TEXT("work core touch wrk evt failed."));
+    }
     return (bResult ? CA_ERR_SUCCESS :CA_ERR_SYS_CALL);
 }
 
@@ -169,12 +247,6 @@ CA_DECLARE(CAErrno) CC_SetPauseFlag(CCWrk *pCWrk, BOOL bPause)
     BOOL bNeedTouch = FALSE;
 
     EnterCriticalSection(&pCWrk->wrkCS);
-    if (NULL == pCWrk)
-    {
-        funcErr = CA_ERR_BAD_SEQ;
-        goto EXIT;
-    }
-
     pCWrk->wrkMod = (bPause ? CC_WRK_MOD_SAFE : CC_WRK_MOD_NORMAL);
     if (NULL == pCWrk->pSR)
     {
@@ -185,6 +257,9 @@ CA_DECLARE(CAErrno) CC_SetPauseFlag(CCWrk *pCWrk, BOOL bPause)
     caErr = CA_SRLock(pSR, TRUE);
     if (CA_ERR_SUCCESS != caErr)
     {
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_WARN|CA_RTLOG_OSERR, 
+            TEXT("core update pause state failed. can't open the flock"));
+
         funcErr = caErr;
         goto EXIT;
     }
@@ -226,7 +301,10 @@ CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, const TCHAR *pszCfgFName,
     caErr = CA_CfgReCalculate(pCfgDatum);
     if (CA_ERR_SUCCESS != caErr)
     {
-        /* XXX write log */
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("ReCalculate config data failed, error code %u"), 
+            caErr);
+
         return caErr;
     }
 
@@ -236,15 +314,17 @@ CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, const TCHAR *pszCfgFName,
     caErr = CA_CfgShWr(pszCfgFName, &oldCfgDatum, pCfgDatum);
     if (CA_ERR_SUCCESS != caErr)
     {
-        /* XXX write log */
+        CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
+            TEXT("write config config data to (%s) failed, error code %u"), 
+            pszCfgFName, caErr);
     }
 
     /* update config to rt data */
-
+    CA_CfgSetRT(pCfgDatum);
 
     /* update config to sh data */
-
+    EnterCriticalSection(&pCWrk->wrkCS);    
+    funcErr = CC_UpdateCfgToShMM(pCWrk, pCfgDatum);
+    LeaveCriticalSection(&pCWrk->wrkCS);
     return funcErr;
 }
-
-

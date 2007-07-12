@@ -52,7 +52,8 @@ static DWORD WINAPI OCAS_ShWrkTh(VOID *pArg)
             caErr = CC_State(pProc->pCCWrk, TRUE, &wrkState);
             if (CA_ERR_SUCCESS != caErr)
             {
-                /* XXX write log */
+                CA_RTLog(CA_SRC_MARK, CA_RTLOG_WARN, 
+                    TEXT("Read work state failed. err is %u"), caErr);
                 continue;
             }
 
@@ -160,7 +161,7 @@ int OCAS_PWrk(OCAWProc *pProc)
     {
         CloseHandle(hEvt);
 
-        /* XXX panic */
+        CAS_PanicNoMsg(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED);
         nProcExit = CA_PROC_EXIT_INIT_FAILED;
         goto EXIT;
     }
@@ -169,7 +170,11 @@ int OCAS_PWrk(OCAWProc *pProc)
         OCASS_EVT_NAME_SHELL_WRK);
     if (NULL == pProc->hShWrkEvt)
     {
-        /* XXX panic */
+        CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+            TEXT("Startup failed. Create name event %s failed."
+                 "System last error is %u."), 
+                 OCASS_EVT_NAME_SHELL_WRK, GetLastError());
+
         nProcExit = CA_PROC_EXIT_INIT_FAILED;
         goto EXIT;
     }
@@ -177,7 +182,9 @@ int OCAS_PWrk(OCAWProc *pProc)
     caErr = CC_Startup(CC_WRK_MOD_SAFE, &pProc->pCCWrk);
     if (CA_ERR_SUCCESS != caErr)
     {
-        /* panic */
+        CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+            TEXT("Startup failed. Load library or read config failed."));
+
         DestroyWindow(pProc->hMainDlg);
         nProcExit = CA_PROC_EXIT_INIT_FAILED;
         goto EXIT;
@@ -187,7 +194,10 @@ int OCAS_PWrk(OCAWProc *pProc)
     pProc->hShWrkTh = CreateThread(NULL, 0, OCAS_ShWrkTh, pProc, 0, &dwThId);
     if (NULL == pProc->hShWrkTh)
     {
-        /* XXX panic */
+        CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
+            TEXT("Startup failed. Create shell work trhead failed. "
+                 "System last error is %u"), GetLastError());
+
         nProcExit = CA_PROC_EXIT_INIT_FAILED;
         goto EXIT;
     }
@@ -197,8 +207,9 @@ int OCAS_PWrk(OCAWProc *pProc)
     if (NULL == pProc->hMainDlg)
     {
         CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
-            TEXT("Create Main dialog failed. System Last Error is %u"), 
-            GetLastError());
+            TEXT("Startup failed. Create Main dialog failed. "
+                 "System Last Error is %u"), GetLastError());
+
         nProcExit = CA_PROC_EXIT_INIT_FAILED;
         goto EXIT;
     }
@@ -222,8 +233,8 @@ int OCAS_PWrk(OCAWProc *pProc)
     if (!bResult)
     {
         CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
-            TEXT("Create Main notify icon failed. System Last Error is %u"), 
-            GetLastError());
+            TEXT("Startup failed. Create Main notify icon failed. "
+                 "System Last Error is %u"), GetLastError());
 
         DestroyWindow(pProc->hMainDlg);
         nProcExit = CA_PROC_EXIT_INIT_FAILED;
