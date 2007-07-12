@@ -169,16 +169,21 @@ CA_DECLARE(CAErrno) CC_SetPauseFlag(CCWrk *pCWrk, BOOL bPause)
     BOOL bNeedTouch = FALSE;
 
     EnterCriticalSection(&pCWrk->wrkCS);
-    if (NULL == pCWrk || NULL == pCWrk->pSR)
+    if (NULL == pCWrk)
     {
         funcErr = CA_ERR_BAD_SEQ;
         goto EXIT;
     }
 
-    pCWrk->wrkMod = CC_WRK_MOD_SAFE;
+    pCWrk->wrkMod = (bPause ? CC_WRK_MOD_SAFE : CC_WRK_MOD_NORMAL);
+    if (NULL == pCWrk->pSR)
+    {
+        goto EXIT;
+    }
+
     pSR = pCWrk->pSR;
     caErr = CA_SRLock(pSR, TRUE);
-    if (CA_ERR_SUCCESS == caErr)
+    if (CA_ERR_SUCCESS != caErr)
     {
         funcErr = caErr;
         goto EXIT;
