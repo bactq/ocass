@@ -44,8 +44,9 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     pCfgDatum->bIsAutoInject = TRUE;
     pCfgDatum->logMode = CA_LOGMOD_ERR;
 
-    pCfgDatum->spyLogMask = CA_SPY_LOG_ERR|CA_SPY_LOG_DEL_OLD;
-    pCfgDatum->shellLogMask = CA_SH_LOG_ERR|CA_SH_LOG_DEL_OLD;
+    pCfgDatum->spyLogMask = CA_CfgLogMod2SpyLogMask(CA_LOGMOD_ERR);
+    pCfgDatum->shellLogMask = CA_CfgLogMod2ShLogMask(CA_LOGMOD_ERR);
+
     pCfgDatum->dwSpyLogTSize = CA_CFG_DEFAULT_SPY_LOG_TSIZE_B;
     pCfgDatum->dwSpyNtDumpTSize = CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_B;
     pCfgDatum->dwShellTSize = CA_CFG_DEFAULT_SHELL_TSIZE_B;
@@ -79,10 +80,21 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
         return caErr;
     }
 
+
+    /* log path */
+    dwBufCnt = sizeof(pCfgDatum->szLogPath) / 
+               sizeof(pCfgDatum->szLogPath[0]);
+    caErr = CA_PathJoin(pszWrkPath, CA_CFG_DEFAULT_LOG_PATH, 
+        pCfgDatum->szLogPath, dwBufCnt);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        return caErr;
+    }
+
     /* spy log */
     dwBufCnt = sizeof(pCfgDatum->szSpyLog) / 
                sizeof(pCfgDatum->szSpyLog[0]);
-    caErr = CA_PathJoin(pszWrkPath, CA_CFG_DEFAULT_SPY_LOG, 
+    caErr = CA_PathJoin(pCfgDatum->szLogPath, CA_CFG_DEFAULT_SPY_LOG, 
         pCfgDatum->szSpyLog, dwBufCnt);
     if (CA_ERR_SUCCESS != caErr)
     {
@@ -92,7 +104,7 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     /* nt dump */
     dwBufCnt = sizeof(pCfgDatum->szSpyNtDump) / 
                sizeof(pCfgDatum->szSpyNtDump[0]);
-    caErr = CA_PathJoin(pszWrkPath, CA_CFG_DEFAULT_SPY_NT_DUMP, 
+    caErr = CA_PathJoin(pCfgDatum->szLogPath, CA_CFG_DEFAULT_SPY_NT_DUMP, 
         pCfgDatum->szSpyNtDump, dwBufCnt);
     if (CA_ERR_SUCCESS != caErr)
     {
@@ -102,7 +114,7 @@ static CAErrno CA_CfgGetDefaultSetVals(const TCHAR *pszWrkPath,
     /* shell log */
     dwBufCnt = sizeof(pCfgDatum->szShellLog) / 
                sizeof(pCfgDatum->szShellLog[0]);
-    caErr = CA_PathJoin(pszWrkPath, CA_CFG_DEFAULT_SHELL_LOG, 
+    caErr = CA_PathJoin(pCfgDatum->szLogPath, CA_CFG_DEFAULT_SHELL_LOG, 
         pCfgDatum->szShellLog, dwBufCnt);
     if (CA_ERR_SUCCESS != caErr)
     {
@@ -123,6 +135,8 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
 {
     CACfgDatum cfgDefaultDatum;
     CAErrno caErr;
+    TCHAR szDefaultVal[MAX_PATH];
+    TCHAR *pszDefaultVal;
     DWORD dwBufCnt;
     int nVal;
 
@@ -157,58 +171,77 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
         cfgDefaultDatum.szHistoryPath, pCfgDatum->szHistoryPath, 
         dwBufCnt, pszCfgFName);
 
-    /* spy log */
-    dwBufCnt = sizeof(pCfgDatum->szSpyLog) / 
-               sizeof(pCfgDatum->szSpyLog[0]);
-    GetPrivateProfileString(TEXT("spy"), TEXT("spy_log"), 
-        cfgDefaultDatum.szSpyLog, pCfgDatum->szSpyLog, 
+    /* log path */
+    dwBufCnt = sizeof(pCfgDatum->szLogPath) / 
+               sizeof(pCfgDatum->szLogPath[0]);
+    GetPrivateProfileString(TEXT("app"), TEXT("log_path"), 
+        cfgDefaultDatum.szLogPath, pCfgDatum->szHistoryPath, 
         dwBufCnt, pszCfgFName);
+
+    /* log mode */
+    pCfgDatum->logMode = GetPrivateProfileInt(TEXT("app"), 
+        TEXT("log_mode"), cfgDefaultDatum.logMode, 
+        pszCfgFName);
+
+    /* is auto inject */
+    pCfgDatum->bIsAutoInject = GetPrivateProfileInt(TEXT("app"), 
+        TEXT("is_auto_inject"), cfgDefaultDatum.bIsAutoInject, 
+        pszCfgFName);
+
+    
+    /* spy log size, mask, name  */
     nVal = GetPrivateProfileInt(TEXT("spy"), TEXT("spy_log_ts"), 
         CA_CFG_DEFAULT_SPY_LOG_TSIZE_M, pszCfgFName);
-     pCfgDatum->dwSpyLogTSize = (nVal * 1024 * 1024);
+    pCfgDatum->dwSpyLogTSize = (nVal * 1024 * 1024);
 
-    /* spy net log */
-    dwBufCnt = sizeof(pCfgDatum->szSpyNtDump) / 
-               sizeof(pCfgDatum->szSpyNtDump[0]);
-    GetPrivateProfileString(TEXT("spy"), TEXT("spy_ntdump"), 
-        cfgDefaultDatum.szSpyNtDump, pCfgDatum->szSpyNtDump, 
-        dwBufCnt, pszCfgFName);
-    nVal = GetPrivateProfileInt(TEXT("spy"), TEXT("spy_ntdump_ts"), 
-        CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_M, pszCfgFName);
-     pCfgDatum->dwSpyNtDumpTSize = (nVal * 1024 * 1024);
-
-    /* spy log mask */
     pCfgDatum->spyLogMask = GetPrivateProfileInt(TEXT("spy"), 
         TEXT("spy_logmask"), cfgDefaultDatum.spyLogMask, pszCfgFName);
 
-    /* shell log */
-    dwBufCnt = sizeof(pCfgDatum->szShellLog) / 
-               sizeof(pCfgDatum->szShellLog[0]);
-    GetPrivateProfileString(TEXT("app"), TEXT("log_fname"), 
-        cfgDefaultDatum.szShellLog, pCfgDatum->szShellLog, 
-        dwBufCnt, pszCfgFName);
+    szDefaultVal[0] = '\0';
+    dwBufCnt = sizeof(szDefaultVal) / sizeof(szDefaultVal[0]);
+    caErr = CA_PathJoin(pCfgDatum->szLogPath, CA_CFG_DEFAULT_SPY_LOG, 
+        szDefaultVal, dwBufCnt);
+    pszDefaultVal = (CA_ERR_SUCCESS == caErr ? 
+        szDefaultVal : cfgDefaultDatum.szSpyLog);
+    dwBufCnt = sizeof(pCfgDatum->szLogPath) / 
+               sizeof(pCfgDatum->szLogPath[0]);
+    GetPrivateProfileString(TEXT("spy"), TEXT("spy_log"), pszDefaultVal, 
+        pCfgDatum->szSpyLog, dwBufCnt, pszCfgFName);
+
+    /* spy net log size , name */
+    nVal = GetPrivateProfileInt(TEXT("spy"), TEXT("spy_ntdump_ts"), 
+        CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_M, pszCfgFName);
+    pCfgDatum->dwSpyNtDumpTSize = (nVal * 1024 * 1024);
+
+    szDefaultVal[0] = '\0';
+    dwBufCnt = sizeof(szDefaultVal) / sizeof(szDefaultVal[0]);
+    caErr = CA_PathJoin(pCfgDatum->szLogPath, CA_CFG_DEFAULT_SPY_NT_DUMP, 
+        szDefaultVal, dwBufCnt);
+    pszDefaultVal = (CA_ERR_SUCCESS == caErr ? 
+        szDefaultVal : cfgDefaultDatum.szSpyNtDump);
+    dwBufCnt = sizeof(pCfgDatum->szSpyNtDump) / 
+               sizeof(pCfgDatum->szSpyNtDump[0]);
+    GetPrivateProfileString(TEXT("spy"), TEXT("spy_ntdump"), pszDefaultVal, 
+        pCfgDatum->szSpyNtDump, dwBufCnt, pszCfgFName);
+
+    /* shell log size, mask, name */
     nVal = GetPrivateProfileInt(TEXT("app"), TEXT("log_ts"), 
         CA_CFG_DEFAULT_SHELL_TSIZE_M, pszCfgFName);
-     pCfgDatum->dwShellTSize = (nVal * 1024 * 1024);
-
-     /* shell log mask */
+    pCfgDatum->dwShellTSize = (nVal * 1024 * 1024);
     pCfgDatum->shellLogMask = GetPrivateProfileInt(TEXT("app"), 
         TEXT("log_mask"), cfgDefaultDatum.shellLogMask, pszCfgFName);
 
-    return CA_ERR_SUCCESS;
-}
+    szDefaultVal[0] = '\0';
+    dwBufCnt = sizeof(szDefaultVal) / sizeof(szDefaultVal[0]);
+    caErr = CA_PathJoin(pCfgDatum->szLogPath, CA_CFG_DEFAULT_SHELL_LOG, 
+        szDefaultVal, dwBufCnt);
+    pszDefaultVal = (CA_ERR_SUCCESS == caErr ? 
+        szDefaultVal : cfgDefaultDatum.szShellLog);
+    dwBufCnt = sizeof(pCfgDatum->szShellLog) / 
+               sizeof(pCfgDatum->szShellLog[0]);
+    GetPrivateProfileString(TEXT("app"), TEXT("log_fname"), pszDefaultVal, 
+        pCfgDatum->szShellLog, dwBufCnt, pszCfgFName);
 
-CA_DECLARE(CAErrno) CA_CfgWr(const TCHAR *pszCfgFName, 
-                             const TCHAR *pszWrkPath, CACfgDatum *pCfgDatum)
-{
-    /* XXX FIXME if the path is not FULL */
-    WritePrivateProfileString(TEXT("app"), TEXT("communicator_fname"), 
-        pCfgDatum->szCommunicatorFName, pszCfgFName);
-
-    WritePrivateProfileString(TEXT("app"), TEXT("history_path"), 
-        pCfgDatum->szHistoryPath, pszCfgFName);
-
-    /* XXX XXX */
     return CA_ERR_SUCCESS;
 }
 
@@ -349,4 +382,68 @@ EXIT:
     }
 
     return funcErr;
+}
+
+CA_DECLARE(CASpyLogMask) CA_CfgLogMod2SpyLogMask(CALogMod logMod)
+{
+    switch (logMod)
+    {
+    case CA_LOGMOD_WARN:
+        return CA_SPY_LOG_WARN|CA_SPY_LOG_ERR|CA_SPY_LOG_DEL_OLD|
+            CA_SPY_LOG_NT_DUMP;
+
+    case CA_LOGMOD_NONE:
+        return CA_SPY_LOG_NONE;
+
+    case CA_LOGMOD_DBG:
+        return CA_SPY_LOG_INFO|CA_SPY_LOG_DBG|CA_SPY_LOG_WARN|
+            CA_SPY_LOG_ERR|CA_SPY_LOG_NT_ADUMP|CA_SPY_LOG_DEL_OLD;
+
+    case CA_LOGMOD_DBG_ARC:
+        return CA_SPY_LOG_INFO|CA_SPY_LOG_DBG|CA_SPY_LOG_WARN|
+            CA_SPY_LOG_ERR|CA_SPY_LOG_NT_ADUMP|CA_SPY_LOG_RENAME_OLD;
+
+    default:
+    case CA_LOGMOD_ERR:
+        return CA_SPY_LOG_ERR|CA_SPY_LOG_DEL_OLD;
+    }
+}
+
+CA_DECLARE(CAShellLogMask) CA_CfgLogMod2ShLogMask(CALogMod logMod)
+{
+    switch (logMod)
+    {
+    case CA_LOGMOD_WARN:
+        return CA_SH_LOG_WARN|CA_SH_LOG_ERR|CA_SH_LOG_DEL_OLD;
+
+    case CA_LOGMOD_NONE:
+        return CA_SH_LOG_NONE;
+
+    case CA_LOGMOD_DBG:
+        return CA_SH_LOG_DBG|CA_SH_LOG_INFO|CA_SH_LOG_WARN|
+            CA_SH_LOG_ERR|CA_SH_LOG_DEL_OLD;
+
+
+    case CA_LOGMOD_DBG_ARC:
+        return CA_SH_LOG_DBG|CA_SH_LOG_INFO|CA_SH_LOG_WARN|
+            CA_SH_LOG_ERR|CA_SH_LOG_RENAME_OLD;
+
+    default:
+    case CA_LOGMOD_ERR:
+        return CA_SH_LOG_ERR|CA_SH_LOG_DEL_OLD;
+    }
+}
+
+CA_DECLARE(CAErrno) CA_CfgShWr(const TCHAR *pszCfgFName, 
+                               CACfgDatum *pCfgDatum)
+{
+    /* XXX FIXME if the path is not FULL */
+    WritePrivateProfileString(TEXT("app"), TEXT("communicator_fname"), 
+        pCfgDatum->szCommunicatorFName, pszCfgFName);
+
+    WritePrivateProfileString(TEXT("app"), TEXT("history_path"), 
+        pCfgDatum->szHistoryPath, pszCfgFName);
+
+    /* XXX XXX */
+    return CA_ERR_SUCCESS;
 }

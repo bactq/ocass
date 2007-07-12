@@ -188,7 +188,6 @@ BOOL OCAS_ComboBoxAddItem(HWND hComboBox, const OCASComboBoxItem *pItem)
         return FALSE;
     }
 
-    return TRUE;
     nResult = SendMessage(hComboBox, CB_SETITEMDATA, (WPARAM)nResult,
             (LPARAM)pItem->pData);  
     return (CB_ERR == nResult ? FALSE : TRUE);
@@ -261,7 +260,7 @@ BOOL OCAS_ComboBoxSetSelWithData(HWND hComboBox, void *pData, int nDefault)
         if ((void*)nResult == pData)
         {
             bFind = TRUE;
-            nNeedSelId = nResult;
+            nNeedSelId = i;
             break;
         }
     }

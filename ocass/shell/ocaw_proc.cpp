@@ -76,6 +76,7 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
     pProc->dwShellProcId = GetCurrentProcessId();
     pProc->shellProcType = OCASP_TYPE_WRK;
     pProc->bIsBackground = TRUE;
+    pProc->bIsSafeMod = FALSE;
     InitializeCriticalSection(&pProc->shellCS);
     caErr = CA_GetModPath(NULL, pProc->szWrkPath, 
         sizeof(pProc->szWrkPath) / sizeof(pProc->szWrkPath[0]));
@@ -88,7 +89,7 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
     CA_InitGetOpt(nArgc, pArgv, &datumGetOpt);
     for (;;)
     {
-        caErr = CA_GetOpt(&datumGetOpt, "?hHf:F", &cOptCh, &pzOptArg);
+        caErr = CA_GetOpt(&datumGetOpt, "?hHf:FS", &cOptCh, &pzOptArg);
         if (CA_ERR_SUCCESS != caErr)
         {
             break;
@@ -100,6 +101,10 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
         case 'h':
         case 'H':
             pProc->shellProcType = OCASP_TYPE_USEAGE;
+            break;
+
+        case 'S':
+            pProc->bIsSafeMod = TRUE;
             break;
 
         case 'F':

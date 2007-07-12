@@ -28,9 +28,10 @@
 
 #define CA_CFG_DEFAULT_TEMPLATE_PATH    (TEXT("template"))
 #define CA_CFG_DEFAULT_HISTORY_PATH     (TEXT("history"))
-#define CA_CFG_DEFAULT_SPY_LOG          (TEXT("log\\ocass_s.log"))
-#define CA_CFG_DEFAULT_SPY_NT_DUMP      (TEXT("log\\ocass_ntd.log"))
-#define CA_CFG_DEFAULT_SHELL_LOG        (TEXT("log\\ocass.log"))
+#define CA_CFG_DEFAULT_LOG_PATH         (TEXT("log"))
+#define CA_CFG_DEFAULT_SPY_LOG          (TEXT("ocass_s.log"))
+#define CA_CFG_DEFAULT_SPY_NT_DUMP      (TEXT("ocass_ntd.log"))
+#define CA_CFG_DEFAULT_SHELL_LOG        (TEXT("ocass.log"))
 
 #define CA_CFG_DEFAULT_SPY_LOG_TSIZE_B        (1024 * 1024 * 2)
 #define CA_CFG_DEFAULT_SPY_NT_DUMP_TSIZE_B    (1024 * 1024 * 5)
@@ -76,6 +77,9 @@ typedef struct _CA_CFG_DATUM
  * [app]
  * communicator_fname="c:\abc\abc.exe"
  * template_path="c:\abc"
+ * log_path="c:\abc"
+ * log_mode=1
+ * is_auto_inject=0
  * log_fname="abc"
  * log_ts=5
  * log_mask=0
@@ -94,8 +98,8 @@ CA_DECLARE(CAErrno) CA_CfgGetFName(const TCHAR *pszWrkPath,
 CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName, 
                              const TCHAR *pszWrkPath, CACfgDatum *pCfgDatum);
 
-CA_DECLARE(CAErrno) CA_CfgWr(const TCHAR *pszCfgFName, 
-                             CACfgDatum *pCfgDatum);
+CA_DECLARE(CAErrno) CA_CfgShWr(const TCHAR *pszCfgFName, 
+                               CACfgDatum *pCfgDatum);
 
 CA_DECLARE(CAErrno)     CA_CfgDupRT(CACfgDatum *pResult);
 CA_DECLARE(CACfgDatum*) CA_CfgGetRT(void);
@@ -108,5 +112,8 @@ CA_DECLARE(CAErrno)     CA_CfgSetRTFromFile(const TCHAR *pszCfgFName,
 
 CA_DECLARE(CAErrno)     CA_CfgOCASSIsAutoRun(BOOL *pbIsAutoRun);
 CA_DECLARE(CAErrno)     CA_CfgOCASSAutoRunSet(BOOL bIsAutoRun);
+
+CA_DECLARE(CASpyLogMask) CA_CfgLogMod2SpyLogMask(CALogMod logMod);
+CA_DECLARE(CAShellLogMask) CA_CfgLogMod2ShLogMask(CALogMod logMod);
 
 #endif /* !defined(_CA_CFG_H_) */

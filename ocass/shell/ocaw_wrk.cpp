@@ -230,7 +230,10 @@ int OCAS_PWrk(OCAWProc *pProc)
         goto EXIT;
     }
 
-    CC_SetWrkMod(pProc->pCCWrk, CC_WRK_MOD_NORMAL);
+    if (!pProc->bIsSafeMod)
+    {
+        CC_SetWrkMod(pProc->pCCWrk, CC_WRK_MOD_NORMAL);
+    }
 
     for (;;)
     {

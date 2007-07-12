@@ -37,6 +37,8 @@ typedef struct _OCAWProc
     int argc;
     char **argv;
     BOOL bIsBackground;
+    BOOL bIsSafeMod;
+
     TCHAR szCfgFName[MAX_PATH];
     TCHAR szWrkPath[MAX_PATH];
     CRITICAL_SECTION shellCS;

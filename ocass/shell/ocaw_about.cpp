@@ -23,6 +23,10 @@
 #include "ocaw_about.h"
 #include "resource.h"
 
+const TCHAR *OCAS_ABOUT_TXT = 
+        TEXT("test\r\n"
+             "test2");
+
 static BOOL OCAS_AboutOnClose(HWND hWnd)
 {
     SendMessage(hWnd, WM_CLOSE, NULL, NULL);
@@ -33,7 +37,7 @@ static BOOL OCAS_AboutOnInit(HWND hWnd)
 {
     OCAS_SetDlgItemTxt(hWnd, IDC_STATIC_VER, CA_VER_PRODUCT_STR);
     OCAS_SetDlgItemTxt(hWnd, IDC_STATIC_BTM, __DATE__);
-    OCAS_SetDlgItemTxt(hWnd, IDC_EDIT_ABOUT_TXT, "test\r\ntest2");
+    OCAS_SetDlgItemTxt(hWnd, IDC_EDIT_ABOUT_TXT, OCAS_ABOUT_TXT);
     return TRUE;
 }
 
