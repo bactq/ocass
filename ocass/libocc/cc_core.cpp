@@ -175,6 +175,7 @@ CA_DECLARE(CAErrno) CC_SetPauseFlag(CCWrk *pCWrk, BOOL bPause)
         goto EXIT;
     }
 
+    pCWrk->wrkMod = CC_WRK_MOD_SAFE;
     pSR = pCWrk->pSR;
     caErr = CA_SRLock(pSR, TRUE);
     if (CA_ERR_SUCCESS == caErr)
@@ -200,12 +201,44 @@ EXIT:
     return funcErr;
 }
 
-CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, 
+CA_DECLARE(BOOL) CC_IsPause(CCWrk *pCWrk)
+{
+    CCWrkMod wrkMod;
+
+    EnterCriticalSection(&pCWrk->wrkCS);
+    wrkMod = pCWrk->wrkMod;
+    LeaveCriticalSection(&pCWrk->wrkCS);
+    return (wrkMod & CC_WRK_MOD_PAUSE ? TRUE : FALSE);
+}
+
+CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, const TCHAR *pszCfgFName, 
                                  CACfgDatum *pCfgDatum)
 {
+    CACfgDatum oldCfgDatum;
     CAErrno funcErr = CA_ERR_SUCCESS;
+    CAErrno caErr;
 
-    /* XXX read new config from rt */
+    caErr = CA_CfgReCalculate(pCfgDatum);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        /* XXX write log */
+        return caErr;
+    }
+
+    CA_CfgDupRT(&oldCfgDatum);
+
+    /* update config to file */
+    caErr = CA_CfgShWr(pszCfgFName, &oldCfgDatum, pCfgDatum);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        /* XXX write log */
+    }
+
+    /* update config to rt data */
+
+
+    /* update config to sh data */
+
     return funcErr;
 }
 

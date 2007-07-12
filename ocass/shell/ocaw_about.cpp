@@ -24,8 +24,11 @@
 #include "resource.h"
 
 const TCHAR *OCAS_ABOUT_TXT = 
-        TEXT("test\r\n"
-             "test2");
+        TEXT("\r\n"
+             "Home: http://code.google.com/p/ocass/\r\n"
+             "\r\n"
+             "Author: Le Xiongjia\r\n"
+             "Mail: webmaster@lexx.51.net  xiongjia_le@sonic.com \r\n");
 
 static BOOL OCAS_AboutOnClose(HWND hWnd)
 {
