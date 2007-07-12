@@ -175,7 +175,7 @@ CA_DECLARE(CAErrno) CA_CfgRd(const TCHAR *pszCfgFName,
     dwBufCnt = sizeof(pCfgDatum->szLogPath) / 
                sizeof(pCfgDatum->szLogPath[0]);
     GetPrivateProfileString(TEXT("app"), TEXT("log_path"), 
-        cfgDefaultDatum.szLogPath, pCfgDatum->szHistoryPath, 
+        cfgDefaultDatum.szLogPath, pCfgDatum->szLogPath, 
         dwBufCnt, pszCfgFName);
 
     /* log mode */
