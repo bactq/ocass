@@ -31,7 +31,7 @@ static DWORD WINAPI OCAS_ShWrkTh(VOID *pArg)
     CCWrkStateDesc wrkState;
     OCAWProc *pProc = (OCAWProc *)pArg;
     CAErrno caErr;
-    DWORD dwWrkCycle = 1000 * 2;
+    DWORD dwWrkCycle = 800;
     DWORD dwResult;
 
     for (;;)

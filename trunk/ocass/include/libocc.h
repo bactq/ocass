@@ -74,6 +74,7 @@ CA_DECLARE(CAErrno) CC_Touch(CCWrk *pCWrk);
 
 CA_DECLARE(const TCHAR*) CC_StateDesc(CCWrkState wrkState);
 
-CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, CACfgDatum *pCfgDatum);
+CA_DECLARE(CAErrno) CC_UpdateCfg(CCWrk *pCWrk, const TCHAR *pszCfgFName, 
+                                 CACfgDatum *pCfgDatum);
 
 #endif /* !defined(_LIBOCC_H_) */

@@ -52,7 +52,7 @@ BOOL OCAS_ChangeHistoryPath(HWND hWnd, TCHAR *pszHistoryPath)
         return FALSE;
     }
 
-    caErr = CC_UpdateCfg(pProc->pCCWrk, &cfgDatum);
+    caErr = CC_UpdateCfg(pProc->pCCWrk, pProc->szCfgFName, &cfgDatum);
     return (CA_ERR_SUCCESS == caErr ? TRUE : FALSE);
 }
 
@@ -112,6 +112,45 @@ BOOL OCAS_OnChangeHistoryPath(HWND hWnd)
     return OCAS_ChangeHistoryPath(hWnd, szPath);
 }
 
+BOOL OCAS_OnUpdateMonBtnState(HWND hWnd)
+{
+    OCAWProc *pProc = CAS_MGetProcPtr();
+    BOOL bIsPause;
+
+    if (NULL == pProc || NULL == pProc->pCCWrk)
+    {
+        bIsPause = FALSE;
+    }
+    else
+    {
+        bIsPause = CC_IsPause(pProc->pCCWrk);
+    }
+
+    return OCAS_SetDlgItemTxt(hWnd, IDC_BTN_MONCTL, 
+        bIsPause ? TEXT("Start") : TEXT("Pause"));
+}
+
+BOOL OCAS_OnMonCtlClick(HWND hWnd)
+{
+    OCAWProc *pProc = CAS_MGetProcPtr();
+    CAErrno caErr;
+    BOOL bIsPause;
+
+    if (NULL == pProc || NULL == pProc->pCCWrk)
+    {
+        return FALSE;
+    }
+
+    bIsPause = CC_IsPause(pProc->pCCWrk);
+    caErr = CC_SetPauseFlag(pProc->pCCWrk, !bIsPause);
+    if (CA_ERR_SUCCESS != caErr)
+    {
+        /* XXX FIXME pop a err msg */
+    }
+
+    return OCAS_OnUpdateMonBtnState(hWnd);
+}
+
 BOOL OCAS_OnMainDlgInit(HWND hWnd)
 {
     CACfgDatum cfgDatum;
@@ -127,6 +166,7 @@ BOOL OCAS_OnMainDlgInit(HWND hWnd)
     CA_CfgDupRT(&cfgDatum);
     OCAS_SetHistoryPathToUI(hWnd, cfgDatum.szHistoryPath);
     OCAS_SetMonProcNameToUI(hWnd, cfgDatum.szCommunicatorFName);
+    OCAS_OnUpdateMonBtnState(hWnd);
     return TRUE;
 }
 
@@ -160,6 +200,9 @@ BOOL OCAS_OnMainDlgCmdEvt(HWND hWnd, UINT wParam, LPARAM lParam,
 
     case IDC_BUTTON_CHANGE:
         return OCAS_OnChangeHistoryPath(hWnd);
+
+    case IDC_BTN_MONCTL:
+        return OCAS_OnMonCtlClick(hWnd);
 
     default:
         return FALSE;

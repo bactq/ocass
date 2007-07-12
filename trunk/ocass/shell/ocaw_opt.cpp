@@ -86,7 +86,7 @@ static BOOL OCAS_CfgOnBtnOkClick(HWND hWnd)
     bResult = OCAS_CfgUpdateCfgFromUI(hWnd, &cfgDatum);
     if (bResult)
     {
-        CC_UpdateCfg(pProc->pCCWrk, &cfgDatum);
+        CC_UpdateCfg(pProc->pCCWrk, pProc->szCfgFName, &cfgDatum);
     }
 
 EXIT:

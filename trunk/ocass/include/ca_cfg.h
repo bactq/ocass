@@ -117,4 +117,6 @@ CA_DECLARE(CAErrno)     CA_CfgOCASSAutoRunSet(BOOL bIsAutoRun);
 CA_DECLARE(CASpyLogMask) CA_CfgLogMod2SpyLogMask(CALogMod logMod);
 CA_DECLARE(CAShellLogMask) CA_CfgLogMod2ShLogMask(CALogMod logMod);
 
+CA_DECLARE(CAErrno)     CA_CfgReCalculate(CACfgDatum *pResult);
+
 #endif /* !defined(_CA_CFG_H_) */
