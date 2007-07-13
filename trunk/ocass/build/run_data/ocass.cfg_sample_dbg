@@ -1,2 +1,4 @@
+[app]
+log_mode=5
 [spy]
 spy_logmask=-1
