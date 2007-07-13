@@ -85,6 +85,11 @@ BOOL OCAS_ChangeHistoryPath(HWND hWnd, TCHAR *pszHistoryPath)
     }
 
     caErr = CC_UpdateCfg(pProc->pCCWrk, pProc->szCfgFName, &cfgDatum);
+    if (CA_ERR_SUCCESS == caErr)
+    {
+        OCAS_SetDlgItemTxt(hWnd, IDC_EDIT_HISTORY_PATH, pszHistoryPath);
+    }
+
     return (CA_ERR_SUCCESS == caErr ? TRUE : FALSE);
 }
 
