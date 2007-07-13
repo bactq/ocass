@@ -30,7 +30,14 @@
 #include "ocaw_wrk.h"
 #include "ocaw_log.h"
 
-const TCHAR *OCAS_USAGE_TXT = TEXT("Useage");
+const TCHAR *OCAS_USAGE_TXT = TEXT("OCASS Useage:\r\n"
+                                   "\r\n"
+                                   "ocassw.exe -[?hHf:FS]\r\n"
+                                   "\r\n"
+                                   "-? | -h | -H    - Show this help message\r\n"
+                                   "-f <config file>    - set the config file name\r\n"
+                                   "-F  - Run as foreground\r\n"
+                                   "-S  - Run as safe mode\r\n");
 
 int OCAS_PUseage(OCAWProc *pProc)
 {
