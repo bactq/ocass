@@ -80,12 +80,18 @@ static void CS_DoWrkSpy(CSWrk *pCSWrk)
         csLogCfg.dwNtDumpLogTSize = pCSWrk->spyDatum.dwSpyNtDumpTSize;
         csLogCfg.spyLogMask = pCSWrk->spyDatum.logMask;
     }
-    LeaveCriticalSection(&pCSWrk->wrkCS);
-
     if (bStateIsDirty)
     {
         CS_LogUpdateCfg(&csLogCfg);
+
+
+        if (NULL != pCSWrk->protoCache.pCHR)
+        {
+            CA_CHRecUpdateCfg(pCSWrk->protoCache.pCHR, 
+                pCSWrk->spyDatum.szHistoryPath);
+        }
     }
+    LeaveCriticalSection(&pCSWrk->wrkCS);
 }
 
 static DWORD WINAPI CS_WrkTh(void *pArg)

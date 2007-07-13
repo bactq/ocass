@@ -510,18 +510,18 @@ CA_DECLARE(CAErrno) CA_CHRecClose(CACHRec *pCHR)
     return CA_ERR_SUCCESS;
 }
 
-CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR)
+CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR, 
+                                      const TCHAR *pszHistoryPath)
 {
     CAErrno funcErr = CA_ERR_SUCCESS;
     TCHAR szCHRPath[MAX_PATH];
     TCHAR szCHStylePath[MAX_PATH];
+    BOOL bNeedClose;
     int nResult;
 
-    CA_RTCSEnter();
     nResult = CA_SNPrintf(szCHRPath, 
         sizeof(szCHRPath) / sizeof(szCHRPath[0]), TEXT("%s"), 
-        CA_CfgGetRT()->szHistoryPath);
-    CA_RTCSLeave();
+        pszHistoryPath);
     if (0 >= nResult)
     {
         CA_RTLog(CA_SRC_MARK, CA_RTLOG_ERR, 
@@ -541,11 +541,26 @@ CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR)
         return CA_ERR_FNAME_TOO_LONG;
     }
 
-    /* FIXME read cache time from config or args */
+    bNeedClose = FALSE;
     EnterCriticalSection(&pCHR->chrCS);
-    lstrcpy(pCHR->szCHRPath, szCHRPath);
-    lstrcpy(pCHR->szTemplatePath, szCHStylePath);
-    funcErr = CA_CHRecCloseAll(pCHR);
+    nResult = lstrcmpi(pCHR->szCHRPath, szCHRPath);
+    if (0 != nResult)
+    {
+        bNeedClose = TRUE;
+        lstrcpy(pCHR->szCHRPath, szCHRPath);
+    }
+
+    nResult = lstrcmpi(pCHR->szTemplatePath, szCHStylePath);
+    if (0 != nResult)
+    {
+        bNeedClose = TRUE;
+        lstrcpy(pCHR->szTemplatePath, szCHStylePath);
+    }
+
+    if (bNeedClose)
+    {
+        funcErr = CA_CHRecCloseAll(pCHR);
+    }
     LeaveCriticalSection(&pCHR->chrCS);
     return funcErr;
 }

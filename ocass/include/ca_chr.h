@@ -33,7 +33,8 @@ CA_DECLARE(CAErrno) CA_CHRecOpen(CACHRec **pCHR, DWORD nMaxCacheSec);
 
 CA_DECLARE(CAErrno) CA_CHRecClose(CACHRec *pCHR);
 
-CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR);
+CA_DECLARE(CAErrno) CA_CHRecUpdateCfg(CACHRec *pCHR, 
+                                      const TCHAR *pszHistoryPath);
 
 CA_DECLARE(CAErrno) CA_CHRecCloseTimeOutSlot(CACHRec *pCHR);
 CA_DECLARE(CAErrno) CA_CHRecCloseAllSlot(CACHRec *pCHR);

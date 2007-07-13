@@ -22,6 +22,7 @@
  */
 
 #include "ca_evts.h"
+#include "ca_str.h"
 #include "ocaw_main.h"
 #include "ocaw_proc.h"
 #include "ocaw_wrk.h"
@@ -140,7 +141,7 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
 
 int OCAS_PWrk(OCAWProc *pProc)
 {
-    NOTIFYICONDATA notifyIconData;
+    NOTIFYICONDATA notifyIconData = {0};
     CAErrno caErr;
     HANDLE hEvt;
     DWORD dwThId;
@@ -228,10 +229,12 @@ int OCAS_PWrk(OCAWProc *pProc)
     notifyIconData.hIcon = LoadIcon(CAS_MGetAppInst(), 
         MAKEINTRESOURCE(IDI_ICON_MAIN));
     notifyIconData.hWnd = pProc->hMainDlg;
-    notifyIconData.szTip[0] = '\0';
+    CA_TruncateStrnCpy(notifyIconData.szTip, 
+        TEXT("MS Office Communicator Assistant"), 
+        sizeof(notifyIconData.szTip) / sizeof(notifyIconData.szTip[0]));
     notifyIconData.uID = OCAW_MAIN_NOTIFY_ICON_ID;
     notifyIconData.uCallbackMessage = OCAW_MSG_NOTIFY_ICON;
-    notifyIconData.uFlags = NIF_ICON|NIF_MESSAGE;
+    notifyIconData.uFlags = NIF_ICON|NIF_MESSAGE|NIF_TIP;
     bResult = Shell_NotifyIcon(NIM_ADD, &notifyIconData);
     if (!bResult)
     {
