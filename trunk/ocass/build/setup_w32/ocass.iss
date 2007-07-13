@@ -50,5 +50,8 @@ Name: "{group}\MS Office Communicator Assistant\Assistant control (Safe)"; Filen
 Name: "{group}\MS Office Communicator Assistant\License"; Filename: "{app}\license.txt"; 
 Name: "{group}\MS Office Communicator Assistant\Uninstall"; Filename: "{uninstallexe}"
 
-[Registry]
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "ocass_autorun"; ValueData: "{app}\ocassw.exe"; Flags: uninsdeletekeyifempty uninsdeletevalue
+;
+; remove auto startup
+; [Registry]
+; Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "ocass_autorun"; ValueData: "{app}\ocassw.exe"; Flags: uninsdeletekeyifempty uninsdeletevalue
+;
