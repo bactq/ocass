@@ -51,6 +51,7 @@ void CS_LogNtDump(const TCHAR *pszSrc, int nSrcLine,
                   int nApiSlotId, BOOL bIsFilterProto, 
                   const char *pNtBuf, int nNtBufLen);
 
+BOOL CS_RTLogFilter(void *pCbCtx, CARTLogFlags logFlags);
 void CS_RTLog(void *pCbCtx, CARTLog *pLog);
 
 #endif /* !defined(_CS_LOG_H_) */

@@ -67,6 +67,7 @@ void CS_CoreOnDllUnload(HINSTANCE hInst)
     CS_WrkStop(g_pCSCore->pCoreWrk);
 
     CA_RTSetLog(NULL, NULL);
+    CA_RTSetLogFilter(NULL, NULL);
     CS_LogCleanup();
     CA_Cleanup();
 }
@@ -104,12 +105,8 @@ CA_DECLARE_DYL(CAErrno) CS_Entry(HMODULE hLib, CACfgDatum *pCfgDatum)
         return caErr;
     }
 
-    caErr = CA_RTSetLog(NULL, CS_RTLog);
-    if (CA_ERR_SUCCESS != caErr)
-    {
-        CA_Cleanup();
-        return caErr;
-    }
+    CA_RTSetLog(NULL, CS_RTLog);
+    CA_RTSetLogFilter(NULL, CS_RTLogFilter);
 
     bResult = CA_OFCIsCommunicatorMod(NULL);
     if (!bResult)

@@ -200,6 +200,18 @@ void CS_LogNtDump(const TCHAR *pszSrc, int nSrcLine,
         nSrcLine);
 }
 
+BOOL CS_RTLogFilter(void *pCbCtx, CARTLogFlags logFlags)
+{
+    CSLog *pCSLog = CS_LogGetPtr();
+
+    if (NULL == pCSLog || NULL == pCSLog->pSpyLog)
+    {
+        return TRUE;
+    }
+
+    return CS_LogFalgsNeedFilter(logFlags, pCSLog->spyLogMask);
+}
+
 void CS_RTLog(void *pCbCtx, CARTLog *pLog)
 {
     CASpyLogMask spyLogMask;
