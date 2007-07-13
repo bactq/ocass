@@ -53,11 +53,16 @@ typedef struct _CA_RTLog
 
     CARTLogFlags logFlags;
     const TCHAR *pszLog;
+    DWORD dwOsErr;
 } CARTLog;
 
+typedef BOOL (*CA_RTLogFilterFunc)(void *pCbCtx, CARTLogFlags logFlags);
 typedef void (*CA_RTLogFunc)(void *pCbCtx, CARTLog *pLog);
 
 CA_DECLARE(CAErrno) CA_RTSetLog(void *pCbCtx, CA_RTLogFunc pLogFunc);
+
+CA_DECLARE(CAErrno) CA_RTSetLogFilter(void *pCbCtx, 
+                                      CA_RTLogFilterFunc pLogFilter);
 
 CA_DECLARE(const TCHAR*) CA_RTLogFlagsDesc(CARTLogFlags logFlags);
 

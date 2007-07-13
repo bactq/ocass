@@ -101,9 +101,22 @@ static void CAS_RTLog(void *pCbCtx, CARTLog *pLog)
         szTmBuf[0] = '\0';
     }
 
-    CA_LogLine(pCASLog->pLog, TEXT("%s %s %s(%u): %s"), 
+    CA_LogLine(pCASLog->pLog, TEXT("%s %s %s(%u) [OS Err %u]: %s"), 
         szTmBuf, CA_RTLogFlagsDesc(pLog->logFlags), 
-        pLog->pszSrcBase, pLog->nSrcLine, pLog->pszLog);
+        pLog->pszSrcBase, pLog->nSrcLine, pLog->dwOsErr, 
+        pLog->pszLog);
+}
+
+static BOOL CAS_RTLogFilter(void *pCbCtx, CARTLogFlags logFlags)
+{
+    CASLog *pCASLog = CAS_GetLogDataPtr();
+
+    if (NULL == pCASLog || NULL == pCASLog->pLog)
+    {
+        return TRUE;
+    }
+
+    return CAS_LogNeedFilter(pCASLog->shellLogMask, logFlags);
 }
 
 CAErrno CAS_LogStartup(void)
@@ -137,11 +150,16 @@ CAErrno CAS_LogStartup(void)
     g_casLog.pLog = pLog;
     g_casLog.shellLogMask = cfgDatum.shellLogMask;
     g_pCASLog = &g_casLog;
+
+    CA_RTSetLog(NULL, CAS_RTLog);
+    CA_RTSetLogFilter(NULL, CAS_RTLogFilter);
     return CA_ERR_SUCCESS;
 }
 
 void CAS_LogCleanup(void)
 {
+    CA_RTSetLog(NULL, NULL);
+    CA_RTSetLogFilter(NULL, NULL);
     if (NULL == g_pCASLog)
     {
         return;

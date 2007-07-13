@@ -38,6 +38,9 @@ typedef struct _CART
 
     void *pRTLogCbCtx;
     CA_RTLogFunc pRTLogFunc;
+
+    void *pRTLogFilterCbCtx;
+    CA_RTLogFilterFunc pRTLogFilterFunc;
 } CART;
 
 CART* CA_GetPtrRT(void);

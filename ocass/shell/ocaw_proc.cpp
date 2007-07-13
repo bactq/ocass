@@ -183,6 +183,7 @@ CAErrno CAS_PStartup(int nArgc, char **pArgv,
         CAS_LogStartup();
     }
 
+    CA_RTLog(CA_SRC_MARK, CA_RTLOG_INFO, TEXT("Proc data startup success"));
     return CA_ERR_SUCCESS;
 }
 
