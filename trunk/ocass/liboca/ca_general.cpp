@@ -174,6 +174,32 @@ CA_DECLARE(CAErrno) CA_RTSetLog(void *pCbCtx, CA_RTLogFunc pLogFunc)
     return CA_ERR_SUCCESS;
 }
 
+CA_DECLARE(CAErrno) CA_RTSetLogFilter(void *pCbCtx, 
+                                      CA_RTLogFilterFunc pLogFilter)
+{
+    CA_RTCSEnter();
+    CA_GetPtrRT()->pRTLogFilterCbCtx = pCbCtx;
+    CA_GetPtrRT()->pRTLogFilterFunc = pLogFilter;
+    CA_RTCSLeave();
+    return CA_ERR_SUCCESS;
+}
+
+static BOOL CA_RTLogNeedFilter(CARTLogFlags logFlags)
+{
+    CA_RTLogFilterFunc pLogFilter = NULL;
+    void *pCbCtx = NULL;
+
+    /* XXX FIXME this 2 val no thread safe */
+    pCbCtx = CA_GetPtrRT()->pRTLogFilterCbCtx;
+    pLogFilter = CA_GetPtrRT()->pRTLogFilterFunc;
+    if (NULL == pLogFilter)
+    {
+        return FALSE;
+    }
+
+    return pLogFilter(pCbCtx, logFlags);
+}
+
 CA_DECLARE(void) CA_RTLog(const TCHAR *pszSrc, int nSrcLine, 
                           CARTLogFlags logFlags, const TCHAR *pszFmt, ...)
 {
@@ -181,12 +207,26 @@ CA_DECLARE(void) CA_RTLog(const TCHAR *pszSrc, int nSrcLine,
     va_list pArgList;
     CARTLog rtLog;
     TCHAR szRTLog[1024 * 4];
+    DWORD dwOsErr = ERROR_SUCCESS;
+    BOOL bResult;
     void *pCbCtx;
     int nResult;
 
+    if (logFlags & CA_RTLOG_OSERR)
+    {
+        dwOsErr = GetLastError();
+    }
+
+    /* XXX FIXME this 2 val no thread safe */
     pCbCtx = CA_GetPtrRT()->pRTLogCbCtx;
     pLogFunc = CA_GetPtrRT()->pRTLogFunc;
     if (NULL == pLogFunc)
+    {
+        return;
+    }
+
+    bResult = CA_RTLogNeedFilter(logFlags);
+    if (bResult)
     {
         return;
     }
@@ -200,6 +240,7 @@ CA_DECLARE(void) CA_RTLog(const TCHAR *pszSrc, int nSrcLine,
         return;
     }
 
+    rtLog.dwOsErr = dwOsErr;
     rtLog.logFlags = logFlags;
     rtLog.pszSrc = pszSrc;
     CA_PathGetBaseName(pszSrc, &rtLog.pszSrcBase);
