@@ -1,0 +1,16 @@
+[app]
+communicator_fname="c:\abc\abc.exe"
+template_path="c:\abc"
+log_path="c:\abc"
+log_mode=1
+is_auto_inject=0
+log_fname="abc"
+log_ts=5
+log_mask=0
+[spy]
+history_path="c:\abc"
+spy_log="c:\abc\abc.log"
+spy_log_ts=5
+spy_ntdump="c:\abc\abc.data"
+spy_ntdump_ts=5
+spy_logmask=0
