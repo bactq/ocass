@@ -141,13 +141,14 @@ static BOOL CALLBACK OCAS_MainDlgProc(HWND hWnd, UINT nMsg,
 
 int OCAS_PWrk(OCAWProc *pProc)
 {
-    NOTIFYICONDATA notifyIconData = {0};
     CAErrno caErr;
     HANDLE hEvt;
     DWORD dwThId;
     BOOL bResult;
+    BOOL bCreate;
     MSG  wndMsg;
     int nProcExit = CA_PROC_EXIT_OK;
+    int i;
 
     pProc->hMainDlg     = NULL;
     pProc->hShWrkEvt    = NULL;
@@ -225,18 +226,27 @@ int OCAS_PWrk(OCAWProc *pProc)
     }
 
     /* add notify icon */
-    notifyIconData.cbSize = sizeof(notifyIconData);
-    notifyIconData.hIcon = LoadIcon(CAS_MGetAppInst(), 
-        MAKEINTRESOURCE(IDI_ICON_MAIN));
-    notifyIconData.hWnd = pProc->hMainDlg;
-    CA_TruncateStrnCpy(notifyIconData.szTip, 
-        TEXT("MS Office Communicator Assistant"), 
-        sizeof(notifyIconData.szTip) / sizeof(notifyIconData.szTip[0]));
-    notifyIconData.uID = OCAW_MAIN_NOTIFY_ICON_ID;
-    notifyIconData.uCallbackMessage = OCAW_MSG_NOTIFY_ICON;
-    notifyIconData.uFlags = NIF_ICON|NIF_MESSAGE|NIF_TIP;
-    bResult = Shell_NotifyIcon(NIM_ADD, &notifyIconData);
-    if (!bResult)
+    for (bCreate = FALSE, i = 0;; i++)
+    {
+        if (5 <= i)
+        {
+            /* retry 3 time */
+            break;
+        }
+
+        bResult = OCAS_AddNotifyIcon(pProc->hMainDlg, 
+            OCAW_MAIN_NOTIFY_ICON_ID, IDI_ICON_MAIN, OCAW_MSG_NOTIFY_ICON, 
+            TEXT("MS Office Communicator Assistant"));
+        if (!bResult)
+        {
+            Sleep(1000);
+            continue;
+        }
+
+        bCreate = TRUE;
+        break;
+    }
+    if (!bCreate)
     {
         CAS_Panic(CA_SRC_MARK, CA_PROC_EXIT_INIT_FAILED, 
             TEXT("Startup failed. Create Main notify icon failed. "
@@ -269,10 +279,7 @@ int OCAS_PWrk(OCAWProc *pProc)
     }
 
     /* remove notify icon */
-    notifyIconData.cbSize = sizeof(notifyIconData);
-    notifyIconData.uID = OCAW_MAIN_NOTIFY_ICON_ID;
-    notifyIconData.uFlags = NIF_ICON;
-    Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+    OCAS_RmNotifyIcon(pProc->hMainDlg, OCAW_MAIN_NOTIFY_ICON_ID);
 
     pProc->hMainDlg = NULL;
 EXIT:
