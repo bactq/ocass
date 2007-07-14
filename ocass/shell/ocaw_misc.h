@@ -76,4 +76,9 @@ BOOL OCAS_SetDlgCheckBoxState(HWND hDlg, UINT nCtrlItem,
 
 BOOL OCAS_SetDlgItemEnable(HWND hDlg, UINT nCtrlItem, BOOL bEnable);
 
+BOOL OCAS_AddNotifyIcon(HWND hParentWnd, UINT nCtlId, 
+                        UINT nIconResId, UINT nCbMsg, const TCHAR *pszTip);
+
+BOOL OCAS_RmNotifyIcon(HWND hParentWnd, UINT nCtlId);
+
 #endif /* !defined(_OCAW_MISC_H_) */

@@ -24,6 +24,7 @@
 #include <shlobj.h>
 #include "ca_str.h"
 #include "ocaw_misc.h"
+#include "ocaw_main.h"
 
 BOOL OCAS_AppendMenuItem(HMENU hMenu, UINT nMenuId, TCHAR *pszName, 
                          BOOL bDefault, BOOL bDisabled)
@@ -353,4 +354,39 @@ BOOL OCAS_SetDlgItemEnable(HWND hDlg, UINT nCtrlItem, BOOL bEnable)
     }
 
     return EnableWindow(hDlgItem, bEnable);
+}
+
+BOOL OCAS_AddNotifyIcon(HWND hParentWnd, UINT nCtlId, 
+                        UINT nIconResId, UINT nCbMsg, const TCHAR *pszTip)
+{
+    NOTIFYICONDATA notifyIconData = {0};
+    BOOL bResult;
+
+    notifyIconData.cbSize = sizeof(notifyIconData);
+    notifyIconData.uID = nCtlId;
+    notifyIconData.uCallbackMessage = nCbMsg;
+    notifyIconData.hWnd = hParentWnd;
+    notifyIconData.hIcon = LoadIcon(CAS_MGetAppInst(), 
+                                    MAKEINTRESOURCE(nIconResId));   
+    CA_TruncateStrnCpy(notifyIconData.szTip, pszTip, 
+        sizeof(notifyIconData.szTip) / sizeof(notifyIconData.szTip[0]));
+    notifyIconData.uFlags = NIF_ICON|NIF_MESSAGE|NIF_TIP;
+    bResult = Shell_NotifyIcon(NIM_ADD, &notifyIconData);
+    if (!bResult)
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+BOOL OCAS_RmNotifyIcon(HWND hParentWnd, UINT nCtlId)
+{
+    NOTIFYICONDATA notifyIconData = {0};
+
+    notifyIconData.cbSize = sizeof(notifyIconData);
+    notifyIconData.uID = nCtlId;
+    notifyIconData.hWnd = hParentWnd;
+    notifyIconData.uFlags = NIF_ICON;
+    return Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
 }
