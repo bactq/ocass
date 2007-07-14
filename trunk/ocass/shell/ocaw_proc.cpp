@@ -37,10 +37,10 @@ const TCHAR *OCAS_USAGE_TXT = TEXT("OCASS Useage:\r\n"
                                    "\r\n"
                                    "ocassw.exe -[?hHf:FS]\r\n"
                                    "\r\n"
-                                   "-? | -h | -H    - Show this help message\r\n"
-                                   "-f <config file>    - set the config file name\r\n"
-                                   "-F  - Run as foreground\r\n"
-                                   "-S  - Run as safe mode\r\n");
+                                   "-? | -h | -H - Show this help message\r\n"
+                                   "-F - Run as foreground\r\n"
+                                   "-S - Run as safe mode\r\n"
+                                   "-f <config file> - set the config file name\r\n");
 
 int OCAS_PUseage(OCAWProc *pProc)
 {
@@ -211,4 +211,3 @@ int CAS_PRun(OCAWProc *pProc)
         return OCAS_PUseage(pProc);
     }
 }
-
