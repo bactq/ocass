@@ -1,0 +1,1 @@
+A simple Plug-In of the Microsoft Office Communicator 2005.This Plug-In will monitor and parse all SIP protocol from Office Communicator. And get customer need info (chart history, login event, ... ) from the protocol.
